@@ -1,3 +1,33 @@
 # pe-failure-lab
 
-A roleplay-based simulation lab for exploring failure patterns in Platform Engineering.
+Roleplay-based simulation and assessment lab for exploring failure patterns in Platform Engineering.
+
+## Vision
+- `docs/product/vision.md`: repo-level epic hypothesis and long-term direction
+- `AGENTS.md`: repository operating guidance for AI-native collaboration
+
+## Core Layout
+- `docs/intent-development`: intent-driven development documents with traceability from intent to implementation
+- `docs/operations`: operating rules, quality gates, and repo policies
+- `docs/decisions`: architecture and product decisions
+
+## Intent Traceability
+This repository adopts the same intent-development flow used in `knowledge-lake`:
+
+1. Define product intent in a Feature Proposal.
+2. Link the intent in `docs/intent-development/intent-registry.md`.
+3. Specify learner and observer behavior in a User Interaction Spec.
+4. Add an Implementation Spec when scope becomes concrete.
+5. Keep traceability between vision, intent, interaction, and implementation explicit.
+
+## Current Focus
+- make Platform Engineering failure patterns visible, playable, and discussable
+- design simulation flows before committing to implementation detail
+- preserve traceability from product vision to scenario and interaction design
+
+## Development Model
+- `docs/product/vision.md` defines why the product exists.
+- `docs/product/expected-outputs/` defines what the product should return at key moments such as game end.
+- `docs/intent-development/enabler-proposals/` defines foundational assets that implementation must serve.
+- `docs/intent-development/feature-proposals/` defines user-facing capabilities built on those enablers.
+- `docs/intent-development/ui-specs/` and `docs/intent-development/implementation-specs/` must reference the enablers they depend on.
