@@ -49,3 +49,15 @@ This repository is AI-native. Documents and structures should be optimized prima
 ## Repo Bias
 - This repository is not optimized primarily as a reading experience.
 - It is optimized as a structured working substrate for humans and GenAI collaborating on a simulation product.
+
+## Root-Level Simulation Entry Policy
+- Treat the repository root as a valid entry point for simulation execution as well as development work.
+- If the user asks to run, test-play, or simulate from the root, do not assume the task is only about implementation planning.
+- In simulation-execution contexts, prioritize:
+  - `docs/product/contracts/mvp-simulation-contract-v1.md`
+  - `docs/product/concepts/enterprise-context-card-v1.md`
+  - `docs/product/concepts/mvp-simulation-session-concept.md`
+  - `docs/product/contracts/facilitator-role-contract-v1.md`
+  - `docs/product/personas/`
+  - `failure-model/`
+- When simulation and development intents are both plausible, prefer the user's explicit execution request over the repository's development-document bias.

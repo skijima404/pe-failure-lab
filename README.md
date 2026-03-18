@@ -2,8 +2,43 @@
 
 Roleplay-based simulation and assessment lab for exploring failure patterns in Platform Engineering.
 
+## Simulation Entry
+Use the repository root as a valid entry point for running the MVP simulation, not only for development.
+
+If an AI agent is asked to run or test-play the simulation from the repository root, it should treat the following artifacts as the primary execution bundle:
+- `docs/product/concepts/enterprise-context-card-v1.md`
+- `docs/product/concepts/mvp-simulation-session-concept.md`
+- `docs/product/contracts/mvp-simulation-contract-v1.md`
+- `docs/product/contracts/facilitator-role-contract-v1.md`
+- `docs/product/personas/executive-stakeholder-v1.md`
+- `docs/product/personas/platform-side-stakeholder-v1.md`
+- `docs/product/personas/legacy-app-side-stakeholder-v1.md`
+- `docs/product/personas/new-product-tech-lead-v1.md`
+- `failure-model/`
+
+For MVP test play, the root-level default interpretation should be:
+- this repository is both a simulation-design workspace and a simulation-running workspace
+- if the user asks to run, test-play, or simulate, prioritize session execution behavior over development-planning behavior
+- use the existing contracts and persona assets before proposing broader redesign
+
+Suggested root-level execution flow:
+1. Read the MVP simulation contract and enterprise context.
+2. Load the persona cards and facilitator contract.
+3. Start in initialization mode.
+4. Wait for explicit start.
+5. Run the meeting simulation.
+6. Produce game-end output and enter post-game discussion mode
+
 ## Vision
 - `docs/product/vision.md`: repo-level epic hypothesis and long-term direction
+- `docs/product/concepts/mvp-simulation-session-concept.md`: current thin playable session concept
+- `docs/product/concepts/enterprise-context-card-v1.md`: fixed enterprise context for the first playable version
+- `docs/product/contracts/facilitator-role-contract-v1.md`: meeting-operator contract for the facilitator role
+- `docs/product/contracts/mvp-simulation-contract-v1.md`: thin playable session contract
+- `docs/product/personas/executive-stakeholder-v1.md`: first stakeholder persona card
+- `docs/product/personas/platform-side-stakeholder-v1.md`: platform realism and boundary-focused stakeholder persona
+- `docs/product/personas/legacy-app-side-stakeholder-v1.md`: legacy-system risk and migration-pressure stakeholder persona
+- `docs/product/personas/new-product-tech-lead-v1.md`: modern delivery-friction and bespoke-help pressure persona
 - `AGENTS.md`: repository operating guidance for AI-native collaboration
 
 ## Core Layout
