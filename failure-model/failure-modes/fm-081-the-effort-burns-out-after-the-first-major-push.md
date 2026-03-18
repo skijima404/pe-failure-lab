@@ -3,7 +3,7 @@ id: fm-081
 title: The Effort Burns Out After the First Major Push
 type: failure_mode
 triggers:
-  - rf-032
+  - rf-034
 triggered_by: []
 leads_to: []
 leads_from: []
@@ -30,4 +30,4 @@ This tends to emerge when the first win was achieved through unusually high exer
 - Treat burnout after an initial win as an acceleration-design failure, not only as a people issue.
 
 ## Notes
-Initial draft linked to `rf-032`.
+Initial draft now linked to `rf-034`.

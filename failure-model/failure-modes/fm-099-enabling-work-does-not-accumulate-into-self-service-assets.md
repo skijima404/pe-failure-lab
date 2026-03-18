@@ -3,7 +3,7 @@ id: fm-099
 title: Enabling Work Does Not Accumulate into Self-Service Assets
 type: failure_mode
 triggers:
-  - rf-041
+  - rf-040
 triggered_by: []
 leads_to: []
 leads_from: []
@@ -17,7 +17,7 @@ tags:
 Enabling work does not accumulate into self-service assets, so support effort is spent repeatedly without leaving behind enough reusable capability to reduce future dependency.
 
 ## Context
-This tends to emerge when the team does a large amount of coaching, walkthrough, or project-facing support, but does not convert that work into documentation, product changes, templates, or other reusable adoption assets.
+This tends to emerge when the team does a large amount of coaching, walkthrough, or project-facing support, but does not convert that work into reusable adoption assets.
 
 ## Mechanism
 - Similar enablement is delivered again and again through human effort.
@@ -30,4 +30,4 @@ This tends to emerge when the team does a large amount of coaching, walkthrough,
 - Treat repeated human explanation of the same issue as a signal that enabling work is not accumulating properly.
 
 ## Notes
-Initial draft linked to `rf-041`.
+Initial draft now linked to `rf-040` after merging support-dependence into self-service failure.

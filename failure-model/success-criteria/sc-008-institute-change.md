@@ -6,10 +6,8 @@ threatened_by:
   - rf-038
   - rf-039
   - rf-040
-  - rf-041
   - rf-042
   - rf-043
-  - rf-044
 tags:
   - success_criteria
   - kotter_step_8
@@ -37,10 +35,8 @@ Current symptom files:
 - `rf-038`: Adoption Does Not Reach the Intended Users
 - `rf-039`: Adoption Does Not Produce Strong User Satisfaction
 - `rf-040`: Usage Does Not Become Self-Service
-- `rf-041`: Adoption Still Depends on High-Touch Project Support
 - `rf-042`: Usage and Adoption Are Not Tracked Reliably
 - `rf-043`: Adoption Does Not Become Organizationally Legible or Durable
-- `rf-044`: Platform Engineering Practice Does Not Become Internalized Within the Platform Team
 
 ## Notes
 Kotter Step 8.

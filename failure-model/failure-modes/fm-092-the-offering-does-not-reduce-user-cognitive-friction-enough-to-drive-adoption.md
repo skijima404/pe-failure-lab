@@ -22,7 +22,7 @@ This tends to emerge when the team assumes that what feels obvious, simple, or n
 ## Mechanism
 - The effort underestimates the gap between platform-team assumptions and user mental models.
 - The platform does not lower the practical recognition burden enough for users to see how it fits their everyday work.
-- As a result, intended users remain unreached because the platform still feels too foreign, unclear, or effortful to enter.
+- As a result, intended users remain unreached because the platform still feels too foreign or effortful to enter.
 
 ## Countermove
 - Design for the user's actual mental model rather than for the provider's mental model.

@@ -3,7 +3,6 @@ id: sc-007
 title: Sustain Acceleration
 type: success_criteria
 threatened_by:
-  - rf-032
   - rf-033
   - rf-034
   - rf-035
@@ -33,7 +32,6 @@ In Platform Engineering, one successful change is rarely enough. If the effort b
 ## Symptom Drafts
 Current symptom files:
 
-- `rf-032`: Momentum Falls After the Initial Win
 - `rf-033`: There Is No Credible Path to the Next Win
 - `rf-034`: Capacity for Continued Expansion Is Not Secured
 - `rf-035`: The Change Effort Does Not Scale Beyond Key Individuals

@@ -22,7 +22,7 @@ This tends to emerge when the team succeeds in getting users to try the platform
 ## Mechanism
 - The platform addresses an assumed problem more than the problem users actually most need solved.
 - Users can try the offering and still conclude that it does not improve their reality enough to feel worthwhile.
-- As a result, adoption happens without creating strong satisfaction, advocacy, or durable pull.
+- As a result, adoption happens without creating strong satisfaction or durable pull.
 
 ## Countermove
 - Validate whether the platform is solving the user's most important real problem, not only a plausible one.

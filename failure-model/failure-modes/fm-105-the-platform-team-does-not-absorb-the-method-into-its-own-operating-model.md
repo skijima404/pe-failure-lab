@@ -3,7 +3,7 @@ id: fm-105
 title: The Platform Team Does Not Absorb the Method into Its Own Operating Model
 type: failure_mode
 triggers:
-  - rf-044
+  - rf-043
 triggered_by: []
 leads_to: []
 leads_from: []
@@ -30,4 +30,4 @@ This tends to emerge when the team can use Platform Engineering language or arti
 - Treat method imitation without internalization as an institutionalization failure, not only as incomplete training.
 
 ## Notes
-Initial draft linked to `rf-044`.
+Initial draft now linked to `rf-043` after merging internalization into organizational durability.

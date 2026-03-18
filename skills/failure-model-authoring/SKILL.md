@@ -22,6 +22,7 @@ This skill operationalizes:
 4. Extract `Failure Mode` candidates as recurring judgment patterns, omissions, or assumptions that produce the symptom.
 5. Normalize titles, statements, file names, and observable signals for GenAI readability.
 6. Add frontmatter links and verify top-down and bottom-up consistency.
+7. If the same concern is repeating across multiple steps, decide whether it should instead become a `cross_cutting_principle`.
 
 ## Asset Roles
 - `Success Criteria`:
@@ -30,6 +31,8 @@ This skill operationalizes:
   - observable failure state in conversation, decision-making, or organizational behavior
 - `Failure Mode`:
   - recurring judgment pattern, omission, or assumption that produces a symptom
+- `Cross-Cutting Principle`:
+  - reusable concern that applies across multiple steps and should not be fully re-explained in each local node
 
 Do not collapse `Symptom` and `Failure Mode` into one node unless there is a strong reason.
 
@@ -38,6 +41,7 @@ Do not collapse `Symptom` and `Failure Mode` into one node unless there is a str
 - Prefer one strong first sentence over a long setup.
 - Write `Observable Signals` so they can be matched against dialogue, questions, or visible actions.
 - Favor nodes that help explain why an effort does or does not continue over time; for this repository, continuity and long-term compounding are first-order concerns, not optional nice-to-haves.
+- When the same rationale is recurring across many steps, prefer creating or updating a `cross_cutting_principle` and then keeping step-local nodes focused on the stage-specific failure shape.
 - Prefer signals like:
   - `When asked "Why now?", the answer stays future-oriented`
   - `When asked "Why should leadership care?", the answer stays technical`
@@ -68,3 +72,4 @@ Do not collapse `Symptom` and `Failure Mode` into one node unless there is a str
 - Are similar nodes distinguishable from each other?
 - Are top-down and bottom-up links both present and consistent?
 - Does the file remain a durable repository asset rather than a chat residue?
+- Is any repeated rationale better represented once as a `cross_cutting_principle`?

@@ -3,11 +3,9 @@ id: rf-014
 title: The Initiative Path Does Not Create Focus or Sustained Value
 type: symptom
 triggered_by:
-  - fm-025
   - fm-026
   - fm-027
   - fm-029
-  - fm-107
 triggers: []
 threatens:
   - sc-003
@@ -18,23 +16,23 @@ tags:
 ---
 
 ## Symptom Statement
-The initiative path exists, but it does not create enough focus, exclusions, or cumulative value to keep the effort coherent over time.
+The initiative path exists, but it does not make the main strategic stream clear enough to keep adjacent or project-specific work in a deliberate supporting role.
 
 ## Consequence
-The team spreads effort across too many directions, does not clarify what it will not do, and fails to build visible value that keeps the strategy remembered and supported.
+The team may still do useful work, including project-specific work, but cannot explain clearly which work is advancing the main path, which work is supporting it, and which work should wait.
 
 ## Observable Signals
-- The initiative list keeps expanding without clear exclusions or boundaries
-- "What not to do" is unclear, unstable, or unsupported by concrete tactics
-- Progress does not accumulate into visible value that reinforces the strategic direction
+- The team cannot explain which work is the main stream and which work is intentionally supporting, signaling, or transitional
+- Project-specific engagements happen without a clear explanation of how they support the strategy
+- Core service or initiative bets lose clarity because too many adjacent activities are treated as equally central
 
 ## User Interpretation
-Participants are likely to see the strategy as busy but unfocused, with motion that does not add up to a durable path.
+Participants are likely to see the strategy as active, but unclear about what is truly central versus merely useful.
 
 ## Structural Impact
-- Priorities become unstable
-- Scope pressure increases because exclusions are weak
-- Strategic memory decays because value is not accumulated in a visible way
+- Priorities become unstable because the main path is not defended clearly enough
+- Adjacent work starts competing with the core strategy instead of serving it deliberately
+- The effort loses concentration because focus is not translated into an explicit operating stream
 
 ## Notes
 Initial draft for `sc-003`.

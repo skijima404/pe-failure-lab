@@ -22,7 +22,7 @@ This tends to emerge when the effort targets a user such as developers directly,
 ## Mechanism
 - The team optimizes messaging, enablement, or design for the wrong immediate audience.
 - The real internal role that controls access, prioritization, or adoption is not engaged strongly enough.
-- As a result, the intended users are not reached effectively because the actual adoption path was misunderstood.
+- As a result, the intended users are not reached because the actual adoption path was misunderstood.
 
 ## Countermove
 - Identify which internal role the adoption path actually runs through before treating a user segment as the primary target.

@@ -6,7 +6,6 @@ triggered_by:
   - fm-020
   - fm-021
   - fm-022
-  - fm-023
   - fm-024
   - fm-028
 triggers: []

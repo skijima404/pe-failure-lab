@@ -18,7 +18,7 @@ tags:
 Adoption does not reach the intended users, so the platform change remains narrower than the audience it was supposed to institutionalize.
 
 ## Consequence
-The effort may exist and even function in pockets, but it does not spread widely enough to become the normal way of working.
+The effort may function in pockets, but it does not spread widely enough to become normal.
 
 ## Observable Signals
 - Intended user groups are still not using the platform behavior or offering in meaningful numbers
@@ -26,7 +26,7 @@ The effort may exist and even function in pockets, but it does not spread widely
 - When asked who has actually adopted the change, the answer excludes much of the intended audience
 
 ## User Interpretation
-Participants are likely to feel that the platform exists, but not as something that has actually taken hold across the users it was meant to serve.
+Participants are likely to feel that the platform exists, but has not taken hold across the users it was meant to serve.
 
 ## Structural Impact
 - Institutionalization remains partial and fragile

@@ -26,7 +26,7 @@ Users may comply or continue using the platform reluctantly, but they do not bec
 - When asked whether users would choose the new way again, the answer is hesitant or mixed
 
 ## User Interpretation
-Participants are likely to feel that adoption has happened technically, but not yet in a way that creates durable user preference.
+Participants are likely to feel that adoption has happened technically, but not in a way that creates durable preference.
 
 ## Structural Impact
 - Retention and advocacy remain weak

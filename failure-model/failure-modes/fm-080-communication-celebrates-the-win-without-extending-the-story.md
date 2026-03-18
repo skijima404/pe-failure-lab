@@ -3,7 +3,7 @@ id: fm-080
 title: Communication Celebrates the Win Without Extending the Story
 type: failure_mode
 triggers:
-  - rf-032
+  - rf-033
 triggered_by: []
 leads_to: []
 leads_from: []
@@ -30,4 +30,4 @@ This tends to emerge when short-term win messaging is strong enough to create re
 - Check whether audiences are hearing continuation or completion after a win is announced.
 
 ## Notes
-Initial draft linked to `rf-032`.
+Initial draft now linked to `rf-033`.
