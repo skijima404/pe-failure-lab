@@ -3,7 +3,7 @@ id: fm-098
 title: Project-Specific Support Remains the Primary Adoption Mode
 type: failure_mode
 triggers:
-  - rf-041
+  - rf-040
 triggered_by: []
 leads_to: []
 leads_from: []
@@ -17,7 +17,7 @@ tags:
 Project-specific support remains the primary adoption mode, so users reach value mainly through direct per-project help rather than through a lower-touch institutional path.
 
 ## Context
-This tends to emerge when the platform team keeps helping individual projects succeed one by one, but does not convert those engagements into a cheaper and more repeatable adoption model.
+This tends to emerge when the platform team keeps helping individual projects one by one, but those engagements are not turned into a lower-touch path.
 
 ## Mechanism
 - Adoption is repeatedly achieved through bespoke project engagement.
@@ -30,4 +30,4 @@ This tends to emerge when the platform team keeps helping individual projects su
 - Treat stable high-touch dependence as an institutionalization failure, not only as strong customer care.
 
 ## Notes
-Initial draft linked to `rf-041`.
+Initial draft now linked to `rf-040` after merging support-dependence into self-service failure.

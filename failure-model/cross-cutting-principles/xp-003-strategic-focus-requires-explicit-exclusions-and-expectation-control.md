@@ -10,15 +10,7 @@ applies_to_success_criteria:
   - sc-008
 illustrated_by:
   - rf-014
-  - rf-024
-  - rf-041
-  - fm-023
-  - fm-025
   - fm-026
-  - fm-051
-  - fm-053
-  - fm-054
-  - fm-107
 tags:
   - cross_cutting_principle
   - focus

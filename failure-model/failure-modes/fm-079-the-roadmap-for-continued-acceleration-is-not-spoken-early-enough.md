@@ -3,7 +3,7 @@ id: fm-079
 title: The Roadmap for Continued Acceleration Is Not Spoken Early Enough
 type: failure_mode
 triggers:
-  - rf-032
+  - rf-033
 triggered_by: []
 leads_to: []
 leads_from: []
@@ -30,4 +30,4 @@ This tends to emerge when the effort focuses on getting to the first visible suc
 - Treat roadmap silence around the first win as a momentum risk.
 
 ## Notes
-Initial draft linked to `rf-032`.
+Initial draft now linked to `rf-033`.

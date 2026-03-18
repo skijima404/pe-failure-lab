@@ -12,7 +12,6 @@ applies_to_success_criteria:
   - sc-008
 illustrated_by:
   - rf-025
-  - rf-032
   - rf-033
   - rf-034
   - rf-037

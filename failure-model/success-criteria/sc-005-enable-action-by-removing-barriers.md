@@ -6,7 +6,6 @@ threatened_by:
   - rf-021
   - rf-022
   - rf-023
-  - rf-024
   - rf-025
   - rf-026
 tags:
@@ -36,7 +35,6 @@ Current symptom files:
 - `rf-021`: Barriers Are Not Surfaced Reliably
 - `rf-022`: Surfaced Barriers Are Not Resolved Effectively
 - `rf-023`: Role and Responsibility Boundaries Are Unclear
-- `rf-024`: Exceptions and Expectations Are Not Controlled
 - `rf-025`: Barrier Removal Effort Loses Operating Capacity and Attention
 - `rf-026`: Resistance and Friction Are Absorbed Informally Instead of Systemically
 

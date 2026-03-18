@@ -6,6 +6,8 @@ triggered_by:
   - fm-095
   - fm-096
   - fm-097
+  - fm-098
+  - fm-099
 triggers: []
 threatens:
   - sc-008
@@ -16,18 +18,19 @@ tags:
 ---
 
 ## Symptom Statement
-Usage does not become self-service at the service level, so the offering itself still requires direct guidance, mediation, or repeated assistance instead of enabling normal independent behavior.
+Usage does not become self-service, so the offering still requires too much direct guidance, mediation, or repeated project support to become a normal lower-touch way of working.
 
 ## Consequence
-The organization cannot absorb the change at scale because use of the platform still requires too much direct help to become routine.
+The organization cannot absorb the change at scale because each new case still costs too much support to make platform usage routine and cheaper over time.
 
 ## Observable Signals
 - Users still need repeated human guidance to get value from the platform
 - Common usage paths do not become easy enough to execute without intervention
-- When asked whether users can proceed independently, the answer remains conditional, narrow, or negative
+- The support volume per adopting project does not decline meaningfully over time
+- When asked whether users can proceed independently or more cheaply than before, the answer remains conditional, narrow, or negative
 
 ## User Interpretation
-Participants are likely to feel that the platform is present, but not yet something people can use as part of ordinary work without handholding.
+Participants are likely to feel that the platform is present, but not yet something people can use as part of ordinary work without repeated help.
 
 ## Structural Impact
 - Adoption cannot scale cleanly

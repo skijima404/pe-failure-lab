@@ -47,3 +47,9 @@ This directory stores the graph-shaped knowledge assets that define how `pe-fail
 - Cross-cutting principles should be used when the same concern recurs across multiple steps and repeating the full rationale inside each step-local node would create unnecessary duplication
 - Kotter-aligned steps should not be interpreted as a strict one-pass sequence; later outcomes such as short-term wins may be used deliberately to reinforce earlier success criteria such as urgency, legitimacy, sponsorship, or investment confidence
 - Scoring or simulation logic should therefore allow evidence from later stages to strengthen the judged condition of earlier stages when that reinforcement is explicitly part of the strategy
+
+## Current Product Positioning
+- This failure model should currently be interpreted primarily as a `Level 1 escape game` against the CNCF Platform Engineering Maturity Model, especially the `Provisional` stage
+- In this repository, `failure` most often means remaining trapped in Level 1 patterns such as voluntary or temporary effort, reactive support behavior, weak product thinking, weak adoption structure, weak measurement, and weak continuity
+- Correspondingly, the model should prioritize failures that prevent an organization from establishing the minimum foundations needed to escape Level 1 and move toward Level 2 `Operationalized`
+- Higher-maturity concerns may still appear, but they are secondary unless they materially affect the ability to build the Level 2 foundation

@@ -3,7 +3,7 @@ id: fm-106
 title: The Practice Remains Vendor-Driven and Does Not Survive Contract Boundaries
 type: failure_mode
 triggers:
-  - rf-044
+  - rf-043
 triggered_by: []
 leads_to: []
 leads_from: []
@@ -30,4 +30,4 @@ This tends to emerge when vendors, consultants, or external partners are the mai
 - Treat vendor continuity as temporary support, not as the long-term container for the practice.
 
 ## Notes
-Initial draft linked to `rf-044`.
+Initial draft now linked to `rf-043` after merging internalization into organizational durability.
