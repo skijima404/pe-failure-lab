@@ -29,6 +29,13 @@ Allow variation in:
 The goal is stable structural function with varied surface expression.
 
 ## Runtime Use Guidance
+This persona card is a durable development spec.
+Its detailed sections are for authoring, tuning, and validation.
+Runtime execution does not need to reflect every section directly.
+
+Prefer using the thin runtime memo:
+- `docs/product/personas/runtime/executive-stakeholder-runtime-v1.md`
+
 For runtime prompting, this persona should be compressed to:
 - core concern: business value, investment credibility, and practical scale
 - typical misread: maps Platform Engineering into familiar business or shared-service categories

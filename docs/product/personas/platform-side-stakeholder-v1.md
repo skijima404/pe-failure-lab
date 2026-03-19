@@ -23,6 +23,13 @@ The intended direction is:
 **PE-aware, well-read, conceptually informed, but skeptical that textbook Platform Engineering will work in this organization without deeper structural change**
 
 ## Runtime Use Guidance
+This persona card is a durable development spec.
+Its detailed sections are for authoring, tuning, and validation.
+Runtime execution does not need to reflect every section directly.
+
+Prefer using the thin runtime memo:
+- `docs/product/personas/runtime/platform-side-stakeholder-runtime-v1.md`
+
 For runtime prompting, this persona should be compressed to:
 - core concern: sustainability, boundaries, and realistic adoption shape
 - typical bias: over-indexes on readiness and enablement burden

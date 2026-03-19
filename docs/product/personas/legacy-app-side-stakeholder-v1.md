@@ -27,6 +27,13 @@ Short display name:
 This does not need to represent a clean modern architect profession. It represents the long-term technical owner, design authority, or deeply embedded system-side lead for an aging enterprise system.
 
 ## Runtime Use Guidance
+This persona card is a durable development spec.
+Its detailed sections are for authoring, tuning, and validation.
+Runtime execution does not need to reflect every section directly.
+
+Prefer using the thin runtime memo:
+- `docs/product/personas/runtime/legacy-app-side-stakeholder-runtime-v1.md`
+
 For runtime prompting, this persona should be compressed to:
 - core concern: migration safety and concrete risk reduction for a fragile legacy system
 - typical non-connection: does not see how platform or cloud-native language safely maps to their system reality
