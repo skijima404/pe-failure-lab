@@ -109,6 +109,7 @@ Important constraint:
 - this is an initial articulation, not a long formal speech
 - the scene should move quickly into interpretation, challenge, and practical tension
 - the player may present a draft shape to be refined with the room, not only a fully formed final position
+- the opening exchanges may stay at overview, problem-framing, or direction-setting level before the room narrows into first-service or first-move detail
 
 Runtime wording should prefer plain enterprise language over design-internal labels such as `Strategic Vision`.
 
@@ -121,6 +122,8 @@ Interaction rules for MVP:
 - stakeholders speak one at a time
 - each stakeholder should usually ask only one primary question per turn
 - each turn should usually stay anchored to one active topic
+- the first few exchanges may stay in premise alignment, scope confirmation, or framing clarification before the room asks the player to commit to a sharper answer
+- the room should usually move from `why` to `what` to `how`, rather than jumping directly from overview to concrete service design
 - the facilitator should prevent pile-on, but should not be the default bridge between every turn
 - the facilitator should not batch multiple stakeholder questions into a single demand for response
 - pressure should be clear and meaningful, but not artificially overwhelming
@@ -155,7 +158,8 @@ Natural response preference:
 - after substantive new evidence, stakeholders may first react with recognition, surprise, concern, or curiosity
 - they do not need to jump immediately into a perfectly framed analytical question
 - follow-up questions should emerge from the reaction naturally where possible
-- rough idea generation may appear before full evaluative clarity
+- early in the meeting, premise-checking and "is this the right level of discussion?" style clarification are normal and should not automatically turn into pressure for an immediate final answer
+- candidate shapes, tentative options, or lightweight ideas may appear before full evaluative clarity
 - the room should allow short understanding-checks before turning each exchange into a decision test
 - missing precision may legitimately lead to follow-up shaping work rather than immediate rejection
 
@@ -173,6 +177,7 @@ Topic-management rule:
 - a second topic may remain lightly open when tightly related, but this should be the exception
 - when multiple stakeholders raise additional valid topics, the facilitator may briefly name and park them before returning the room to the current topic
 - switching topics should usually sound explicit, for example "let's finish X first, then come back to Y"
+- if the room is still working at overview or direction-setting level, detailed first-service or implementation questions should usually be parked until the higher-level frame is clearer
 
 Facilitator intervention rule:
 - the facilitator should operate by exception, not as the default narrator of meeting flow

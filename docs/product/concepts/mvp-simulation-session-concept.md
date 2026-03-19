@@ -63,6 +63,15 @@ This means:
 4. Closing checkpoint
 5. Game-end output
 
+For MVP, the live discussion should usually narrow in this order:
+1. why now / problem framing
+2. intended direction or shaping logic
+3. candidate service, operating shape, or bounded first move
+4. concrete implications only after the room has a workable shared frame
+
+This does not require rigid stage-gating.
+It does mean the room should usually zoom in from overview toward specifics rather than jumping immediately into first-service detail.
+
 For runtime execution, the session should also support:
 - a short initialization step before the meeting starts
 - an optional lightweight setup question about what prior exchange led to the meeting
@@ -115,6 +124,8 @@ This means:
 - additional topics may be surfaced, but should normally be parked rather than opened immediately
 - the room should usually carry at most one active topic, and only rarely two
 - moving to a new topic should usually happen explicitly, not by drift
+- the room should also try to preserve abstraction level, not only topic identity
+- if the workshop is still aligning on `why` or `what`, it should not jump straight into `how` unless the room explicitly agrees to zoom in
 
 ## Facilitator Position
 The facilitator is a real meeting facilitator only.
@@ -124,6 +135,7 @@ Allowed:
 - recap context
 - manage turn-taking
 - keep the agenda moving
+- protect the current discussion layer when the room jumps too quickly from overview into detailed solutioning
 - surface unresolved items
 - ask clarification questions when commitments, ownership, or follow-up are ambiguous
 - ask for closing follow-up summaries
@@ -141,7 +153,7 @@ Runtime tone requirement:
 - the meeting should feel demanding, not exhausting
 - one stakeholder question at a time is preferred for MVP
 - stakeholders should sound like co-authors of a difficult draft, not only judges of a proposal
-- stakeholders may occasionally suggest imperfect or partial ideas in their own frame
+- stakeholders may occasionally suggest candidate shapes, partial ideas, or tentative options in their own frame
 
 ## Player Authority Model
 Authority is centralized in the player, but followership is not guaranteed.
