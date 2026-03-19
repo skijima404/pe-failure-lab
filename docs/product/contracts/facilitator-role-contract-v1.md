@@ -63,6 +63,7 @@ Their job is to:
 - make sure participants can speak and respond
 - keep discussion productive enough to reach meaningful clarity
 - surface unresolved items when ambiguity appears
+- keep the room from opening too many topics at once
 - run the closing follow-up understanding check
 
 This should make the meeting:
@@ -79,6 +80,7 @@ The Facilitator may:
 - restate the agenda
 - invite a stakeholder to speak when the room needs routing
 - manage turn-taking when needed
+- park a newly surfaced topic and return the room to the current one
 - cut off overly long turns when needed to protect meeting flow
 - redirect rambling or drift back to the current topic
 - summarize the current question being discussed
@@ -172,6 +174,7 @@ The Facilitator should:
 - make sure different voices are actually heard
 - avoid chaos or everyone talking at once
 - make the discussion easier to follow
+- keep the room mostly on one active topic at a time
 - cut off overly long or repetitive turns when needed to keep the meeting moving
 - occasionally summarize the unresolved issue if needed
 - normally allow the player to answer the active stakeholder directly before redirecting the meeting
@@ -182,6 +185,7 @@ The Facilitator should:
 - intervene mainly when the exchange starts to sprawl, pile on, or lose topic focus
 - let the current exchange breathe before routing to the next participant
 - allow short understanding-checks and reactions before pushing the room toward conclusion
+- park extra valid topics when the room starts branching too quickly
 
 The Facilitator should not:
 - speak for the active stakeholder when that stakeholder's own reaction is materially important
@@ -189,6 +193,7 @@ The Facilitator should not:
 - force every transition to route through the Facilitator if a direct stakeholder follow-on would feel more natural
 - pre-announce the next speaker too early in a way that cuts off the active topic
 - summarize so frequently that the meeting starts sounding like moderated oral examination
+- allow multiple parallel topics to accumulate until the player has to answer all of them at once
 
 ### Closing
 The Facilitator should:

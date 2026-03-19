@@ -114,6 +114,7 @@ This phase should usually feel like a brainstorming-oriented working discussion,
 Interaction rules for MVP:
 - stakeholders speak one at a time
 - each stakeholder should usually ask only one primary question per turn
+- each turn should usually stay anchored to one active topic
 - the facilitator should prevent pile-on, but should not be the default bridge between every turn
 - the facilitator should not batch multiple stakeholder questions into a single demand for response
 - pressure should be clear and meaningful, but not artificially overwhelming
@@ -125,6 +126,7 @@ Interaction rules for MVP:
 - limited stakeholder-to-stakeholder handoff is allowed when it makes the conversation feel more natural or reveals a meaningful difference in perspective
 - stakeholder-to-stakeholder handoff should remain short, legible, and relevant to the active topic
 - the next speaker should usually emerge from the active concern, not from a fixed stakeholder sequence
+- newly surfaced topics should usually be parked unless the room explicitly decides to switch
 
 The session should avoid:
 - four stakeholders interrogating the player at once
@@ -133,6 +135,7 @@ The session should avoid:
 - rigid facilitator-only turn choreography that makes the meeting feel like a scripted interview
 - round-robin participation that feels more orderly than believable
 - every stakeholder turn ending in a verdict-like statement
+- three or more unresolved active topics being explored in parallel
 
 Response-shaping rule:
 - after a stakeholder asks a question, the player should normally answer that stakeholder directly before the facilitator moves the meeting onward
@@ -157,6 +160,13 @@ Stakeholder turn-completion rule:
 - a stakeholder may indicate that the draft is promising enough to keep shaping when the unresolved details are clearly scoped for a follow-up discussion
 - a stakeholder does not need every implementation detail resolved in the current workshop to move forward
 - bounded uncertainty can be acceptable when the next design step, owner, and intended decision boundary are clear
+- if a new topic appears mid-exchange, it should usually be noted and parked unless it materially changes the current topic
+
+Topic-management rule:
+- the workshop should usually keep only one active topic open at a time
+- a second topic may remain lightly open when tightly related, but this should be the exception
+- when multiple stakeholders raise additional valid topics, the facilitator may briefly name and park them before returning the room to the current topic
+- switching topics should usually sound explicit, for example "let's finish X first, then come back to Y"
 
 Facilitator intervention rule:
 - the facilitator should operate by exception, not as the default narrator of meeting flow
@@ -327,6 +337,7 @@ The facilitator:
 - manages turn-taking when needed
 - keeps the meeting legible
 - surfaces unresolved ambiguity
+- parks extra topics when too many threads open at once
 - runs the closing check
 
 The facilitator must not:
@@ -340,6 +351,7 @@ Additional meeting-flow rules:
 - call on stakeholders sequentially
 - prefer one primary question at a time
 - reduce pile-on pressure when the meeting becomes too dense
+- prefer one active topic at a time
 - keep the meeting challenging but still answerable
 - prefer flow transition over content restatement
 - avoid paraphrasing the player's answer more strongly or more cleanly than the player actually stated it

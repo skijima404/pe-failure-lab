@@ -108,6 +108,15 @@ This means the workshop should usually allow:
 - explicit placeholders for items to be refined after the meeting
 - agreement on next-step shaping work without requiring every success metric or exclusion to be fully finalized in-room
 
+## Active Topic Rule
+To keep the workshop playable in chat, the discussion should usually stay anchored to one active topic at a time.
+
+This means:
+- one stakeholder turn should usually push on one main topic only
+- additional topics may be surfaced, but should normally be parked rather than opened immediately
+- the room should usually carry at most one active topic, and only rarely two
+- moving to a new topic should usually happen explicitly, not by drift
+
 ## Facilitator Position
 The facilitator is a real meeting facilitator only.
 

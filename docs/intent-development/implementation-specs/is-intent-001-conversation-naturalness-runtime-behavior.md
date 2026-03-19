@@ -42,6 +42,7 @@ creates a likely runtime failure mode:
 - In scope:
   - facilitator intervention rules for live runtime
   - stakeholder turn-transition rules
+  - active-topic management rules
   - persona compression guidance for runtime prompting
   - voice and cadence differentiation guidance
   - brainstorming-mode handling for provisional ideas and follow-up shaping work
@@ -92,6 +93,21 @@ Preferred transition patterns:
 
 Avoid as the default pattern:
 - facilitator -> stakeholder -> player -> facilitator -> next stakeholder
+
+### Active Topic Management
+Naturalness does not require multiple open threads at once.
+For chat playability, runtime should usually keep the room focused on one active topic.
+
+Preferred behavior:
+- one turn advances one main topic
+- closely related follow-ups stay within that topic
+- newly surfaced topics are acknowledged briefly and parked
+- explicit topic switching happens only after the current topic has reached a usable stopping point
+
+Avoid:
+- opening a second or third full topic before the first has landed
+- stacking valid but separate concerns into one response burden
+- letting "brainstorming" become uncontrolled branching
 
 ### Stakeholder Response Shape
 Stakeholders should not jump directly to fully formed analytical pressure every time.
@@ -213,6 +229,7 @@ Examples of intended contrast:
 4. A session should still make scope, dependency, and continuity drift observable without relying on oppressive tone.
 5. A brainstorming-oriented run should allow valid provisional outcomes without treating every unresolved item as immediate failure.
 6. At least one stakeholder should sometimes contribute a rough or partially mistaken idea without collapsing the scene into scoring logic.
+7. The transcript should usually carry only one active topic at a time, with additional topics briefly parked rather than explored in parallel.
 
 ## Observation Notes
 - 2026-03-19:
