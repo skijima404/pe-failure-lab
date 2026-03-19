@@ -10,7 +10,7 @@ Define the first thin playable session concept for the product before locking a 
 This document captures the intended experience shape, the tension the session should preserve, and the explicit MVP limits.
 
 ## Session Goal
-Create a short Platform Engineering-specific meeting simulation where apparent progress can coexist with hidden structural deterioration.
+Create a short Platform Engineering-specific brainstorming workshop simulation where draft progress can coexist with hidden structural deterioration.
 
 The session should make visible:
 - blurred boundaries
@@ -19,7 +19,7 @@ The session should make visible:
 - drift toward bespoke support or delivery substitution
 
 ## Session Shape
-- one-scene meeting simulation
+- one-scene brainstorming workshop simulation
 - target length: 10-15 minutes
 - suitable for first test play and potentially booth/demo use
 
@@ -32,7 +32,7 @@ The primary evaluation center is:
 
 **Strategic Vision drafting with a partially formed coalition**
 
-The player is in a meeting where they:
+The player is in a workshop where they:
 - presents a draft strategic direction
 - works with coalition participants to shape that direction into something usable
 - encounters practical ambiguity and early structural drift while trying to make the vision concrete
@@ -43,11 +43,11 @@ It is also not a pure approval gate.
 The coalition has formed enough that participants are willing to engage seriously.
 However, the shape of the vision, the usable scope, and the sustainable operating model are not yet secure.
 
-The meeting should feel like:
+The workshop should feel like:
 - the vision is being drafted and sharpened with others in the room
 - coalition participation already exists at a workable level
 - practical ambiguity is already surfacing in the room
-- participants are helping pressure-test the direction, not only approve or reject it
+- participants are helping pressure-test the direction and generate rough ideas, not only evaluate it
 
 The player should be able to enter the scene quickly.
 
@@ -56,10 +56,10 @@ This means:
 - the player should not be forced to infer too much hidden backstory
 - the opening should make the immediate situation legible without overexplaining
 
-## Meeting Structure
+## Workshop Structure
 1. Facilitator recap and framing
 2. Draft Strategic Vision framing by the player
-3. Stakeholder working discussion, challenge, and refinement
+3. Stakeholder brainstorming, challenge, and refinement
 4. Closing follow-up understanding check
 5. Game-end output
 
@@ -86,9 +86,9 @@ Design-internal labels such as `Strategic Vision` may remain in product assets, 
 
 ## Role Interpretation
 This is not just a policy explanation meeting.
-It is not best treated as a hard approval meeting either.
+It is not best treated as a review meeting either.
 
-It is a working session where stakeholders interpret and shape the vision through their own incentives, risks, and constraints.
+It is a brainstorming-oriented working session where stakeholders interpret, shape, and sometimes loosely propose ideas through their own incentives, risks, and constraints.
 
 For live usability:
 - each stakeholder should have a short display name
@@ -97,13 +97,14 @@ For live usability:
 
 ## Workshop Mode Assumption
 For MVP naturalness, this scene should usually be treated as:
-- a drafting workshop rather than a final approval forum
+- a drafting and brainstorming workshop rather than a final approval forum
 - a session where participants help expose constraints, boundaries, and design implications
 - a meeting where some important items can legitimately be carried into follow-up work
 
-This means the meeting should usually allow:
+This means the workshop should usually allow:
 - provisional wording
 - scoped uncertainty
+- rough ideas that are not fully correct yet
 - explicit placeholders for items to be refined after the meeting
 - agreement on next-step shaping work without requiring every success metric or exclusion to be fully finalized in-room
 
@@ -132,6 +133,7 @@ Runtime tone requirement:
 - the meeting should feel demanding, not exhausting
 - one stakeholder question at a time is preferred for MVP
 - stakeholders should sound like co-authors of a difficult draft, not only judges of a proposal
+- stakeholders may occasionally suggest imperfect or partial ideas in their own frame
 
 ## Player Authority Model
 Authority is centralized in the player, but followership is not guaranteed.
@@ -208,12 +210,12 @@ Continuity Risk goes down when:
 - durable follow-through looks plausible
 
 ## Outcome Separation
-Meeting outcome and structural outcome must remain separate.
+Draft progress and structural outcome must remain separate.
 
-### Meeting Outcome
-- Go
-- Conditional Go
-- No Go
+### Draft Progress
+- Fragmented
+- Advancing
+- Coalescing
 
 ### Structural Outcome
 - Stable
@@ -237,7 +239,7 @@ Thin interpretation for MVP:
 Examples:
 - broad verbal alignment with worsening structural states
 - participants leave feeling roughly satisfied while holding incompatible expectations
-- Conditional Go appears orderly while follow-up understanding is misaligned
+- the workshop feels productive while follow-up understanding is misaligned
 - a productive workshop produces a credible draft, but hidden support assumptions still drift
 
 ## Hard Failure Trigger
@@ -277,7 +279,7 @@ Scope is necessary to judge boundary drift.
 
 ## MVP Game-End Output
 At minimum, show:
-- meeting outcome
+- draft progress
 - structural outcome
 - live state summary
   - Boundary Clarity

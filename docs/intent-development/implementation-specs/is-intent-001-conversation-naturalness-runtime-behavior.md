@@ -24,7 +24,7 @@ It narrows how runtime behavior should be shaped so the simulation does not coll
 ## Goal
 Define runtime behavior rules that make live simulation dialogue feel like a plausible enterprise meeting rather than a scripted Q&A sequence.
 
-This includes runs where the scene works better as a drafting workshop than as a hard-approval meeting.
+This includes runs where the scene works better as a brainstorming workshop than as a hard-approval meeting.
 
 ## Problem Statement
 Current product assets already describe natural conversation as a priority, but the combined effect of:
@@ -44,7 +44,7 @@ creates a likely runtime failure mode:
   - stakeholder turn-transition rules
   - persona compression guidance for runtime prompting
   - voice and cadence differentiation guidance
-  - workshop-mode handling for provisional decisions and follow-up shaping work
+  - brainstorming-mode handling for provisional ideas and follow-up shaping work
   - naturalness-focused validation checks
 - Out of scope:
   - broader scenario redesign beyond intent-001
@@ -99,7 +99,7 @@ Stakeholders should not jump directly to fully formed analytical pressure every 
 Preferred runtime sequence when new information appears:
 1. recognition, surprise, concern, relief, or curiosity
 2. short interpretation in the stakeholder's own frame
-3. one concrete question or condition
+3. one rough idea, question, or condition
 
 This keeps the conversation from sounding like stacked oral-exam prompts.
 
@@ -117,14 +117,16 @@ Unhealthy tempo signals to avoid:
 - every turn ending in a decision test
 - repeated demand for enterprise-complete clarity inside an early buy-in meeting
 
-### Workshop-Oriented Scene Handling
-When the topic is difficult to reason about without visible artifacts, runtime should be allowed to treat the meeting as a working session rather than a final commitment gate.
+### Brainstorming-Oriented Scene Handling
+When the topic is difficult to reason about without visible artifacts, runtime should be allowed to treat the scene as a brainstorming workshop rather than a final commitment gate.
 
 In that mode:
 - stakeholders may help shape the draft instead of only evaluating it
+- stakeholders may contribute rough, partial, or slightly mistaken ideas in their own frame
 - missing detail does not automatically mean failure
 - "to be refined and documented after this meeting" can be a legitimate intermediate state
 - the player may succeed by bounding open items and assigning next-step design work, not only by finalizing everything in-room
+- clean verdict language should be used sparingly
 
 This is especially important when the scene involves:
 - scope boundaries
@@ -202,13 +204,15 @@ Examples of intended contrast:
 2. Reframe turn progression around active concern instead of fixed stakeholder sequencing.
 3. Compress runtime persona usage so each stakeholder keeps distinct voice, bias, and escalation triggers without sounding templated.
 4. Align UI and contract language so the experience is not framed primarily as pressure-response turn play.
+5. Reduce review-meeting behaviors such as verdict rounds, over-clean closing, and evaluator-like stakeholder turns.
 
 ## Verification
 1. A sample session transcript should not require facilitator speech between every stakeholder exchange.
 2. At least one plausible turn chain should allow direct stakeholder follow-up or short stakeholder-to-stakeholder handoff without losing clarity.
 3. Stakeholders should be distinguishable by voice and interaction rhythm even before their topic content becomes explicit.
 4. A session should still make scope, dependency, and continuity drift observable without relying on oppressive tone.
-5. A workshop-oriented run should allow valid provisional outcomes without treating every unresolved item as immediate failure.
+5. A brainstorming-oriented run should allow valid provisional outcomes without treating every unresolved item as immediate failure.
+6. At least one stakeholder should sometimes contribute a rough or partially mistaken idea without collapsing the scene into scoring logic.
 
 ## Observation Notes
 - 2026-03-19:
@@ -219,3 +223,11 @@ Examples of intended contrast:
   Stakeholders may still be demanding commitment too aggressively, especially around success criteria, measurement shape, and scope exclusions that would plausibly be refined after the meeting rather than finalized inside it. Revisit how often participants should accept "to be refined and documented after this meeting" as a legitimate intermediate state instead of treating missing precision as immediate failure.
 - 2026-03-19:
   Some scenarios may be structurally better suited to workshop-style drafting than chat-only approval discussion. Revisit whether the default scene framing for intent-001 should more often assume a partially formed coalition working session, especially when the topic normally depends on a one-page brief or visible scope and ownership artifacts.
+- 2026-03-19:
+  Initialization language may still be too approval-meeting-oriented. Revisit the session-controller opening so it explicitly frames the scene as a workshop-style alignment and shaping discussion, not only as a meeting where the player must explain and secure support for a direction that already exists.
+- 2026-03-19:
+  Scenario initialization may be over-anchoring on Kubernetes. Consider letting the player choose whether the current workshop scope is Kubernetes-centered, virtual-server-centered, or mixed before the meeting starts, so the opening context does not prematurely bias the discussion toward Kubernetes-only framing.
+- 2026-03-19:
+  Even with improved naturalness, turns can still sprawl across multiple subtopics at once. Revisit whether each stakeholder turn should usually stay anchored to one active topic only, especially when the conversation starts mixing platform responsibilities, product ownership, enablement shape, operational ownership, and exception support in a single turn.
+- 2026-03-19:
+  The scene can still collapse back into review-meeting behavior: structured wrap-up, sequential stakeholder verdicts, and a clean evaluator close. Revisit how often workshop-style runs should include more lateral idea generation, partial misunderstanding, and imperfect participant suggestions before converging. Stakeholders should sometimes contribute rough ideas or slightly wrong proposals in their own frame, not only polished evaluation criteria.

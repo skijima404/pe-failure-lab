@@ -13,11 +13,11 @@
 ## UX Intent
 Enable a learner to feel escalating Platform Engineering pressure through interaction while making structural drift visible early enough for reflection and judgment.
 
-The interaction should remain viable even when the scene works better as a drafting workshop than as a purely verbal approval meeting.
+The interaction should remain viable when the scene is run as a brainstorming workshop rather than as a purely verbal approval meeting.
 
 ## User Flows
 1. Session start -> learner selects scenario and role -> receives context, starting constraints, and optionally a short brief or visible card -> begins stakeholder interaction
-2. Stakeholder exchange develops -> learner clarifies, reframes, or bounds commitments under pressure -> system updates visible structural signals -> learner adjusts strategy
+2. Stakeholder brainstorming develops -> learner clarifies, reframes, bounds commitments, or redirects rough ideas under pressure -> system updates visible structural signals -> learner adjusts strategy
 3. Session end -> learner reviews replay and assessment summary -> identifies where boundaries held or failed
 
 ## Screen / Component Scope
@@ -58,13 +58,14 @@ The interaction should remain viable even when the scene works better as a draft
   - emphasize role, pressure, structural risk, and boundary choices
 - Helper text:
   - explain that decisions are evaluated for sustainability, not only speed or helpfulness
-  - explain that the goal is a believable meeting, not perfect turn-by-turn efficiency
-  - explain when the current scene is a drafting workshop rather than a final approval meeting
+  - explain that the goal is a believable workshop, not perfect turn-by-turn efficiency
+  - explain when the current scene is a brainstorming workshop rather than a final approval meeting
 - Reflection prompts:
   - where did scope expand?
   - which stakeholder pressure changed your operating model?
   - which boundary should have been clarified or defended earlier?
   - which unresolved items were valid follow-up work, and which ones hid structural drift?
+  - which participant ideas were useful, and which ones sounded plausible but pulled the draft in the wrong direction?
 
 ## Accessibility and Quality Notes
 - Keyboard and focus:

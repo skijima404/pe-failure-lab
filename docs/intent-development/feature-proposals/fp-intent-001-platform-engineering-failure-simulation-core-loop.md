@@ -13,7 +13,7 @@
 ## Intent
 Create the core simulation loop that lets a learner enter a Platform Engineering scenario, respond to stakeholder pressure, and see structural failure signals emerge over time.
 
-The loop may include scenes that work as partially formed coalition workshops, not only as approval-oriented meetings.
+The loop may include scenes that work as partially formed coalition brainstorming workshops, not only as approval-oriented meetings.
 
 ## Problem
 Current Platform Engineering learning materials can explain failure patterns, but they do not let learners practice boundary management under pressure. Without an interactive loop, failure remains abstract and retrospective rather than experiential and discussable.
@@ -22,8 +22,8 @@ Current Platform Engineering learning materials can explain failure patterns, bu
 1. A learner can play through a scenario as a Platform decision-maker with multiple stakeholder interactions.
 2. The simulation surfaces structural state changes such as scope creep, tension, and collapse risk as the session progresses.
 3. The system supports replay and reflection on decisions that increased or reduced systemic failure.
-4. Live dialogue feels like a plausible enterprise meeting rather than a rigid facilitator-routed interview.
-5. The loop can support workshop-style drafting scenes where bounded uncertainty and follow-up shaping work remain legitimate outcomes.
+4. Live dialogue feels like a plausible enterprise workshop rather than a rigid facilitator-routed interview.
+5. The loop can support brainstorming-style drafting scenes where bounded uncertainty, rough ideas, and follow-up shaping work remain legitimate outcomes.
 
 ## Scope
 - In scope:
