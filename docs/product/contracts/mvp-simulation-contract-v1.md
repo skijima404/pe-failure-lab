@@ -179,13 +179,12 @@ Facilitator intervention rule:
 - the facilitator should usually stay quiet while an active exchange is still productive and legible
 - the facilitator should step in mainly when turn ownership becomes unclear, pile-on starts, or topic drift threatens legibility
 
-### 2-4. Closing Follow-Up Understanding Check
-The facilitator asks each participant to summarize what they believe happens next.
+### 2-4. Closing Checkpoint
+The facilitator closes the meeting with a light checkpoint rather than a recap-based scoring ritual.
 
 Before moving into the closing check:
 - the player should normally have had a fair chance to explain what they see as the current problem, intended direction, and immediate next step
 - if that framing is still materially unclear, the facilitator should invite one short clarification from the player rather than paraphrasing it on their behalf
-- the closing check should test stakeholder understanding of the player's framing, not replace it
 - unresolved items may remain open if they are clearly named as follow-up work rather than hidden assumptions
 
 Preferred closing pattern:
@@ -194,6 +193,8 @@ Preferred closing pattern:
 - if they remain conditional, they should preferably name the one key point that still needs to be made clearer
 - participants may explicitly distinguish between what is good enough to continue and what still needs refinement outside the meeting
 - participants do not need to issue a clean `Go / No Go` style verdict at closing
+- the close does not require a player recap for scoring purposes
+- the close does not need to check coverage of every raised topic before the workshop can end
 
 This should sound more like:
 - "I understand the proposal this way."
@@ -211,7 +212,6 @@ At minimum:
 - draft progress
 - structural progress as `x/5`
 - live state summary
-- stakeholder follow-up alignment state
 
 Output rule:
 - the primary structural result must be shown as `x/5`
@@ -456,14 +456,8 @@ Follow-up discussion note:
 - this becomes risky only when follow-up shifts into request intake, implicit delivery commitment, or bespoke solution shaping before the operating path is defined
 
 Additional draft-progress rules:
-- the workshop may shift from `Advancing` to `Fragmented` during the closing follow-up understanding check
-- a mismatch at close should affect draft progress only when it is material
-
-For MVP, a mismatch is material if it changes one or more of:
-- support scope
-- ownership
-- next-step obligation
-- exception status
+- closing should not act as a recap-coverage gate that regrades the entire session
+- draft progress should mainly reflect how the workshop moved the strategic discussion itself
 
 ## Structural Success
 Structural success is not determined by whether the meeting felt successful.
@@ -672,17 +666,11 @@ The minimum internal follow-up object is:
 - support_mode
 - scope
 
-This exists so the closing check can compare what participants think happens next.
+This may support internal state handling or future follow-up logic.
 
 ## Closing Contract
-At closing, the facilitator asks each participant to summarize what they believe happens next.
-
-The system checks only:
-- Aligned
-- Partially aligned
-- Misaligned
-
-MVP does not yet explain why the mismatch happened.
+At closing, the facilitator may run a short checkpoint on what participants understood, what can continue, and what still needs shaping.
+This checkpoint exists for meeting realism and legibility, not for recap coverage scoring.
 
 ## Post-Game Discussion and QA
 After result output, the session enters post-game discussion mode automatically.

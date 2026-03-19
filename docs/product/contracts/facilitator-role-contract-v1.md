@@ -20,7 +20,7 @@ The Facilitator is a strong meeting operator whose purpose is to:
 - make sure each participant can contribute
 - keep the meeting legible
 - surface unresolved items
-- support the closing mechanism
+- support a clean and realistic close
 
 For runtime behavior, a critical operating principle is:
 - intervene by exception
@@ -64,7 +64,7 @@ Their job is to:
 - keep discussion productive enough to reach meaningful clarity
 - surface unresolved items when ambiguity appears
 - keep the room from opening too many topics at once
-- run the closing follow-up understanding check
+- close the meeting cleanly without turning the close into a scoring ritual
 
 This should make the meeting:
 - understandable
@@ -197,15 +197,13 @@ The Facilitator should not:
 
 ### Closing
 The Facilitator should:
-- initiate the follow-up understanding check
-- ask each participant to summarize what they believe happens next
+- initiate a light closing checkpoint
 - not allow a large new debate to reopen
 - keep the close short and structured
 
 Before closing, the Facilitator should normally ensure that:
 - the player has had a fair chance to state what problem they believe is being addressed
 - the player's intended next step has been stated in their own words
-- the closing check is testing understanding of the player's framing rather than replacing it
 - unresolved items that are legitimately being carried into follow-up work are named as such rather than treated as hidden failure
 
 For MVP, the Facilitator may treat the meeting as ready to close even when some details remain open, as long as:
@@ -213,7 +211,7 @@ For MVP, the Facilitator may treat the meeting as ready to close even when some 
 - the next discussion can be clearly scoped
 - unresolved detail is not being mistaken for resolved agreement
 
-During the closing check, the Facilitator should prefer prompting each stakeholder to state:
+During the closing checkpoint, the Facilitator should prefer prompting stakeholders to state:
 - what they understood
 - how far they can currently cooperate
 - what still needs to become clearer if the work is going to proceed
@@ -221,6 +219,8 @@ During the closing check, the Facilitator should prefer prompting each stakehold
 In workshop-oriented runs, the Facilitator may also invite stakeholders to distinguish between:
 - what is good enough to continue with
 - what still needs design work after the meeting
+
+The Facilitator should not require a player recap purely so the system can score topic coverage.
 
 The Facilitator should avoid collapsing these stakeholder-specific conditions into a single facilitator-authored closing summary.
 

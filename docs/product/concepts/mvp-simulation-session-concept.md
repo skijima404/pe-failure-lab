@@ -60,7 +60,7 @@ This means:
 1. Facilitator recap and framing
 2. Draft Strategic Vision framing by the player
 3. Stakeholder brainstorming, challenge, and refinement
-4. Closing follow-up understanding check
+4. Closing checkpoint
 5. Game-end output
 
 For runtime execution, the session should also support:
@@ -93,7 +93,6 @@ It is a brainstorming-oriented working session where stakeholders interpret, sha
 For live usability:
 - each stakeholder should have a short display name
 - stakeholders should be introduced clearly, but the discussion does not need to stay in rigid round-robin order
-- each turn should usually contain one primary question, not a pile of stacked demands
 
 ## Workshop Mode Assumption
 For MVP naturalness, this scene should usually be treated as:
@@ -260,31 +259,25 @@ A hard failure trajectory is triggered when the player commits the platform team
 without explicit boundary, owner, and exit condition.
 
 ## Closing Mechanic
-The facilitator should close with a follow-up understanding check such as:
+The facilitator should close the workshop with a light checkpoint, not a recap-based evaluation gate.
 
-> Before we close, I'd like to reconfirm the follow-up items. Could each of you briefly summarize what you believe happens next from your perspective?
-
-This is not a broad satisfaction check.
-
-It is specifically about whether each stakeholder's understanding is:
-- Aligned
-- Partially aligned
-- Misaligned
-
-In workshop-oriented runs, the closing check may also confirm:
-- what parts of the draft feel usable enough to continue
+The close may briefly confirm:
+- what feels usable enough to continue
 - what remains intentionally open
-- which unresolved items are valid follow-up work rather than meeting failure
+- what should be carried into follow-up shaping work
 
-## Minimal Follow-Up Object
-The simulation will likely need a minimal internal follow-up structure:
+The close should not require the player to deliver a final recap for scoring purposes.
+It should also not depend on coverage-style checking of every topic raised in the room.
+
+## Optional Internal Follow-Up Object
+If helpful for internal state handling, the simulation may keep a minimal follow-up structure:
 - action
 - owner
 - timing
 - support_mode
 - scope
 
-Scope is necessary to judge boundary drift.
+This is optional implementation support, not a required user-facing closing mechanic.
 
 ## MVP Game-End Output
 At minimum, show:
@@ -294,8 +287,6 @@ At minimum, show:
   - Boundary Clarity
   - Dependency Load
   - Continuity Risk
-- stakeholder follow-up understanding check
-  - Aligned / Partially aligned / Misaligned
 
 No deep causal mismatch analysis is required yet.
 
