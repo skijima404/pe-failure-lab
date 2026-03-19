@@ -27,6 +27,12 @@ This scene should usually be treated as:
 
 Coalition participation exists at a workable level, but the usable scope, operating model, and follow-through shape are not yet secure.
 
+Evaluation rule for this scene:
+- the evaluator should judge the session as `Coalition -> Strategic Vision drafting`, not as a later-phase operating-model review
+- the primary question is whether meaningful failure-model signals became visible and whether the room made strategic-level progress on the day's active topic
+- the evaluator should not treat the absence of later-phase detail, named owners, or finalized operating contracts as a primary failure by itself
+- a `3/5` structural result should be available for solid early-stage work; it must not imply near-failure
+
 ## Session Structure
 The session runs in three phases.
 
@@ -212,10 +218,19 @@ Output rule:
 - draft progress should be expressed as workshop-oriented progression, not as a meeting verdict
 - qualitative labels such as `medium risk`, `strained`, or similar may be shown only as secondary interpretation
 - qualitative labels alone are not sufficient
+- the output should follow the fixed report shape defined in `docs/product/expected-outputs/game-end-output.md`
+- the score should be calibrated to the current scene phase rather than to a fully formed operating model
+- the evaluator should mainly reward two things:
+  - whether important failure-model signals were made visible
+  - whether the active strategic topic moved toward a clearer draft direction or decision boundary
+- the evaluator should not reduce the score simply because relationship-based coalition work has not yet become formal role contract
 
 After result output, the session automatically enters post-game discussion mode.
-At that point, the evaluator asks:
-- "Do you have any questions?"
+At that point, the evaluator should invite reflection in a light, encouraging way rather than a proctor-like way.
+
+Preferred examples:
+- "There was real progress here, and a few important signals are now visible. If you want, we can reflect on it."
+- "The draft moved forward. If you want, we can talk through what felt strong and what still needs shaping."
 
 ## Cast Contract
 Roles:
