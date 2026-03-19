@@ -2,7 +2,7 @@
 
 - Product: Platform Engineering Failure Lab
 - Status: draft
-- Updated: 2026-03-18
+- Updated: 2026-03-19
 
 ## Purpose
 Define the first thin playable session concept for the product before locking a stricter simulation contract or implementation detail.
@@ -26,25 +26,28 @@ The session should make visible:
 ## Core Scene Definition
 The v1 session is positioned around:
 - Strategic Vision
-- coalition-forming pressure
+- coalition pressure after partial coalition formation
 
 The primary evaluation center is:
 
-**Strategic Vision under coalition-forming pressure**
+**Strategic Vision drafting with a partially formed coalition**
 
 The player is in a meeting where they:
-- presents the current Strategic Vision
-- seeks buy-in from the coalition and/or broader support base
-- encounters practical ambiguity and early structural drift under pressure
+- presents a draft strategic direction
+- works with coalition participants to shape that direction into something usable
+- encounters practical ambiguity and early structural drift while trying to make the vision concrete
 
 This is not a pure execution kickoff.
+It is also not a pure approval gate.
 
-The direction has been articulated enough to be presented, but commitment, interpretation, and sustainable follow-through are not yet secure.
+The coalition has formed enough that participants are willing to engage seriously.
+However, the shape of the vision, the usable scope, and the sustainable operating model are not yet secure.
 
 The meeting should feel like:
-- the vision is being articulated and concretized
-- buy-in is still being formed or tested
+- the vision is being drafted and sharpened with others in the room
+- coalition participation already exists at a workable level
 - practical ambiguity is already surfacing in the room
+- participants are helping pressure-test the direction, not only approve or reject it
 
 The player should be able to enter the scene quickly.
 
@@ -55,8 +58,8 @@ This means:
 
 ## Meeting Structure
 1. Facilitator recap and framing
-2. Strategic Vision articulation by the player
-3. Stakeholder Q&A and challenge
+2. Draft Strategic Vision framing by the player
+3. Stakeholder working discussion, challenge, and refinement
 4. Closing follow-up understanding check
 5. Game-end output
 
@@ -69,6 +72,7 @@ Runtime phrasing should prefer plain enterprise language such as:
 - the direction you are proposing
 - what you want this initiative to become
 - the direction you want people to align around
+- the draft we are trying to shape together
 
 Design-internal labels such as `Strategic Vision` may remain in product assets, but should not dominate spoken runtime dialogue.
 
@@ -82,13 +86,26 @@ Design-internal labels such as `Strategic Vision` may remain in product assets, 
 
 ## Role Interpretation
 This is not just a policy explanation meeting.
+It is not best treated as a hard approval meeting either.
 
-It is also a buy-in meeting. Stakeholders interpret the vision through their own incentives, risks, and constraints.
+It is a working session where stakeholders interpret and shape the vision through their own incentives, risks, and constraints.
 
 For live usability:
 - each stakeholder should have a short display name
-- stakeholders should be introduced and called on one at a time
+- stakeholders should be introduced clearly, but the discussion does not need to stay in rigid round-robin order
 - each turn should usually contain one primary question, not a pile of stacked demands
+
+## Workshop Mode Assumption
+For MVP naturalness, this scene should usually be treated as:
+- a drafting workshop rather than a final approval forum
+- a session where participants help expose constraints, boundaries, and design implications
+- a meeting where some important items can legitimately be carried into follow-up work
+
+This means the meeting should usually allow:
+- provisional wording
+- scoped uncertainty
+- explicit placeholders for items to be refined after the meeting
+- agreement on next-step shaping work without requiring every success metric or exclusion to be fully finalized in-room
 
 ## Facilitator Position
 The facilitator is a real meeting facilitator only.
@@ -114,13 +131,14 @@ Runtime tone requirement:
 - the facilitator should keep the meeting tense but not excessively oppressive
 - the meeting should feel demanding, not exhausting
 - one stakeholder question at a time is preferred for MVP
+- stakeholders should sound like co-authors of a difficult draft, not only judges of a proposal
 
 ## Player Authority Model
 Authority is centralized in the player, but followership is not guaranteed.
 
 The player is:
 - the primary visible owner of the initiative in the room
-- responsible for presenting and clarifying the Strategic Vision
+- responsible for presenting and clarifying the Strategic Vision draft
 - responsible for shaping the practical engagement model
 
 However:
@@ -135,6 +153,7 @@ The player must be explicitly allowed to:
 - defer
 - reframe
 - route to another owner
+- mark an item for follow-up design rather than finalizing it in the room
 
 ## Platform-Side Stakeholder Position
 The platform-side stakeholder should be treated as a critical internal coalition member, not merely an assumed follower.
@@ -219,6 +238,7 @@ Examples:
 - broad verbal alignment with worsening structural states
 - participants leave feeling roughly satisfied while holding incompatible expectations
 - Conditional Go appears orderly while follow-up understanding is misaligned
+- a productive workshop produces a credible draft, but hidden support assumptions still drift
 
 ## Hard Failure Trigger
 A hard failure trajectory is triggered when the player commits the platform team to:
@@ -239,6 +259,11 @@ It is specifically about whether each stakeholder's understanding is:
 - Aligned
 - Partially aligned
 - Misaligned
+
+In workshop-oriented runs, the closing check may also confirm:
+- what parts of the draft feel usable enough to continue
+- what remains intentionally open
+- which unresolved items are valid follow-up work rather than meeting failure
 
 ## Minimal Follow-Up Object
 The simulation will likely need a minimal internal follow-up structure:

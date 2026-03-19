@@ -3,7 +3,7 @@
 - Product: Platform Engineering Failure Lab
 - Artifact Type: simulation contract
 - Status: draft
-- Updated: 2026-03-18
+- Updated: 2026-03-19
 
 ## Purpose
 Define the minimum operating contract for the first playable meeting simulation.
@@ -14,9 +14,16 @@ This contract exists so the session can be run consistently before deeper scorin
 The session is a one-scene meeting simulation.
 
 Primary evaluation center:
-- Strategic Vision under coalition-forming pressure
+- Strategic Vision drafting with a partially formed coalition
 
-The player is presenting and clarifying the current direction while practical commitment pressure is already emerging.
+The player is presenting and clarifying a draft direction while practical pressure is already emerging.
+
+This scene should usually be treated as:
+- a working session
+- a draft-shaping discussion
+- not a pure approval gate
+
+Coalition participation exists at a workable level, but the usable scope, operating model, and follow-through shape are not yet secure.
 
 ## Session Structure
 The session runs in three phases.
@@ -52,6 +59,13 @@ This setup question should:
 - not change the core scenario structure
 - help the player enter the meeting more naturally
 
+Initialization may also provide a short visible framing artifact when the topic would otherwise be unfairly hard to reason about through chat alone.
+
+Examples:
+- a one-page brief
+- a scope and ownership card
+- a short list of target and non-target cases
+
 ## Session Language Policy
 Session dialogue language should default to the language used by the player in their first session-facing message, unless the user explicitly requests another language.
 
@@ -86,34 +100,41 @@ The player presents or clarifies the current direction and intended move.
 Important constraint:
 - this is an initial articulation, not a long formal speech
 - the scene should move quickly into interpretation, challenge, and practical tension
+- the player may present a draft shape to be refined with the room, not only a fully formed final position
 
 Runtime wording should prefer plain enterprise language over design-internal labels such as `Strategic Vision`.
 
 ### 2-3. Stakeholder Q&A and Pressure
 Stakeholders question, challenge, interpret, and pressure the player from their own perspective.
 
+This phase should usually feel like a working discussion, not a sequence of hard approval tests.
+
 Interaction rules for MVP:
 - stakeholders speak one at a time
 - each stakeholder should usually ask only one primary question per turn
-- the facilitator should usually direct the order explicitly rather than allowing pile-on
+- the facilitator should prevent pile-on, but should not be the default bridge between every turn
 - the facilitator should not batch multiple stakeholder questions into a single demand for response
 - pressure should be clear and meaningful, but not artificially overwhelming
 - stakeholders should generally behave cooperatively in process, even when they are not aligned in substance
 - stakeholders should usually try to understand and draw out the player's meaning before rejecting it
+- stakeholders may help shape the draft by adding constraints, clarifying boundaries, or exposing missing distinctions
 - pressure should often take the form of clarification-seeking rather than adversarial interrogation
 - limited stakeholder-to-stakeholder handoff is allowed when it makes the conversation feel more natural or reveals a meaningful difference in perspective
 - stakeholder-to-stakeholder handoff should remain short, legible, and relevant to the active topic
+- the next speaker should usually emerge from the active concern, not from a fixed stakeholder sequence
 
 The session should avoid:
 - four stakeholders interrogating the player at once
 - compound multi-part questions when a single question would do
 - facilitator summaries that increase pressure by stacking unresolved demands into one response turn
 - rigid facilitator-only turn choreography that makes the meeting feel like a scripted interview
+- round-robin participation that feels more orderly than believable
 
 Response-shaping rule:
 - after a stakeholder asks a question, the player should normally answer that stakeholder directly before the facilitator moves the meeting onward
 - after the player answers, the asking stakeholder should normally get one short reaction turn in their own voice before the facilitator transitions
 - if a stakeholder surfaces a new concrete concern, example, or expectation, the player should normally receive one short response turn before the meeting transitions
+- if the player's answer creates a natural overlap with another stakeholder's concern, that stakeholder may react directly without waiting for formal rerouting
 - the facilitator should not prematurely close or redirect in a way that prevents the player from clarifying what problem they are actually trying to solve
 - the facilitator should not react on behalf of the asking stakeholder when that stakeholder's own reaction is what matters
 
@@ -121,6 +142,8 @@ Natural response preference:
 - after substantive new evidence, stakeholders may first react with recognition, surprise, concern, or curiosity
 - they do not need to jump immediately into a perfectly framed analytical question
 - follow-up questions should emerge from the reaction naturally where possible
+- the room should allow short understanding-checks before turning each exchange into a decision test
+- missing precision may legitimately lead to follow-up shaping work rather than immediate rejection
 
 Stakeholder turn-completion rule:
 - a stakeholder turn does not need to end after a single question-answer pair
@@ -128,6 +151,12 @@ Stakeholder turn-completion rule:
 - the meeting should allow enough back-and-forth for meaningful stance movement, not only concern surfacing
 - a stakeholder may move to `Go` when the direction feels acceptable and the unresolved details are clearly scoped for a follow-up discussion
 - a stakeholder does not need every implementation detail resolved in the current meeting to move forward
+- bounded uncertainty can be acceptable when the next design step, owner, and intended decision boundary are clear
+
+Facilitator intervention rule:
+- the facilitator should operate by exception, not as the default narrator of meeting flow
+- the facilitator should usually stay quiet while an active exchange is still productive and legible
+- the facilitator should step in mainly when turn ownership becomes unclear, pile-on starts, or topic drift threatens legibility
 
 ### 2-4. Closing Follow-Up Understanding Check
 The facilitator asks each participant to summarize what they believe happens next.
@@ -136,11 +165,13 @@ Before moving into the closing check:
 - the player should normally have had a fair chance to explain what they see as the current problem, intended direction, and immediate next step
 - if that framing is still materially unclear, the facilitator should invite one short clarification from the player rather than paraphrasing it on their behalf
 - the closing check should test stakeholder understanding of the player's framing, not replace it
+- unresolved items may remain open if they are clearly named as follow-up work rather than hidden assumptions
 
 Preferred closing pattern:
 - each stakeholder should briefly state what they understood
 - each stakeholder may also state the level of cooperation they can currently offer
 - if they remain conditional, they should preferably name the one key point that still needs to be made clearer
+- participants may explicitly distinguish between what is good enough to continue and what still needs refinement outside the meeting
 
 This should sound more like:
 - "I understand the proposal this way."
@@ -183,6 +214,7 @@ Roles:
 Role rules:
 - the player owns content and commitment judgment
 - stakeholders apply pressure from their own incentives and misunderstandings
+- stakeholders may also function as draft-shaping participants rather than only as approvers
 - the facilitator manages in-meeting flow only
 - the session controller manages session lifecycle and phase transitions
 - the evaluator owns scoring, result output, and post-game learning-oriented QA
@@ -191,7 +223,7 @@ For runtime usability, stakeholder roles should also have short display names th
 
 Display names:
 - should be simple and easy to distinguish in live conversation
-- should be used by the facilitator when directing turn-taking
+- should be used by the facilitator when directing turn-taking is actually needed
 - do not need to replace the underlying persona labels in repository assets
 
 ## Session Controller Contract
@@ -225,10 +257,13 @@ This means:
 - participants may react before they fully structure their thoughts
 - slight surprise, hesitation, partial understanding, and uneven phrasing are desirable
 - new evidence may first produce recognition, surprise, or concern before it produces a clean analytical question
+- the room should not sound like everyone is racing to conclusion at every turn
+- participants should be allowed to build a draft together when the topic is naturally workshop-shaped
 
 When naturalness and neat structural progression are in tension:
 - prefer natural conversation first
 - preserve structural legibility second
+- preserve equalized turn distribution third
 
 The goal is not maximum conversational efficiency.
 The goal is believable interaction that still makes structural pressure visible.

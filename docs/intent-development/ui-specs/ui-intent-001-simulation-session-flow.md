@@ -5,7 +5,7 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-17
-- updated_at: 2026-03-17
+- updated_at: 2026-03-19
 - related_feature_proposal: docs/intent-development/feature-proposals/fp-intent-001-platform-engineering-failure-simulation-core-loop.md
 - related_enablers:
   - intent-000
@@ -13,9 +13,11 @@
 ## UX Intent
 Enable a learner to feel escalating Platform Engineering pressure through interaction while making structural drift visible early enough for reflection and judgment.
 
+The interaction should remain viable even when the scene works better as a drafting workshop than as a purely verbal approval meeting.
+
 ## User Flows
-1. Session start -> learner selects scenario and role -> receives context and starting constraints -> begins stakeholder interaction
-2. Stakeholder exchange -> learner responds to pressure or requests -> system updates visible structural signals -> learner adjusts strategy
+1. Session start -> learner selects scenario and role -> receives context, starting constraints, and optionally a short brief or visible card -> begins stakeholder interaction
+2. Stakeholder exchange develops -> learner clarifies, reframes, or bounds commitments under pressure -> system updates visible structural signals -> learner adjusts strategy
 3. Session end -> learner reviews replay and assessment summary -> identifies where boundaries held or failed
 
 ## Screen / Component Scope
@@ -25,6 +27,7 @@ Enable a learner to feel escalating Platform Engineering pressure through intera
   - reflection and replay summary
 - Components:
   - role and scenario brief
+  - optional one-page brief or scope / ownership card
   - stakeholder conversation panel
   - structural state indicator panel
   - reflection summary
@@ -38,6 +41,7 @@ Enable a learner to feel escalating Platform Engineering pressure through intera
 - Primary actions:
   - choose a role and scenario
   - respond to stakeholders
+  - refer back to brief or visible scope information when present
   - inspect structural state changes
   - review replay and assessment
 - Validation and error behavior:
@@ -47,16 +51,20 @@ Enable a learner to feel escalating Platform Engineering pressure through intera
   - scenario entry shows available simulations and intended learning focus
   - in-session loading should preserve conversational continuity
   - failure states should distinguish system failure from simulation collapse
+  - when a scenario depends on visible framing, the session should show that framing before live dialogue starts
 
 ## Content / Copy Notes
 - Labels:
   - emphasize role, pressure, structural risk, and boundary choices
 - Helper text:
   - explain that decisions are evaluated for sustainability, not only speed or helpfulness
+  - explain that the goal is a believable meeting, not perfect turn-by-turn efficiency
+  - explain when the current scene is a drafting workshop rather than a final approval meeting
 - Reflection prompts:
   - where did scope expand?
   - which stakeholder pressure changed your operating model?
   - which boundary should have been clarified or defended earlier?
+  - which unresolved items were valid follow-up work, and which ones hid structural drift?
 
 ## Accessibility and Quality Notes
 - Keyboard and focus:
@@ -70,3 +78,4 @@ Enable a learner to feel escalating Platform Engineering pressure through intera
 1. A learner can complete a full simulation session from scenario entry to reflection without losing context.
 2. Structural state changes are visible during the interaction, not only after the session ends.
 3. The end-of-session view links observable outcomes back to concrete learner decisions and stakeholder exchanges.
+4. A scenario that depends on visible framing can supply a short brief or scope card without breaking the session flow.
