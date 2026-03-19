@@ -226,6 +226,13 @@ Display names:
 - should be used by the facilitator when directing turn-taking is actually needed
 - do not need to replace the underlying persona labels in repository assets
 
+Default stakeholder display names for MVP:
+- Executive Stakeholder: `Aki Tanaka`
+- Platform-side Stakeholder: `Naoki Sato`
+- Legacy App-side Stakeholder: `Hiroshi Kondo`
+- New Product Tech Lead: `Emi Hayashi`
+- Facilitator: `Mika`
+
 ## Session Controller Contract
 The session controller is an out-of-world role.
 

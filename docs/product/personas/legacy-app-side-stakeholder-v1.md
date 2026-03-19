@@ -21,6 +21,9 @@ It is stronger if this role primarily carries:
 Working role label:
 - Core System Technical Lead
 
+Short display name:
+- `Hiroshi Kondo`
+
 This does not need to represent a clean modern architect profession. It represents the long-term technical owner, design authority, or deeply embedded system-side lead for an aging enterprise system.
 
 ## Runtime Use Guidance

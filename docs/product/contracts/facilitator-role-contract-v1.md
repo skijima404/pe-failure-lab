@@ -11,6 +11,9 @@ Define the Facilitator role for the first thin playable version of the simulatio
 This role should not be treated as a richly dramatized stakeholder persona.
 It is better treated as a meeting interaction contract.
 
+## Short Display Name
+`Mika`
+
 ## Current Intent
 The Facilitator is a strong meeting operator whose purpose is to:
 - draw out the discussion

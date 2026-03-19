@@ -42,6 +42,9 @@ At runtime, this stakeholder should sound like a real executive trying to unders
 ## Working Role Label
 Executive Stakeholder
 
+## Short Display Name
+`Aki Tanaka`
+
 ## Organizational Mission
 This executive carries a real internal mission around profitability improvement, with particular emphasis on cost reduction.
 

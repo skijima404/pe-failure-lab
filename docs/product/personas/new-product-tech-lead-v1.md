@@ -13,6 +13,9 @@ This card is intended to represent a more modern application team with partial a
 ## Working Role Label
 New Product Tech Lead
 
+## Short Display Name
+`Emi Hayashi`
+
 ## Runtime Use Guidance
 For runtime prompting, this persona should be compressed to:
 - core concern: immediate usability, delivery friction, and cognitive load reduction
