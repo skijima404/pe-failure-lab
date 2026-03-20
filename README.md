@@ -6,14 +6,14 @@ Roleplay-based simulation and assessment lab for exploring failure patterns in P
 Use the repository root as a valid entry point for running the MVP simulation, not only for development.
 
 If an AI agent is asked to run or test-play the simulation from the repository root, it should treat the following artifacts as the primary execution bundle:
-- `docs/product/concepts/enterprise-context-card-v1.md`
+- `docs/product/concepts/enterprise-context-card.md`
 - `docs/product/concepts/mvp-simulation-session-concept.md`
-- `docs/product/contracts/mvp-simulation-contract-v1.md`
-- `docs/product/contracts/facilitator-role-contract-v1.md`
-- `docs/product/personas/executive-stakeholder-v1.md`
-- `docs/product/personas/platform-side-stakeholder-v1.md`
-- `docs/product/personas/legacy-app-side-stakeholder-v1.md`
-- `docs/product/personas/new-product-tech-lead-v1.md`
+- `docs/product/contracts/mvp-simulation-contract.md`
+- `docs/product/contracts/facilitator-role-contract.md`
+- `docs/product/personas/executive-stakeholder.md`
+- `docs/product/personas/platform-side-stakeholder.md`
+- `docs/product/personas/legacy-app-side-stakeholder.md`
+- `docs/product/personas/new-product-tech-lead.md`
 - `failure-model/`
 
 For MVP test play, the root-level default interpretation should be:
@@ -32,13 +32,13 @@ Suggested root-level execution flow:
 ## Vision
 - `docs/product/vision.md`: repo-level epic hypothesis and long-term direction
 - `docs/product/concepts/mvp-simulation-session-concept.md`: current thin playable session concept
-- `docs/product/concepts/enterprise-context-card-v1.md`: fixed enterprise context for the first playable version
-- `docs/product/contracts/facilitator-role-contract-v1.md`: meeting-operator contract for the facilitator role
-- `docs/product/contracts/mvp-simulation-contract-v1.md`: thin playable session contract
-- `docs/product/personas/executive-stakeholder-v1.md`: first stakeholder persona card
-- `docs/product/personas/platform-side-stakeholder-v1.md`: platform realism and boundary-focused stakeholder persona
-- `docs/product/personas/legacy-app-side-stakeholder-v1.md`: legacy-system risk and migration-pressure stakeholder persona
-- `docs/product/personas/new-product-tech-lead-v1.md`: modern delivery-friction and bespoke-help pressure persona
+- `docs/product/concepts/enterprise-context-card.md`: fixed enterprise context for the first playable version
+- `docs/product/contracts/facilitator-role-contract.md`: meeting-operator contract for the facilitator role
+- `docs/product/contracts/mvp-simulation-contract.md`: thin playable session contract
+- `docs/product/personas/executive-stakeholder.md`: first stakeholder persona card
+- `docs/product/personas/platform-side-stakeholder.md`: platform realism and boundary-focused stakeholder persona
+- `docs/product/personas/legacy-app-side-stakeholder.md`: legacy-system risk and migration-pressure stakeholder persona
+- `docs/product/personas/new-product-tech-lead.md`: modern delivery-friction and bespoke-help pressure persona
 - `AGENTS.md`: repository operating guidance for AI-native collaboration
 
 ## Core Layout
@@ -70,7 +70,8 @@ This repository uses an intent-driven development flow:
 ## Development Model
 - `docs/product/vision.md` defines why the product exists.
 - `docs/product/expected-outputs/` defines what the product should return at key moments such as game end.
-- `docs/intent-development/enabler-proposals/` defines foundational assets that implementation must serve.
+- `docs/intent-development/enabler-proposals/` is the default format for foundational assets and reusable operating foundations that implementation must serve.
 - `docs/intent-development/feature-proposals/` defines user-facing capabilities built on those enablers.
 - `docs/intent-development/ui-specs/` and `docs/intent-development/implementation-specs/` must reference the enablers they depend on.
+- `docs/decisions/` stores ADRs for major architecture changes, especially when failure, repeated evidence, or implementation breakdown explains why the shift happened.
 - `failure-model/` defines what success, symptom emergence, and failure causality mean for the simulation itself.

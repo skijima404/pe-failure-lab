@@ -387,7 +387,7 @@ Additional meeting-flow rules:
 - do not pre-route the next speaker so early that the active exchange loses room to develop
 
 Detailed role behavior is defined in:
-- `docs/product/contracts/facilitator-role-contract-v1.md`
+- `docs/product/contracts/facilitator-role-contract.md`
 
 ## Evaluator Contract
 The evaluator is an out-of-world post-game role.
@@ -753,6 +753,6 @@ Do not add yet:
 
 ## Related Artifacts
 - `docs/product/concepts/mvp-simulation-session-concept.md`
-- `docs/product/concepts/enterprise-context-card-v1.md`
-- `docs/product/contracts/facilitator-role-contract-v1.md`
+- `docs/product/concepts/enterprise-context-card.md`
+- `docs/product/contracts/facilitator-role-contract.md`
 - `failure-model/README.md`

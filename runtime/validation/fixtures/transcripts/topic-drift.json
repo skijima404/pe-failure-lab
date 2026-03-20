@@ -1,0 +1,37 @@
+[
+  {
+    "turn_index": 1,
+    "speaker_id": "exec",
+    "speaker_name": "Executive Stakeholder",
+    "turn_owner": "initiating_actor",
+    "text": "What is the first usable scope boundary here?"
+  },
+  {
+    "turn_index": 2,
+    "speaker_id": "player",
+    "speaker_name": "Player",
+    "turn_owner": "player",
+    "text": "We start with one onboarding path."
+  },
+  {
+    "turn_index": 3,
+    "speaker_id": "platform",
+    "speaker_name": "Platform-side Stakeholder",
+    "turn_owner": "reacting_actor",
+    "text": "Fine, but what support will platform side absorb after that?"
+  },
+  {
+    "turn_index": 4,
+    "speaker_id": "delivery",
+    "speaker_name": "New Product Tech Lead",
+    "turn_owner": "reacting_actor",
+    "text": "Before that, I need to know what changes for my team's delivery workflow this quarter."
+  },
+  {
+    "turn_index": 5,
+    "speaker_id": "exec",
+    "speaker_name": "Executive Stakeholder",
+    "turn_owner": "reacting_actor",
+    "text": "And who owns the cross-organization decision if this expands?"
+  }
+]

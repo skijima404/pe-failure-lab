@@ -5,10 +5,22 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-17
-- updated_at: 2026-03-19
+- updated_at: 2026-03-21
+- related_value_streams:
+  - docs/intent-development/value-streams/vs-intent-001-simulation-session-to-reflection.md
+- related_intent: docs/intent-development/intents/in-intent-001-simulation-core-loop.md
 - related_enablers:
   - intent-000
+  - intent-007
 - related_ui_spec: docs/intent-development/ui-specs/ui-intent-001-simulation-session-flow.md
+- related_implementation_specs:
+  - docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md
+  - docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-multi-agent-handoff.md
+  - docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md
+  - docs/intent-development/implementation-specs/is-intent-001-runtime-module-structure.md
+  - docs/intent-development/implementation-specs/is-intent-001-runtime-observability-and-validation.md
+- related_development_memos:
+  - docs/intent-development/development-memos/dm-intent-001-multi-agent-runtime-implementation-map.md
 
 ## Intent
 Create the core simulation loop that lets a learner enter a Platform Engineering scenario, respond to stakeholder pressure, and see structural failure signals emerge over time.
@@ -62,13 +74,22 @@ Current Platform Engineering learning materials can explain failure patterns, bu
   - revert the affected document set and registry entry together
 
 ## Open Questions
-- [ ] What is the minimum structural state model for the first playable simulation?
+- [x] What is the minimum structural state model for the first playable simulation?
+  - Initial answer is defined in `docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md` through the `room_state`, `participant_states`, `exchange_state`, and `structural_state` sections.
 - [ ] Should observers and learners share the same interface in the first iteration?
 - [ ] How much persona detail should remain in runtime prompts versus durable source assets?
 - [ ] Which scenarios require visible pre-read or scope / ownership artifacts to remain fair and natural in chat-first runtime?
 
 ## Evidence / References
+- `docs/intent-development/value-streams/vs-intent-001-simulation-session-to-reflection.md`
+- `docs/intent-development/intents/in-intent-001-simulation-core-loop.md`
 - `docs/product/vision.md`
 - `docs/intent-development/enabler-proposals/ep-intent-000-platform-engineering-failure-model.md`
+- `docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md`
 - `docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md`
+- `docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-multi-agent-handoff.md`
+- `docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md`
+- `docs/intent-development/implementation-specs/is-intent-001-runtime-module-structure.md`
+- `docs/intent-development/implementation-specs/is-intent-001-runtime-observability-and-validation.md`
+- `docs/intent-development/development-memos/dm-intent-001-multi-agent-runtime-implementation-map.md`
 - `README.md`

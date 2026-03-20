@@ -5,7 +5,9 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-17
-- updated_at: 2026-03-17
+- updated_at: 2026-03-21
+- related_intents:
+  - docs/intent-development/intents/in-intent-001-simulation-core-loop.md
 - related_enablers:
   - intent-000
 - related_feature_proposals:
@@ -65,6 +67,7 @@ Describe the end-to-end value flow from scenario entry through roleplay, scoring
 - the visual surface is flat, so the booth or demo experience lacks clarity and energy
 
 ## Required Supporting Assets
+- `docs/intent-development/intents/in-intent-001-simulation-core-loop.md`
 - `docs/product/vision.md`
 - `docs/product/expected-outputs/game-end-output.md`
 - `docs/intent-development/enabler-proposals/ep-intent-000-platform-engineering-failure-model.md`

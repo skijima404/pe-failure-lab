@@ -305,4 +305,4 @@ Do not add yet:
 Turn this concept into a compact MVP Simulation Contract before deeper persona writing.
 
 ## Related Context
-- `docs/product/concepts/enterprise-context-card-v1.md`
+- `docs/product/concepts/enterprise-context-card.md`

@@ -5,7 +5,9 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-17
-- updated_at: 2026-03-17
+- updated_at: 2026-03-21
+- related_intents:
+  - docs/intent-development/intents/in-intent-006-failure-model-authoring-workflow.md
 - related_enablers:
   - intent-000
   - intent-005
@@ -75,6 +77,7 @@ Describe the end-to-end value flow by which rough human notes and conversational
 - authoring stays trapped in chat context and is not converted into durable repository assets
 
 ## Required Supporting Assets
+- `docs/intent-development/intents/in-intent-006-failure-model-authoring-workflow.md`
 - `docs/intent-development/enabler-proposals/ep-intent-000-platform-engineering-failure-model.md`
 - `docs/intent-development/enabler-proposals/ep-intent-005-failure-model-authoring-guidance.md`
 - `docs/intent-development/feature-proposals/fp-intent-006-genai-assisted-failure-model-authoring-workflow.md`

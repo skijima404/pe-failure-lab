@@ -6,6 +6,9 @@
 - status: draft
 - created_at: YYYY-MM-DD
 - updated_at: YYYY-MM-DD
+- related_value_streams:
+  - docs/intent-development/value-streams/<file>.md
+- related_intent: docs/intent-development/intents/<file>.md
 - related_feature_proposal: <path>
 - related_ui_spec: <path or TBD>
 - depends_on_enablers:

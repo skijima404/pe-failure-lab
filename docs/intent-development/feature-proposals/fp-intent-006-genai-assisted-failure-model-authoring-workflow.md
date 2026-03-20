@@ -5,7 +5,10 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-17
-- updated_at: 2026-03-17
+- updated_at: 2026-03-21
+- related_value_streams:
+  - docs/intent-development/value-streams/vs-intent-006-rough-note-to-linked-failure-model-assets.md
+- related_intent: docs/intent-development/intents/in-intent-006-failure-model-authoring-workflow.md
 - related_enablers:
   - intent-000
   - intent-005
@@ -62,8 +65,9 @@ Failure-model authoring currently depends on live conversational alignment and r
 - [ ] How much automatic checking is necessary before it slows down authoring more than it helps?
 
 ## Evidence / References
+- `docs/intent-development/value-streams/vs-intent-006-rough-note-to-linked-failure-model-assets.md`
+- `docs/intent-development/intents/in-intent-006-failure-model-authoring-workflow.md`
 - `docs/intent-development/enabler-proposals/ep-intent-000-platform-engineering-failure-model.md`
 - `docs/intent-development/enabler-proposals/ep-intent-005-failure-model-authoring-guidance.md`
 - `docs/templates/failure-model/README.md`
 - `failure-model/README.md`
-

@@ -6,13 +6,22 @@
 - Status: draft
 - Updated: 2026-03-20
 - Related:
+  - `docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md`
   - `docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md`
-  - `docs/product/contracts/mvp-simulation-contract-v1.md`
-  - `docs/product/contracts/facilitator-role-contract-v1.md`
+  - `docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md`
+  - `docs/product/contracts/mvp-simulation-contract.md`
+  - `docs/product/contracts/facilitator-role-contract.md`
   - `docs/product/personas/runtime/`
 
 ## Purpose
 Provide a development handoff for possible multi-agent runtime designs focused on conversation naturalness.
+
+This document is intentionally comparative.
+For the tactical MVP implementation contract, use:
+- `docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md`
+
+For the reusable runtime foundation, use:
+- `docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md`
 
 This document compares:
 - a single-agent conversation runtime
@@ -129,6 +138,10 @@ Reason:
 - `Option A` is easier, but it keeps reproducing the same core failure: one intelligence trying to be actor, facilitator, pressure controller, and evaluator at once
 - `Option B` maximizes naturalness, but will likely create too much sprawl without a strong conductor
 - `Option C` creates the cleanest separation of concerns without losing too much controllability
+
+Tactical implementation note:
+- for MVP, prefer a hidden room orchestrator plus speaking actor agents, rather than making the facilitator own all orchestration directly
+- the primary implementation challenge is shared room-state design, not whether routing exists at all
 
 ## Suggested Agent Responsibilities
 

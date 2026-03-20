@@ -6,11 +6,16 @@
 - status: draft
 - created_at: YYYY-MM-DD
 - updated_at: YYYY-MM-DD
+- supports_value_streams:
+  - docs/intent-development/value-streams/<file>.md
 - enables:
   - intent-###
 
 ## Purpose
 What durable product asset does this enabler define, and why must it exist?
+
+This is the repository's default format for foundational assets and reusable operating foundations.
+If the main need is to preserve a failure-triggered architecture change event, write an ADR in `docs/decisions/` as well.
 
 ## Problem
 What design ambiguity, implementation drift, or evaluation gap exists without this enabler?

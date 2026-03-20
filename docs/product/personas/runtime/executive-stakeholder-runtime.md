@@ -4,7 +4,7 @@
 - Persona Type: runtime-stakeholder-slice
 - Status: draft
 - Updated: 2026-03-19
-- Source Persona: docs/product/personas/executive-stakeholder-v1.md
+- Source Persona: docs/product/personas/executive-stakeholder.md
 
 ## Purpose
 Provide the thin runtime slice for live simulation use.

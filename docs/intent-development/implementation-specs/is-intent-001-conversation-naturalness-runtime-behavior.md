@@ -204,8 +204,8 @@ Examples of intended contrast:
 
 ## Execution Notes
 - Files allowed to touch:
-  - docs/product/contracts/mvp-simulation-contract-v1.md
-  - docs/product/contracts/facilitator-role-contract-v1.md
+  - docs/product/contracts/mvp-simulation-contract.md
+  - docs/product/contracts/facilitator-role-contract.md
   - docs/product/personas/*.md
   - docs/intent-development/ui-specs/ui-intent-001-simulation-session-flow.md
   - docs/intent-development/feature-proposals/fp-intent-001-platform-engineering-failure-simulation-core-loop.md
