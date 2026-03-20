@@ -5,7 +5,10 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-20
-- updated_at: 2026-03-20
+- updated_at: 2026-03-21
+- related_value_streams:
+  - docs/intent-development/value-streams/vs-intent-001-simulation-session-to-reflection.md
+- related_intent: docs/intent-development/intents/in-intent-001-simulation-core-loop.md
 - related_feature_proposal: docs/intent-development/feature-proposals/fp-intent-001-platform-engineering-failure-simulation-core-loop.md
 - related_ui_spec: docs/intent-development/ui-specs/ui-intent-001-simulation-session-flow.md
 - related_runtime_specs:

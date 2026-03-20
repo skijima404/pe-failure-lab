@@ -4,7 +4,11 @@
 - Intent: intent-001
 - Artifact Type: implementation-spec
 - Status: draft
-- Updated: 2026-03-20
+- Updated: 2026-03-21
+- Related Value Streams:
+  - `docs/intent-development/value-streams/vs-intent-001-simulation-session-to-reflection.md`
+- Related Intent:
+  - `docs/intent-development/intents/in-intent-001-simulation-core-loop.md`
 - Related:
   - `docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md`
   - `docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md`

@@ -5,7 +5,10 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-17
-- updated_at: 2026-03-17
+- updated_at: 2026-03-21
+- related_value_streams:
+  - docs/intent-development/value-streams/vs-intent-001-simulation-session-to-reflection.md
+- related_intent: docs/intent-development/intents/in-intent-003-end-of-game-assessment-and-discussion.md
 - related_enablers:
   - intent-000
 - related_ui_spec: TBD
@@ -61,6 +64,7 @@ Without a strong game-end output, the session risks ending as "just a conversati
 - [ ] Should scoring be numeric, banded, or narrative in the earliest iteration?
 
 ## Evidence / References
+- `docs/intent-development/intents/in-intent-003-end-of-game-assessment-and-discussion.md`
 - `docs/product/vision.md`
 - `docs/product/expected-outputs/game-end-output.md`
 - `docs/intent-development/enabler-proposals/ep-intent-000-platform-engineering-failure-model.md`

@@ -8,6 +8,9 @@
 - updated_at: 2026-03-21
 - related_intents:
   - docs/intent-development/intents/in-intent-001-simulation-core-loop.md
+  - docs/intent-development/intents/in-intent-002-precise-failure-pattern-scenarios.md
+  - docs/intent-development/intents/in-intent-003-end-of-game-assessment-and-discussion.md
+  - docs/intent-development/intents/in-intent-004-demo-grade-live-simulation-surface.md
 - related_enablers:
   - intent-000
 - related_feature_proposals:
@@ -68,6 +71,9 @@ Describe the end-to-end value flow from scenario entry through roleplay, scoring
 
 ## Required Supporting Assets
 - `docs/intent-development/intents/in-intent-001-simulation-core-loop.md`
+- `docs/intent-development/intents/in-intent-002-precise-failure-pattern-scenarios.md`
+- `docs/intent-development/intents/in-intent-003-end-of-game-assessment-and-discussion.md`
+- `docs/intent-development/intents/in-intent-004-demo-grade-live-simulation-surface.md`
 - `docs/product/vision.md`
 - `docs/product/expected-outputs/game-end-output.md`
 - `docs/intent-development/enabler-proposals/ep-intent-000-platform-engineering-failure-model.md`
