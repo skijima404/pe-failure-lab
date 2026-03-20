@@ -118,6 +118,12 @@ Stakeholders question, challenge, interpret, and pressure the player from their 
 
 This phase should usually feel like a brainstorming-oriented working discussion, not a sequence of hard approval tests.
 
+Runtime priority order for this phase:
+1. preserve believable workshop conversation
+2. keep the room legible by limiting active-topic sprawl
+3. let the discussion usually narrow from overview toward specifics
+4. keep meaningful structural pressure and failure signals visible
+
 Interaction rules for MVP:
 - stakeholders speak one at a time
 - each stakeholder should usually ask only one primary question per turn

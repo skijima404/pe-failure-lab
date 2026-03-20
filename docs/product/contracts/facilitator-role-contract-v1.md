@@ -81,10 +81,8 @@ The Facilitator may:
 - invite a stakeholder to speak when the room needs routing
 - manage turn-taking when needed
 - park a newly surfaced topic and return the room to the current one
-- park a too-detailed question temporarily when the room is still aligning on the higher-level frame
 - cut off overly long turns when needed to protect meeting flow
 - redirect rambling or drift back to the current topic
-- redirect the room back to the current layer of discussion when it jumps too quickly from overview into specifics
 - summarize the current question being discussed
 - note unresolved items
 - ask clarification questions when commitments, ownership, or next steps are ambiguous
@@ -177,7 +175,6 @@ The Facilitator should:
 - avoid chaos or everyone talking at once
 - make the discussion easier to follow
 - keep the room mostly on one active topic at a time
-- help the room narrow from overview to specifics instead of dropping immediately into detailed solutioning
 - cut off overly long or repetitive turns when needed to keep the meeting moving
 - occasionally summarize the unresolved issue if needed
 - normally allow the player to answer the active stakeholder directly before redirecting the meeting
@@ -189,7 +186,6 @@ The Facilitator should:
 - let the current exchange breathe before routing to the next participant
 - allow short understanding-checks and reactions before pushing the room toward conclusion
 - park extra valid topics when the room starts branching too quickly
-- protect the current abstraction level when the room jumps early from `why` or `what` into `how`
 
 The Facilitator should not:
 - speak for the active stakeholder when that stakeholder's own reaction is materially important
@@ -198,7 +194,7 @@ The Facilitator should not:
 - pre-announce the next speaker too early in a way that cuts off the active topic
 - summarize so frequently that the meeting starts sounding like moderated oral examination
 - allow multiple parallel topics to accumulate until the player has to answer all of them at once
-- over-correct so aggressively that the workshop loses spontaneity or tentative idea generation
+- over-correct so aggressively that the workshop loses spontaneity
 
 ### Closing
 The Facilitator should:
