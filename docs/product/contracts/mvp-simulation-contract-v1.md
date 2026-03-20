@@ -3,20 +3,35 @@
 - Product: Platform Engineering Failure Lab
 - Artifact Type: simulation contract
 - Status: draft
-- Updated: 2026-03-18
+- Updated: 2026-03-19
 
 ## Purpose
-Define the minimum operating contract for the first playable meeting simulation.
+Define the minimum operating contract for the first playable workshop simulation.
 
 This contract exists so the session can be run consistently before deeper scoring, richer persona behavior, or multi-scene expansion are added.
 
 ## Scene Definition
-The session is a one-scene meeting simulation.
+The session is a one-scene brainstorming workshop simulation.
 
 Primary evaluation center:
-- Strategic Vision under coalition-forming pressure
+- Strategic Vision drafting with a partially formed coalition
 
-The player is presenting and clarifying the current direction while practical commitment pressure is already emerging.
+The player is presenting and clarifying a draft direction while practical pressure is already emerging.
+
+This scene should usually be treated as:
+- a working session
+- a draft-shaping discussion
+- a brainstorming-oriented discussion
+- not a pure approval gate
+- not a review-meeting verdict ritual
+
+Coalition participation exists at a workable level, but the usable scope, operating model, and follow-through shape are not yet secure.
+
+Evaluation rule for this scene:
+- the evaluator should judge the session as `Coalition -> Strategic Vision drafting`, not as a later-phase operating-model review
+- the primary question is whether meaningful failure-model signals became visible and whether the room made strategic-level progress on the day's active topic
+- the evaluator should not treat the absence of later-phase detail, named owners, or finalized operating contracts as a primary failure by itself
+- a `3/5` structural result should be available for solid early-stage work; it must not imply near-failure
 
 ## Session Structure
 The session runs in three phases.
@@ -25,7 +40,7 @@ The session runs in three phases.
 The session controller explains:
 - that the simulation is about to begin
 - the purpose of the game
-- the win or success condition
+- the workshop goal
 - the basic operating rules of the session
 
 The session controller may ask whether the player has questions before starting.
@@ -52,6 +67,13 @@ This setup question should:
 - not change the core scenario structure
 - help the player enter the meeting more naturally
 
+Initialization may also provide a short visible framing artifact when the topic would otherwise be unfairly hard to reason about through chat alone.
+
+Examples:
+- a one-page brief
+- a scope and ownership card
+- a short list of target and non-target cases
+
 ## Session Language Policy
 Session dialogue language should default to the language used by the player in their first session-facing message, unless the user explicitly requests another language.
 
@@ -70,9 +92,9 @@ The live simulation begins only after an explicit user signal such as:
 - "Let's start"
 
 ### 2-1. Facilitator Opening and Recap
-The facilitator opens the meeting, briefly restates context, and sets the agenda.
+The facilitator opens the workshop, briefly restates context, and sets the agenda.
 
-The facilitator should also briefly explain why this meeting is happening now.
+The facilitator should also briefly explain why this workshop is happening now.
 
 This recap should:
 - give enough immediate situation context for the player to enter naturally
@@ -86,34 +108,55 @@ The player presents or clarifies the current direction and intended move.
 Important constraint:
 - this is an initial articulation, not a long formal speech
 - the scene should move quickly into interpretation, challenge, and practical tension
+- the player may present a draft shape to be refined with the room, not only a fully formed final position
+- the opening exchanges may stay at overview, problem-framing, or direction-setting level before the room narrows into first-service or first-move detail
 
 Runtime wording should prefer plain enterprise language over design-internal labels such as `Strategic Vision`.
 
-### 2-3. Stakeholder Q&A and Pressure
+### 2-3. Stakeholder Brainstorming, Pressure, and Refinement
 Stakeholders question, challenge, interpret, and pressure the player from their own perspective.
+
+This phase should usually feel like a brainstorming-oriented working discussion, not a sequence of hard approval tests.
+
+Runtime priority order for this phase:
+1. preserve believable workshop conversation
+2. keep the room legible by limiting active-topic sprawl
+3. let the discussion usually narrow from overview toward specifics
+4. keep meaningful structural pressure and failure signals visible
 
 Interaction rules for MVP:
 - stakeholders speak one at a time
 - each stakeholder should usually ask only one primary question per turn
-- the facilitator should usually direct the order explicitly rather than allowing pile-on
+- each turn should usually stay anchored to one active topic
+- the first few exchanges may stay in premise alignment, scope confirmation, or framing clarification before the room asks the player to commit to a sharper answer
+- the room should usually move from `why` to `what` to `how`, rather than jumping directly from overview to concrete service design
+- the facilitator should prevent pile-on, but should not be the default bridge between every turn
 - the facilitator should not batch multiple stakeholder questions into a single demand for response
 - pressure should be clear and meaningful, but not artificially overwhelming
 - stakeholders should generally behave cooperatively in process, even when they are not aligned in substance
 - stakeholders should usually try to understand and draw out the player's meaning before rejecting it
+- stakeholders may help shape the draft by adding constraints, clarifying boundaries, or exposing missing distinctions
+- stakeholders may sometimes suggest rough, incomplete, or slightly mistaken ideas in their own frame
 - pressure should often take the form of clarification-seeking rather than adversarial interrogation
 - limited stakeholder-to-stakeholder handoff is allowed when it makes the conversation feel more natural or reveals a meaningful difference in perspective
 - stakeholder-to-stakeholder handoff should remain short, legible, and relevant to the active topic
+- the next speaker should usually emerge from the active concern, not from a fixed stakeholder sequence
+- newly surfaced topics should usually be parked unless the room explicitly decides to switch
 
 The session should avoid:
 - four stakeholders interrogating the player at once
 - compound multi-part questions when a single question would do
 - facilitator summaries that increase pressure by stacking unresolved demands into one response turn
 - rigid facilitator-only turn choreography that makes the meeting feel like a scripted interview
+- round-robin participation that feels more orderly than believable
+- every stakeholder turn ending in a verdict-like statement
+- three or more unresolved active topics being explored in parallel
 
 Response-shaping rule:
 - after a stakeholder asks a question, the player should normally answer that stakeholder directly before the facilitator moves the meeting onward
 - after the player answers, the asking stakeholder should normally get one short reaction turn in their own voice before the facilitator transitions
 - if a stakeholder surfaces a new concrete concern, example, or expectation, the player should normally receive one short response turn before the meeting transitions
+- if the player's answer creates a natural overlap with another stakeholder's concern, that stakeholder may react directly without waiting for formal rerouting
 - the facilitator should not prematurely close or redirect in a way that prevents the player from clarifying what problem they are actually trying to solve
 - the facilitator should not react on behalf of the asking stakeholder when that stakeholder's own reaction is what matters
 
@@ -121,26 +164,48 @@ Natural response preference:
 - after substantive new evidence, stakeholders may first react with recognition, surprise, concern, or curiosity
 - they do not need to jump immediately into a perfectly framed analytical question
 - follow-up questions should emerge from the reaction naturally where possible
+- early in the meeting, premise-checking and "is this the right level of discussion?" style clarification are normal and should not automatically turn into pressure for an immediate final answer
+- candidate shapes, tentative options, or lightweight ideas may appear before full evaluative clarity
+- the room should allow short understanding-checks before turning each exchange into a decision test
+- missing precision may legitimately lead to follow-up shaping work rather than immediate rejection
 
 Stakeholder turn-completion rule:
 - a stakeholder turn does not need to end after a single question-answer pair
 - if the stakeholder's core concern is still active, one or two follow-up exchanges are desirable
 - the meeting should allow enough back-and-forth for meaningful stance movement, not only concern surfacing
-- a stakeholder may move to `Go` when the direction feels acceptable and the unresolved details are clearly scoped for a follow-up discussion
-- a stakeholder does not need every implementation detail resolved in the current meeting to move forward
+- a stakeholder may indicate that the draft is promising enough to keep shaping when the unresolved details are clearly scoped for a follow-up discussion
+- a stakeholder does not need every implementation detail resolved in the current workshop to move forward
+- bounded uncertainty can be acceptable when the next design step, owner, and intended decision boundary are clear
+- if a new topic appears mid-exchange, it should usually be noted and parked unless it materially changes the current topic
 
-### 2-4. Closing Follow-Up Understanding Check
-The facilitator asks each participant to summarize what they believe happens next.
+Topic-management rule:
+- the workshop should usually keep only one active topic open at a time
+- a second topic may remain lightly open when tightly related, but this should be the exception
+- when multiple stakeholders raise additional valid topics, the facilitator may briefly name and park them before returning the room to the current topic
+- switching topics should usually sound explicit, for example "let's finish X first, then come back to Y"
+- if the room is still working at overview or direction-setting level, detailed first-service or implementation questions should usually be parked until the higher-level frame is clearer
+
+Facilitator intervention rule:
+- the facilitator should operate by exception, not as the default narrator of meeting flow
+- the facilitator should usually stay quiet while an active exchange is still productive and legible
+- the facilitator should step in mainly when turn ownership becomes unclear, pile-on starts, or topic drift threatens legibility
+
+### 2-4. Closing Checkpoint
+The facilitator closes the meeting with a light checkpoint rather than a recap-based scoring ritual.
 
 Before moving into the closing check:
 - the player should normally have had a fair chance to explain what they see as the current problem, intended direction, and immediate next step
 - if that framing is still materially unclear, the facilitator should invite one short clarification from the player rather than paraphrasing it on their behalf
-- the closing check should test stakeholder understanding of the player's framing, not replace it
+- unresolved items may remain open if they are clearly named as follow-up work rather than hidden assumptions
 
 Preferred closing pattern:
 - each stakeholder should briefly state what they understood
 - each stakeholder may also state the level of cooperation they can currently offer
 - if they remain conditional, they should preferably name the one key point that still needs to be made clearer
+- participants may explicitly distinguish between what is good enough to continue and what still needs refinement outside the meeting
+- participants do not need to issue a clean `Go / No Go` style verdict at closing
+- the close does not require a player recap for scoring purposes
+- the close does not need to check coverage of every raised topic before the workshop can end
 
 This should sound more like:
 - "I understand the proposal this way."
@@ -155,19 +220,28 @@ This should sound less like:
 After the meeting closes, the evaluator returns the MVP result package.
 
 At minimum:
-- meeting outcome
+- draft progress
 - structural progress as `x/5`
 - live state summary
-- stakeholder follow-up alignment state
 
 Output rule:
 - the primary structural result must be shown as `x/5`
+- draft progress should be expressed as workshop-oriented progression, not as a meeting verdict
 - qualitative labels such as `medium risk`, `strained`, or similar may be shown only as secondary interpretation
 - qualitative labels alone are not sufficient
+- the output should follow the fixed report shape defined in `docs/product/expected-outputs/game-end-output.md`
+- the score should be calibrated to the current scene phase rather than to a fully formed operating model
+- the evaluator should mainly reward two things:
+  - whether important failure-model signals were made visible
+  - whether the active strategic topic moved toward a clearer draft direction or decision boundary
+- the evaluator should not reduce the score simply because relationship-based coalition work has not yet become formal role contract
 
 After result output, the session automatically enters post-game discussion mode.
-At that point, the evaluator asks:
-- "Do you have any questions?"
+At that point, the evaluator should invite reflection in a light, encouraging way rather than a proctor-like way.
+
+Preferred examples:
+- "There was real progress here, and a few important signals are now visible. If you want, we can reflect on it."
+- "The draft moved forward. If you want, we can talk through what felt strong and what still needs shaping."
 
 ## Cast Contract
 Roles:
@@ -183,6 +257,7 @@ Roles:
 Role rules:
 - the player owns content and commitment judgment
 - stakeholders apply pressure from their own incentives and misunderstandings
+- stakeholders may also function as draft-shaping participants and imperfect idea generators rather than only as approvers
 - the facilitator manages in-meeting flow only
 - the session controller manages session lifecycle and phase transitions
 - the evaluator owns scoring, result output, and post-game learning-oriented QA
@@ -191,8 +266,15 @@ For runtime usability, stakeholder roles should also have short display names th
 
 Display names:
 - should be simple and easy to distinguish in live conversation
-- should be used by the facilitator when directing turn-taking
+- should be used by the facilitator when directing turn-taking is actually needed
 - do not need to replace the underlying persona labels in repository assets
+
+Default stakeholder display names for MVP:
+- Executive Stakeholder: `Aki Tanaka`
+- Platform-side Stakeholder: `Naoki Sato`
+- Legacy App-side Stakeholder: `Hiroshi Kondo`
+- New Product Tech Lead: `Emi Hayashi`
+- Facilitator: `Mika`
 
 ## Session Controller Contract
 The session controller is an out-of-world role.
@@ -225,13 +307,16 @@ This means:
 - participants may react before they fully structure their thoughts
 - slight surprise, hesitation, partial understanding, and uneven phrasing are desirable
 - new evidence may first produce recognition, surprise, or concern before it produces a clean analytical question
+- the room should not sound like everyone is racing to conclusion at every turn
+- participants should be allowed to build a draft together when the topic is naturally workshop-shaped
 
 When naturalness and neat structural progression are in tension:
 - prefer natural conversation first
 - preserve structural legibility second
+- preserve equalized turn distribution third
 
 The goal is not maximum conversational efficiency.
-The goal is believable interaction that still makes structural pressure visible.
+The goal is believable workshop interaction that still makes structural pressure visible.
 
 Preferred tone by role:
 - session controller: calm, friendly, and easy to follow
@@ -278,6 +363,7 @@ The facilitator:
 - manages turn-taking when needed
 - keeps the meeting legible
 - surfaces unresolved ambiguity
+- parks extra topics when too many threads open at once
 - runs the closing check
 
 The facilitator must not:
@@ -291,6 +377,7 @@ Additional meeting-flow rules:
 - call on stakeholders sequentially
 - prefer one primary question at a time
 - reduce pile-on pressure when the meeting becomes too dense
+- prefer one active topic at a time
 - keep the meeting challenging but still answerable
 - prefer flow transition over content restatement
 - avoid paraphrasing the player's answer more strongly or more cleanly than the player actually stated it
@@ -307,7 +394,7 @@ The evaluator is an out-of-world post-game role.
 
 The evaluator:
 - generates the result output
-- determines meeting outcome
+- determines draft progress
 - determines structural success and structural progress
 - explains visible state movement
 - supports post-game discussion and QA for learning purposes
@@ -318,7 +405,7 @@ When presenting structural results, the evaluator should:
 - avoid presenting only `high / medium / low` style structural labels without the `x/5` score
 
 The evaluator may:
-- explain why the meeting outcome became `Go`, `Conditional Go`, or `No Go`
+- explain why the draft progress was `Fragmented`, `Advancing`, or `Coalescing`
 - explain why the structural score became what it was
 - explain how visible states changed
 - explain likely stakeholder interpretation differences
@@ -354,40 +441,34 @@ Thin state logic:
 - Continuity Risk rises when follow-up depends on heroics, undefined effort, or assumed coalition
 - Continuity Risk falls when next steps are owned, bounded, and plausibly sustainable
 
-## Meeting Outcome
-Explicit meeting outcome:
-- Go
-- Conditional Go
-- No Go
+## Draft Progress
+Explicit draft-progress outcome:
+- Fragmented
+- Advancing
+- Coalescing
 
-This reflects what the room appears to decide.
+This reflects how far the workshop moved the draft forward.
 
-Meeting outcome is determined socially.
+Draft progress is determined socially.
 It is based on:
-- stakeholder stance
-- whether the meeting closes in a move-forward state
-- whether material mismatch at close causes support withdrawal
+- whether the discussion became more usable and concrete
+- whether key tensions became more legible
+- whether the workshop produced a clearer next-step shaping path
+- whether closing understanding remained materially compatible
 
-Thin stance interpretation:
-- `Go` does not require every detail to be settled in the current meeting
-- `Go` may mean the direction is acceptable, the main concerns are bounded enough, and the remaining detail can be handled in a clearly scoped follow-up discussion
-- `Conditional Go` means the direction may be acceptable, but a condition still remains too unclear to leave for later without weakening support
-- `No Go` means the participant cannot support moving forward at the current level of clarity
+Thin interpretation:
+- `Fragmented` means the workshop surfaced ideas, but the draft remained too mixed, too contradictory, or too vague to create a reliable next step
+- `Advancing` means the workshop moved the draft forward enough to justify continued shaping, even though important uncertainty remains
+- `Coalescing` means the workshop produced a noticeably clearer and more bounded draft shape with a credible next design path
 
 Follow-up discussion note:
-- stakeholder-specific follow-up meetings are not inherently a failure signal
-- bounded discovery, clarification, or product-management-style interviews may be a healthy next step
+- stakeholder-specific follow-up sessions are not inherently a failure signal
+- bounded discovery, clarification, or product-style shaping work may be a healthy next step
 - this becomes risky only when follow-up shifts into request intake, implicit delivery commitment, or bespoke solution shaping before the operating path is defined
 
-Additional meeting rules:
-- the meeting may shift from `Conditional Go` to `No Go` during the closing follow-up understanding check
-- a mismatch at close should affect meeting outcome only when it is material
-
-For MVP, a mismatch is material if it changes one or more of:
-- support scope
-- ownership
-- next-step obligation
-- exception status
+Additional draft-progress rules:
+- closing should not act as a recap-coverage gate that regrades the entire session
+- draft progress should mainly reflect how the workshop moved the strategic discussion itself
 
 ## Structural Success
 Structural success is not determined by whether the meeting felt successful.
@@ -429,7 +510,7 @@ Use the failure model to forecast:
 - what consequence is likely if nothing changes
 
 This forecast should be based on:
-- meeting result
+- draft progress
 - live structural states
 - follow-up alignment or misalignment
 - hard failure trigger
@@ -513,7 +594,7 @@ For MVP, most early test-play results should realistically end around:
 
 This is intentional.
 The product should frequently show:
-- meeting success
+- visible draft progress
 - without structural escape from Level 1 patterns
 
 ### User-Facing Framing
@@ -541,13 +622,14 @@ without explicit:
 ## Session End Conditions
 The session may move to closing in any of the following cases.
 
-### Decision Close
-Use a natural decision close when:
-- all stakeholders have reached `Go`, `Conditional Go`, or `No Go`
-- or, even if one or more stakeholders remain `Conditional Go`, the meeting has produced clearer and more explicit follow-up than existed at the start
+### Progress Close
+Use a natural progress close when:
+- the workshop has produced a clearer draft than existed at the start
+- the main open tensions have been surfaced well enough
+- the next shaping step is explicit enough to continue
 
-This means full enthusiasm is not required.
-The session may close once the room has reached a more explicit and bounded move-forward state.
+This means full agreement is not required.
+The session may close once the room has reached a more explicit and bounded draft-progress state.
 
 ### Facilitated Time Close
 The facilitator may end open discussion and move to closing when:
@@ -595,17 +677,11 @@ The minimum internal follow-up object is:
 - support_mode
 - scope
 
-This exists so the closing check can compare what participants think happens next.
+This may support internal state handling or future follow-up logic.
 
 ## Closing Contract
-At closing, the facilitator asks each participant to summarize what they believe happens next.
-
-The system checks only:
-- Aligned
-- Partially aligned
-- Misaligned
-
-MVP does not yet explain why the mismatch happened.
+At closing, the facilitator may run a short checkpoint on what participants understood, what can continue, and what still needs shaping.
+This checkpoint exists for meeting realism and legibility, not for recap coverage scoring.
 
 ## Post-Game Discussion and QA
 After result output, the session enters post-game discussion mode automatically.
@@ -613,7 +689,7 @@ After result output, the session enters post-game discussion mode automatically.
 Post-game QA exists to maximize learning effect and knowledge retention.
 
 Allowed:
-- explanation of meeting outcome and structural score
+- explanation of draft progress and structural score
 - explanation of stakeholder reactions and visible state changes
 - explanation of likely emotional or reasoning shifts during the session
 - discussion of counterfactual alternatives for learning purposes
@@ -656,16 +732,16 @@ Normal confusion, frustration, or disagreement inside the scenario should not tr
 Termination is reserved for clearly unsafe or clearly out-of-bounds behavior.
 Immediate termination without warning remains acceptable for extreme or clearly malicious behavior.
 
-## Relationship Between Meeting and Structural Success
-Meeting success and structural success must remain separate.
+## Relationship Between Draft Progress and Structural Success
+Draft progress and structural success must remain separate.
 
 Neither implies the other.
 
 Examples:
-- `Meeting: Go / Structural: 0/5` = the room moved forward, but nothing structural improved
-- `Meeting: Conditional Go / Structural: 1/5` = the meeting was cautious, but at least one structural aspect improved
-- `Meeting: Go / Structural: 3/5` = a strong result, but still not a complete maturity shift
-- `Meeting: No Go / Structural: 1/5` = the room did not proceed, but some structural integrity may still have been protected
+- `Draft: Advancing / Structural: 0/5` = the workshop felt productive, but nothing structural improved
+- `Draft: Fragmented / Structural: 1/5` = the workshop did not cohere, but some structural integrity may still have been protected
+- `Draft: Advancing / Structural: 1/5` = the room found a usable next step and at least one structural aspect improved
+- `Draft: Coalescing / Structural: 3/5` = a strong workshop result, but still not a complete maturity shift
 
 ## MVP Non-Goals
 Do not add yet:
