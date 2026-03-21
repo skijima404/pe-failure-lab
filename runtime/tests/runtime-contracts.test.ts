@@ -79,6 +79,27 @@ test("reducer derives support-boundary clarity and closes when next step is boun
   assert.equal(afterStakeholderTurn.close_readiness.reason, "bounded-next-step-visible");
 });
 
+test("player response can generate same-topic overlap candidates from session context", () => {
+  const roomState = createScriptedSessionInitialState();
+  roomState.exchange_state.awaiting_reaction_from = null;
+  roomState.exchange_state.handoff_candidate_actor_ids = [];
+  roomState.exchange_state.follow_up_count = 1;
+
+  const afterPlayerTurn = applyTurnOutcome(roomState, {
+    speaker_id: "player",
+    speaker_name: "Player",
+    turn_owner: "player",
+    text: "We should keep the first onboarding path narrow so platform is not silently absorbing support exceptions for teams.",
+  });
+
+  assert.deepEqual(afterPlayerTurn.exchange_state.handoff_candidate_actor_ids, ["platform"]);
+  assert.equal(afterPlayerTurn.exchange_state.awaiting_reaction_from, null);
+
+  const preparedTurn = prepareNextTurn(afterPlayerTurn);
+  assert.equal(preparedTurn.decision.owner, "reacting_actor");
+  assert.equal(preparedTurn.decision.speaker_id, "platform");
+});
+
 test("persona slice loader reads durable runtime persona assets", () => {
   const execPersona = loadRuntimePersonaSlice("exec");
   const facilitatorPersona = loadRuntimePersonaSlice("mika");

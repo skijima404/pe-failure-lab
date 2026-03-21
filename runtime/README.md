@@ -44,6 +44,7 @@ What exists now:
 - a runnable session driver harness via `npm run fixture:session-driver`
 - a runnable mock adapter harness via `npm run fixture:mock-adapter`
 - a runnable OpenAI adapter harness via `npm run fixture:openai-adapter`
+- a runnable full-session OpenAI playtest harness via `npm run fixture:openai-full-session`
 - a runnable evaluator harness via `npm run fixture:evaluator`
 
 What does not exist yet:
@@ -63,6 +64,7 @@ The script first checks the current environment, then falls back to a repository
 - `npm run fixture:session-driver` now prints a clean simulation-facing transcript by default
 - `npm run fixture:session-driver -- --adapter=openai` uses the same flow with the OpenAI adapter
 - `npm run fixture:openai-adapter` is the dedicated OpenAI E2E harness for the same entry flow
+- `npm run fixture:openai-full-session` runs a durable scripted-player full session from initialization through close and local evaluation
 - closing and evaluator are now separated:
   - facilitator owns the close turn
   - local evaluator starts only after `scene_phase === post-game`
