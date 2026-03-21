@@ -14,6 +14,7 @@
 - related_runtime_specs:
   - docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md
   - docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-multi-agent-handoff.md
+  - docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md
 - related_enabler_proposals:
   - docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md
 - related_product_contracts:
@@ -35,6 +36,9 @@ It keeps the current product direction intact:
 ## Goal
 Define how the shared multi-agent runtime foundation should be used in the current MVP scene.
 
+For remote transcript hygiene, facilitator/evaluator separation, and remote turn-boundary rules, use:
+- `docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md`
+
 ## Problem Statement
 The foundation-level runtime substrate is now defined separately.
 The remaining scene-specific problem is how to apply that foundation so this workshop stays natural, legible, and phase-appropriate.
@@ -46,13 +50,14 @@ Runtime shape:
 - one hidden `room-orchestrator`
 - one speaking `facilitator-agent` using the `Mika` role contract
 - one speaking `actor-agent` per stakeholder
-- one post-game `evaluator-agent`
+- one post-game `local evaluator`
 
 Decision rationale:
 - per-actor agents improve voice separation
 - the orchestrator protects one-topic-at-a-time meeting flow
 - the facilitator remains an in-world speaker, not the whole control plane
 - evaluation stays fully outside the live scene
+- evaluator judgment remains local so failure-signal reading does not collapse into remote write-up generation
 
 ## Scope
 - In scope:
@@ -160,7 +165,7 @@ Use this cast:
 - `facilitator-agent` as `Mika`
 - `3` stakeholder `actor-agents` for the first implementation slice
 - `player`
-- `evaluator-agent`
+- `local evaluator`
 
 Recommended first stakeholder set:
 - executive stakeholder
@@ -179,13 +184,14 @@ Implement the MVP runtime in this order:
    - actor -> player -> overlapping actor
    - facilitator -> actor
    - facilitator -> player
-6. Keep evaluator fully post-game.
+6. Keep evaluator fully post-game and local-first.
 
 Do not implement yet:
 - free actor self-selection without orchestrator approval
 - more than one overlapping actor reaction
 - hidden sub-conversations
 - dynamic spawning of extra agents
+- remote evaluator judgment as the default MVP path
 
 ## Risks
 - the workshop may still feel over-routed if facilitator invocation thresholds are too low

@@ -239,6 +239,117 @@ export function createDeliveryPressureInitialState(): RoomState {
   };
 }
 
+export function createSameTopicOverlapInitialState(): RoomState {
+  const roomState = createInitialRoomState("same-topic-overlap-session");
+
+  return {
+    ...roomState,
+    scene_phase: "discussion",
+    turn_index: 6,
+    active_speaker: "player",
+    active_topic: {
+      topic_id: "topic-006",
+      label: "First-use support boundary",
+      opened_by: "exec",
+      opened_at_turn: 3,
+      topic_type: "support-model",
+      depth: 1,
+      status: "active",
+    },
+    exchange_state: {
+      initiating_actor_id: "exec",
+      last_player_answer_turn: 6,
+      follow_up_count: 1,
+      stance_movement: "partial",
+      awaiting_reaction_from: null,
+      handoff_candidate_actor_ids: ["platform"],
+      should_continue_current_exchange: true,
+    },
+    recent_transcript: [
+      {
+        turn_index: 3,
+        speaker_id: "exec",
+        speaker_name: "Aki Tanaka",
+        turn_owner: "initiating_actor",
+        text: "What is the first boundary teams would experience?",
+      },
+      {
+        turn_index: 4,
+        speaker_id: "player",
+        speaker_name: "Player",
+        turn_owner: "player",
+        text: "They get one onboarding path first, not a full support service.",
+      },
+      {
+        turn_index: 5,
+        speaker_id: "exec",
+        speaker_name: "Aki Tanaka",
+        turn_owner: "initiating_actor",
+        text: "That helps. I can react to that as a business direction.",
+      },
+      {
+        turn_index: 6,
+        speaker_id: "player",
+        speaker_name: "Player",
+        turn_owner: "player",
+        text: "I want to keep that same boundary visible so teams know what is included first.",
+      },
+    ],
+  };
+}
+
+export function createPileOnRiskInitialState(): RoomState {
+  const roomState = createInitialRoomState("pile-on-risk-session");
+
+  return {
+    ...roomState,
+    scene_phase: "discussion",
+    turn_index: 6,
+    active_speaker: "player",
+    active_topic: {
+      topic_id: "topic-007",
+      label: "First-use support boundary",
+      opened_by: "exec",
+      opened_at_turn: 3,
+      topic_type: "support-model",
+      depth: 1,
+      status: "active",
+    },
+    exchange_state: {
+      initiating_actor_id: "exec",
+      last_player_answer_turn: 6,
+      follow_up_count: 2,
+      stance_movement: "partial",
+      awaiting_reaction_from: null,
+      handoff_candidate_actor_ids: ["platform"],
+      should_continue_current_exchange: true,
+    },
+    recent_transcript: [
+      {
+        turn_index: 4,
+        speaker_id: "exec",
+        speaker_name: "Aki Tanaka",
+        turn_owner: "initiating_actor",
+        text: "What business boundary are you actually setting?",
+      },
+      {
+        turn_index: 5,
+        speaker_id: "platform",
+        speaker_name: "Naoki Sato",
+        turn_owner: "reacting_actor",
+        text: "And who absorbs the support work if teams ask for exceptions?",
+      },
+      {
+        turn_index: 6,
+        speaker_id: "player",
+        speaker_name: "Player",
+        turn_owner: "player",
+        text: "We should keep the first path narrow enough that neither platform nor delivery quietly absorbs the exceptions.",
+      },
+    ],
+  };
+}
+
 export const SCRIPTED_SESSION_FIXTURE: ScriptedTurnOutcome[] = [
   {
     speaker_id: "exec",
@@ -259,25 +370,29 @@ export const SCRIPTED_SESSION_FIXTURE: ScriptedTurnOutcome[] = [
     },
   },
   {
-    speaker_id: "platform",
-    speaker_name: "Platform-side Stakeholder",
-    turn_owner: "reacting_actor",
-    text: "I can work with that shape, but I need the support boundary to stay explicit.",
-    expected_selection_reason: "overlap-reaction",
-  },
-  {
     speaker_id: "player",
     speaker_name: "Player",
     turn_owner: "player",
     text: "Yes, that boundary is important. We are standardizing one onboarding path, not taking over ongoing delivery support.",
     expected_selection_reason: "player-clarification-needed",
+    updates: {
+      exchange_state: {
+        initiating_actor_id: "exec",
+        handoff_candidate_actor_ids: ["platform"],
+        last_player_answer_turn: 6,
+        follow_up_count: 1,
+        stance_movement: "visible",
+        awaiting_reaction_from: null,
+        should_continue_current_exchange: true
+      },
+    },
   },
   {
     speaker_id: "platform",
     speaker_name: "Platform-side Stakeholder",
-    turn_owner: "initiating_actor",
+    turn_owner: "reacting_actor",
     text: "Good. If we keep it that narrow, I can support shaping the next step after this meeting.",
-    expected_selection_reason: "initiating-actor-follow-up",
+    expected_selection_reason: "overlap-reaction",
   },
 ];
 

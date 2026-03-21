@@ -25,7 +25,43 @@ function findFacilitator(roomState: RoomState): ParticipantState {
   return facilitator;
 }
 
+function lastTranscriptSpeaker(roomState: RoomState): string | null {
+  return roomState.recent_transcript.at(-1)?.speaker_id ?? null;
+}
+
+function lastTranscriptOwner(roomState: RoomState): TurnOwner | null {
+  return roomState.recent_transcript.at(-1)?.turn_owner ?? null;
+}
+
+function playerResponseOwed(roomState: RoomState): boolean {
+  const lastOwner = lastTranscriptOwner(roomState);
+
+  if (!lastOwner) {
+    return false;
+  }
+
+  if (lastOwner === "player") {
+    return false;
+  }
+
+  return lastTranscriptSpeaker(roomState) !== "player";
+}
+
+function sameTopicOverlapAllowed(roomState: RoomState): boolean {
+  return (
+    roomState.exchange_state.handoff_candidate_actor_ids.length === 1 &&
+    roomState.exchange_state.awaiting_reaction_from === null &&
+    roomState.exchange_state.should_continue_current_exchange &&
+    roomState.exchange_state.follow_up_count <= 1 &&
+    !playerResponseOwed(roomState)
+  );
+}
+
 function requiresFacilitator(roomState: RoomState): string | null {
+  if (roomState.scene_phase === "post-game") {
+    return null;
+  }
+
   if (roomState.scene_phase === "opening" && roomState.recent_transcript.length === 0) {
     return "session-opening";
   }
@@ -36,6 +72,14 @@ function requiresFacilitator(roomState: RoomState): string | null {
 
   if (roomState.exchange_state.handoff_candidate_actor_ids.length > 1) {
     return "turn-ownership-unclear";
+  }
+
+  if (
+    roomState.exchange_state.handoff_candidate_actor_ids.length > 0 &&
+    roomState.exchange_state.follow_up_count > 1 &&
+    !playerResponseOwed(roomState)
+  ) {
+    return "pile-on-risk";
   }
 
   if (roomState.active_topic.depth > 1 && roomState.exchange_state.follow_up_count > 1) {
@@ -57,7 +101,7 @@ export function selectNextTurn(roomState: RoomState): NextTurnDecision {
   }
 
   const awaitingReaction = findParticipant(roomState, roomState.exchange_state.awaiting_reaction_from);
-  if (awaitingReaction) {
+  if (awaitingReaction && !playerResponseOwed(roomState)) {
     return {
       owner: "initiating_actor",
       speaker_id: awaitingReaction.participant_id,
@@ -68,7 +112,7 @@ export function selectNextTurn(roomState: RoomState): NextTurnDecision {
 
   const overlapActorId = roomState.exchange_state.handoff_candidate_actor_ids[0];
   const overlapActor = findParticipant(roomState, overlapActorId);
-  if (overlapActor) {
+  if (overlapActor && sameTopicOverlapAllowed(roomState)) {
     return {
       owner: "reacting_actor",
       speaker_id: overlapActor.participant_id,

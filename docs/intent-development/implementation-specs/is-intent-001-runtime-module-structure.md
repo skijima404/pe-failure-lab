@@ -13,6 +13,7 @@
 - related_ui_spec: docs/intent-development/ui-specs/ui-intent-001-simulation-session-flow.md
 - related_runtime_specs:
   - docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md
+  - docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md
   - docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md
 - depends_on_enablers:
   - intent-000
@@ -25,6 +26,9 @@ It exists to keep traceability explicit between:
 - canonical room state
 - orchestration decisions
 - agent prompt shaping
+- transcript boundary handling
+- evaluator evidence packaging
+- local evaluator judgment
 - runtime execution
 - observability and validation
 
@@ -37,6 +41,9 @@ Without an explicit module structure, multi-agent implementation is likely to bl
 - who decides the next turn
 - where prompt shaping happens
 - where transcript summarization happens
+- where user-facing transcript filtering happens
+- where evaluator evidence packets are assembled
+- where evaluator judgment actually happens
 - how logs and validation relate to runtime behavior
 
 That would make it difficult to answer:
@@ -65,6 +72,8 @@ runtime/
   agents/
   execution/
   transcripts/
+  presentation/
+  evaluation/
   observability/
   validation/
 ```
@@ -150,11 +159,48 @@ Purpose:
 - compact recent transcript into bounded context
 - summarize active exchange for prompt input
 - maintain readable trace artifacts for later evaluation
+- prepare evaluator-facing evidence slices from canonical transcript/state history
 
 Should contain:
 - transcript compaction
 - exchange summary helpers
 - prompt-context extraction helpers
+- evidence-packet builders
+
+### `runtime/presentation/`
+Purpose:
+- enforce user-facing transcript boundary rules
+- suppress orchestration or progress text from visible simulation output
+- separate initialization, live session, closing, and reflection presentation layers
+
+Should contain:
+- transcript filtering
+- visible event classification
+- simulation-facing output shaping
+
+Must not contain:
+- orchestration decision logic
+- canonical state ownership
+- evaluator scoring logic
+
+### `runtime/evaluation/`
+Purpose:
+- interpret evidence packets locally
+- apply phase-aware scoring and structural judgment
+- generate canonical reflection objects before any optional prose shaping
+
+Should contain:
+- evidence interpretation
+- score calculation or score assignment helpers
+- reflection object assembly
+
+May optionally expose:
+- a prose-shaping handoff input for a downstream writer layer
+
+Must not contain:
+- live turn orchestration
+- in-world facilitator dialogue
+- authority to rewrite evidence after judgment is fixed
 
 ### `runtime/observability/`
 Purpose:
@@ -186,16 +232,20 @@ Recommended dependency direction:
 state -> no internal runtime dependency
 orchestration -> state
 agents -> state, transcripts
-execution -> state, orchestration, agents, transcripts, observability
+execution -> state, orchestration, agents, transcripts, presentation, observability
 transcripts -> state
-observability -> state, orchestration
-validation -> state, orchestration, transcripts, observability
+presentation -> state, transcripts
+evaluation -> state, transcripts
+observability -> state, orchestration, evaluation
+validation -> state, orchestration, transcripts, presentation, evaluation, observability
 ```
 
 Rules:
 - `state` should be the lowest-level runtime module
 - `orchestration` may read state but should not depend on agent prompt code
 - `agents` may consume runtime slices but should not decide orchestration
+- `presentation` may filter or classify visible output but should not mutate canonical state
+- `evaluation` should consume evidence and state-derived artifacts, but should not depend on speaking-agent prompt logic
 - `execution` may coordinate all runtime modules but should not redefine their contracts
 
 ## Traceability Contract
@@ -206,7 +256,9 @@ The implementation should let a developer trace any live turn through this chain
 3. prompt input slice
 4. agent output
 5. state update
-6. validation or debug interpretation
+6. presentation filtering or evidence packaging
+7. local evaluator judgment
+8. validation or debug interpretation
 
 This traceability chain is the primary reason to keep modules separate.
 
@@ -224,6 +276,10 @@ runtime/agents/facilitator/prompt.ts
 runtime/agents/evaluator/prompt.ts
 runtime/execution/run-turn.ts
 runtime/transcripts/compaction.ts
+runtime/transcripts/evidence-packet.ts
+runtime/presentation/filter-visible-events.ts
+runtime/evaluation/score-session.ts
+runtime/evaluation/build-reflection.ts
 runtime/observability/event-log.ts
 runtime/validation/transcript-checks.ts
 ```

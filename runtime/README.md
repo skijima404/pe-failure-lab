@@ -17,6 +17,7 @@ This directory holds the first code-level runtime substrate for:
 - `agents/`: prompt-input builders for actor, facilitator, and evaluator agents
 - `execution/`: turn preparation and runtime loop scaffolding
 - `transcripts/`: bounded context extraction from recent transcript
+- `presentation/`: visible transcript rendering and boundary hygiene
 - `observability/`: structured turn logs and debug dumps
 - `validation/`: deterministic checks and fixtures
 
@@ -31,9 +32,12 @@ What exists now:
 - runtime-readable scene and player-initialization asset loaders
 - a player-facing initialization brief and start-signal helper
 - a small session driver from initialization to live turns
+- interactive session primitives for initialize -> start -> player input -> next agent turn
 - session-step and session-loop scaffolding
 - structured logging helpers
 - transcript and validation helpers
+- visible transcript boundary rendering
+- evaluator evidence packet extraction and local-first evaluation
 - scripted fixture runner for traceable turn progression
 - a runnable scripted fixture harness via `npm run fixture:scripted`
 - a runnable initialization harness via `npm run fixture:initialization`
@@ -56,5 +60,15 @@ The script first checks the current environment, then falls back to a repository
 
 ## E2E Notes
 - `npm run fixture:session-driver` runs initialization -> start signal -> local opening -> live turns
+- `npm run fixture:session-driver` now prints a clean simulation-facing transcript by default
 - `npm run fixture:session-driver -- --adapter=openai` uses the same flow with the OpenAI adapter
 - `npm run fixture:openai-adapter` is the dedicated OpenAI E2E harness for the same entry flow
+- closing and evaluator are now separated:
+  - facilitator owns the close turn
+  - local evaluator starts only after `scene_phase === post-game`
+- `runtime/execution/session-driver.ts` now also exposes split interactive helpers:
+  - `initializeSession()`
+  - `startSession()`
+  - `acceptPlayerMessage()`
+  - `runNextAgentTurn()`
+  - `evaluateIfSessionClosed()`

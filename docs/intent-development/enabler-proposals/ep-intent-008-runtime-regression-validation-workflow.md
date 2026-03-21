@@ -44,6 +44,7 @@ Current working storage for this asset:
 - `docs/templates/playtest/runtime-playtest-note-template.md`
 - `skills/runtime-regression-checks/SKILL.md`
 - `skills/session-entry-checks/SKILL.md`
+- `skills/playtest-initialize/SKILL.md`
 - `skills/persona-tuning-checklist/SKILL.md`
 - runtime test and fixture commands in `package.json`
 

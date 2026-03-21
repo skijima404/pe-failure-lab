@@ -13,6 +13,7 @@
 - related_ui_spec: docs/intent-development/ui-specs/ui-intent-001-simulation-session-flow.md
 - related_runtime_specs:
   - docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md
+  - docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md
   - docs/intent-development/implementation-specs/is-intent-001-runtime-module-structure.md
 - depends_on_enablers:
   - intent-000
@@ -26,9 +27,13 @@ Its purpose is to make the runtime explainable enough that a developer can answe
 - what state it was based on
 - why that turn was selected
 - what changed afterward
+- how the local evaluator reached its judgment
 
 ## Goal
 Define the minimum observability and validation contract required to keep multi-agent runtime behavior traceable during MVP development.
+
+This spec should also support validation of the remote session-boundary rules defined in:
+- `docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md`
 
 ## Problem Statement
 The main risk in multi-agent development is not only bad output.
@@ -38,14 +43,18 @@ Without explicit observability and validation rules, the team will struggle to d
 - whether unnatural behavior came from state, orchestration, prompt shaping, or model output
 - whether actor convergence is a prompt issue or a context-slice issue
 - whether facilitator overuse is intentional or accidental
+- whether the evaluator judgment came from evidence continuity or from weak prose-generation fallback
 
 ## Scope
 - In scope:
   - turn-level event logging
-  - debug dump structure
-  - state diff logging
-  - transcript fixtures
-  - validation checks for naturalness and control quality
+- debug dump structure
+- state diff logging
+- visible transcript-boundary validation
+- evaluator evidence-packet validation
+- local evaluator judgment traceability
+- transcript fixtures
+- validation checks for naturalness and control quality
 - Out of scope:
   - production analytics platform
   - user-facing dashboards
@@ -65,6 +74,8 @@ Each turn should emit a structured record with at least:
 - `prompt_input_summary`
 - `agent_output_summary`
 - `state_changes`
+- `visible_output_classification`
+- `evaluation_reference` when applicable
 - `active_topic_after`
 
 ### `selection_reason`
@@ -98,6 +109,23 @@ Minimum shape:
 - `parking_lot_updates`
 - `close_readiness_change`
 
+### `visible_output_classification`
+This field should record whether a turn artifact was:
+- `simulation-visible`
+- `debug-only`
+- `suppressed-orchestration`
+- `suppressed-progress`
+
+This exists so remote transcript hygiene can be validated without losing internal traceability.
+
+### `evaluation_reference`
+When a turn becomes part of the evaluator evidence set, the runtime should be able to mark that relationship.
+
+Minimum shape:
+- `included_in_evidence_packet`
+- `evidence_tags`
+- `judgment_relevance`
+
 ## Debug Dump Contract
 When deeper inspection is needed, the runtime should be able to emit a per-turn debug dump containing:
 - `room_state_before`
@@ -105,6 +133,9 @@ When deeper inspection is needed, the runtime should be able to emit a per-turn 
 - `prompt_input`
 - `raw_agent_output`
 - `normalized_agent_output`
+- `visible_output`
+- `suppressed_output`
+- `evaluation_links`
 - `room_state_after`
 
 This dump is for development and fixture authoring, not default runtime output.
@@ -119,6 +150,10 @@ Checks that can be programmatic:
 - repeated actor questioning without player answer
 - agent outputs containing scoring or evaluator language
 - missing `selection_reason` in turn logs
+- visible transcript containing suppressed-orchestration or suppressed-progress events
+- player-entry violations where stakeholder exchange advances before player articulation
+- evaluator output containing artifact-creation offers without explicit user request
+- reflection report claims unsupported by local evidence references
 
 ### Fixture-based checks
 Checks that rely on representative transcripts:
@@ -126,11 +161,15 @@ Checks that rely on representative transcripts:
 - stakeholder reaction before over-structured analysis
 - enough back-and-forth for stance movement
 - natural facilitator routing without visible traffic control
+- clean boundary between closing and evaluator reflection
+- clean initialization block with no wrapper leakage
 
 ## Recommended Validation Assets
 Recommended assets to keep under version control:
 - sample `room_state` fixtures
 - sample turn-decision fixtures
+- sample evaluator input packets
+- sample evaluator judgment traces
 - short expected transcript fixtures
 - known-bad transcript fixtures
 
@@ -140,6 +179,9 @@ Recommended known-bad categories:
 - `voice-collapse`
 - `premature-governance-pressure`
 - `scoring-language-leakage`
+- `initialization-wrapper-leakage`
+- `orchestration-text-visible`
+- `closing-evaluator-boundary-collapse`
 
 ## Review Workflow
 When a transcript feels wrong, inspect in this order:

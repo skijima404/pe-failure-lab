@@ -1,4 +1,5 @@
 import type { RoomState, TranscriptTurn } from "../state/types.ts";
+import { renderVisibleReflectionReport } from "../presentation/visible-transcript.ts";
 
 export type StructuralResult = "Stable" | "Strained" | "Drifting" | "Failed";
 export type DraftProgress = "Fragmented" | "Advancing" | "Coalescing";
@@ -61,44 +62,7 @@ export function evaluateSession(roomState: RoomState, context: EvaluationContext
 }
 
 export function formatReflectionReport(report: SimulationReflectionReport): string {
-  const renderList = (items: string[]) => items.map((item) => `- ${item}`).join("\n");
-
-  return [
-    `# ${report.title}`,
-    "",
-    "## 1. Overview",
-    `- Scenario: ${report.overview.scenario}`,
-    `- Role: ${report.overview.role}`,
-    `- Date: ${report.overview.date}`,
-    `- Session mode: ${report.overview.session_mode}`,
-    `- Turn count: ${report.overview.turn_count}`,
-    "",
-    "## 2. Evaluation Summary",
-    `- Structural Progress: \`${report.structural_progress}\``,
-    `- Structural Result: \`${report.structural_result}\``,
-    "",
-    "Summary:",
-    report.evaluation_summary,
-    "",
-    "## 3. Draft Progress",
-    `- \`${report.draft_progress}\``,
-    report.draft_progress_summary,
-    "",
-    "## 4. Key Decisions Made",
-    renderList(report.key_decisions_made),
-    "",
-    "## 5. Strengths Observed",
-    renderList(report.strengths_observed),
-    "",
-    "## 6. Areas to Improve",
-    renderList(report.areas_to_improve),
-    "",
-    "## 7. Suggested Next Steps",
-    renderList(report.suggested_next_steps),
-    "",
-    "## 8. Optional Log Highlights",
-    renderList(report.optional_log_highlights),
-  ].join("\n");
+  return renderVisibleReflectionReport(report);
 }
 
 function computeStructuralScore(roomState: RoomState): number {
@@ -223,7 +187,7 @@ function deriveNextSteps(roomState: RoomState): string[] {
   if (roomState.structural_state.support_model_clarity < 3) {
     nextSteps.push("Document the first support boundary so exception handling does not become the default service model.");
   }
-  nextSteps.push("Turn the current workshop direction into a lightweight artifact for the next meeting.");
+  nextSteps.push("Carry the current bounded direction into the next meeting with clearer owner and support assumptions.");
 
   return nextSteps.slice(0, 3);
 }

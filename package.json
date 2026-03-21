@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "simulate:init": "node --experimental-strip-types scripts/run-initialization-brief.mjs",
+    "simulate:mock": "node --experimental-strip-types scripts/run-session-driver.mjs",
+    "simulate:openai": "node --experimental-strip-types scripts/run-openai-adapter.mjs",
     "fixture:initialization": "node --experimental-strip-types scripts/run-initialization-brief.mjs",
     "fixture:session-driver": "node --experimental-strip-types scripts/run-session-driver.mjs",
     "fixture:scripted": "node --experimental-strip-types scripts/run-scripted-fixture.mjs",

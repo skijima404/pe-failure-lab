@@ -12,17 +12,61 @@ export interface SessionStepResult {
   debug_dump: TurnDebugDump;
 }
 
+export interface AgentTurnOptions {
+  opening_mode?: "local" | "responder";
+}
+
+export async function runAgentTurn(
+  roomState: RoomState,
+  responder: RuntimeResponder,
+  options: AgentTurnOptions = {},
+): Promise<SessionStepResult> {
+  if (roomState.scene_phase === "post-game") {
+    throw new Error("runAgentTurn cannot execute after the meeting has ended.");
+  }
+
+  const preparedTurn = prepareNextTurn(roomState);
+
+  if (preparedTurn.decision.owner === "player") {
+    throw new Error("runAgentTurn cannot execute a player-owned turn. Accept player input first.");
+  }
+
+  return executePreparedTurn(roomState, preparedTurn, responder, options.opening_mode ?? "local");
+}
+
 export async function runSessionStep(roomState: RoomState, responder: RuntimeResponder): Promise<SessionStepResult> {
   const preparedTurn = prepareNextTurn(roomState);
+  return executePreparedTurn(roomState, preparedTurn, responder, "local");
+}
+
+async function executePreparedTurn(
+  roomState: RoomState,
+  preparedTurn: ReturnType<typeof prepareNextTurn>,
+  responder: RuntimeResponder,
+  openingMode: "local" | "responder",
+): Promise<SessionStepResult> {
   const deliveryMode =
-    preparedTurn.decision.owner === "facilitator" && preparedTurn.decision.intervention_reason === "session-opening"
+    preparedTurn.decision.owner === "facilitator" &&
+    preparedTurn.decision.intervention_reason === "session-opening" &&
+    openingMode === "local"
       ? "local-opening"
       : "responder";
   const outcome =
     deliveryMode === "local-opening"
       ? createLocalOpeningOutcome(roomState)
       : await responder.respond({ roomState, preparedTurn });
-  const nextRoomState = applyTurnOutcome(roomState, outcome);
+  const lifecycleOutcome =
+    preparedTurn.decision.owner === "facilitator" && preparedTurn.decision.intervention_reason === "closing-transition"
+      ? {
+          ...outcome,
+          updates: {
+            ...outcome.updates,
+            scene_phase: "post-game" as const,
+            active_speaker: null,
+          },
+        }
+      : outcome;
+  const nextRoomState = applyTurnOutcome(roomState, lifecycleOutcome);
   const stateChanges = computeStateChanges(roomState, nextRoomState);
 
   const turnLog = createTurnLog({
@@ -30,7 +74,7 @@ export async function runSessionStep(roomState: RoomState, responder: RuntimeRes
     roomStateAfter: nextRoomState,
     decision: preparedTurn.decision,
     promptInputSummary: summarizePromptInput(preparedTurn.prompt_input, preparedTurn.prompt_text, deliveryMode),
-    agentOutputSummary: summarizeOutcome(outcome, deliveryMode),
+    agentOutputSummary: summarizeOutcome(lifecycleOutcome, deliveryMode),
     stateChanges,
   });
 
@@ -41,8 +85,8 @@ export async function runSessionStep(roomState: RoomState, responder: RuntimeRes
       input: preparedTurn.prompt_input,
       prompt_text: preparedTurn.prompt_text,
     },
-    raw_agent_output: outcome,
-    normalized_agent_output: outcome,
+    raw_agent_output: lifecycleOutcome,
+    normalized_agent_output: lifecycleOutcome,
     room_state_after: nextRoomState,
   });
 

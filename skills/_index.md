@@ -72,6 +72,13 @@ The source of truth for each skill remains its own `SKILL.md`.
     - changing player initialization
     - changing scene setup
     - changing session entry behavior
+- skill: `playtest-initialize`
+  - path: `skills/playtest-initialize/SKILL.md`
+  - role: operational startup workflow before a live runtime playtest
+  - use_when:
+    - preparing to run a real-model playtest
+    - checking `.env` and command readiness
+    - needing to show the user the exact command they must run
 - skill: `persona-tuning-checklist`
   - path: `skills/persona-tuning-checklist/SKILL.md`
   - role: qualitative checklist for persona and prompt tuning

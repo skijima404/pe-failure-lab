@@ -4,10 +4,19 @@ import { resolve } from "node:path";
 import test from "node:test";
 
 import { evaluateSession, formatReflectionReport } from "../evaluation/report.ts";
+import { evaluateClosedSessionLocally } from "../evaluation/local-evaluator.ts";
 import { buildInitializationBrief, formatInitializationBrief, isStartSignal } from "../execution/initialization.ts";
 import { MockModelAdapter, AdapterBackedResponder } from "../execution/model-client.ts";
 import { prepareNextTurn } from "../execution/run-turn.ts";
-import { runSessionFromPlayerStart } from "../execution/session-driver.ts";
+import {
+  acceptPlayerMessage,
+  evaluateIfSessionClosed,
+  initializeSession,
+  runNextAgentTurn,
+  runSessionFromPlayerStart,
+  startSession,
+} from "../execution/session-driver.ts";
+import { renderVisibleTranscript } from "../presentation/visible-transcript.ts";
 import { loadDefaultSceneSetup } from "../scene/setup-loader.ts";
 import { loadDefaultPlayerInitialization } from "../scene/player-initialization-loader.ts";
 import { applyTurnOutcome } from "../state/reducers.ts";
@@ -17,13 +26,19 @@ import { runScriptedFixture } from "../validation/fixture-runner.ts";
 import {
   countDistinctTopicSignals,
   facilitatorOveruse,
+  hasClosingEvaluatorBoundaryCollapse,
+  hasInitializationWrapperLeakage,
   hasActorKnowledgeLeakage,
+  hasOrchestrationTextVisible,
+  hasPlayerEntryViolation,
   hasScoringLeakage,
   hasTopicSprawl,
 } from "../validation/transcript-checks.ts";
 import {
   createDeliveryPressureInitialState,
+  createPileOnRiskInitialState,
   createPlatformPressureInitialState,
+  createSameTopicOverlapInitialState,
   createScriptedSessionInitialState,
   SCRIPTED_SESSION_FIXTURE,
 } from "../validation/fixtures/scripted-session.ts";
@@ -36,7 +51,7 @@ test("scripted fixture completes with zero selection mismatches", async () => {
   );
 
   assert.equal(result.mismatches.length, 0);
-  assert.equal(result.results.length, 4);
+  assert.equal(result.results.length, 3);
   assert.equal(result.results.at(-1)?.room_state.close_readiness.ready, true);
 });
 
@@ -147,6 +162,21 @@ test("voice separation fixtures select platform and delivery as distinct next sp
   assert.match(deliveryTurn.prompt_text, /roadmap pressure/i);
 });
 
+test("same-topic overlap is allowed after player response when burden stays bounded", () => {
+  const overlapTurn = prepareNextTurn(createSameTopicOverlapInitialState());
+
+  assert.equal(overlapTurn.decision.owner, "reacting_actor");
+  assert.equal(overlapTurn.decision.speaker_id, "platform");
+  assert.equal(overlapTurn.decision.selection_reason, "overlap-reaction");
+});
+
+test("pile-on risk routes to facilitator instead of allowing another stakeholder stack", () => {
+  const pileOnTurn = prepareNextTurn(createPileOnRiskInitialState());
+
+  assert.equal(pileOnTurn.decision.owner, "facilitator");
+  assert.equal(pileOnTurn.decision.intervention_reason, "pile-on-risk");
+});
+
 test("known-bad transcript fixtures trigger expected validation flags", () => {
   const facilitatorTurns = JSON.parse(
     readFileSync(resolve("runtime/validation/fixtures/transcripts/facilitator-overuse.json"), "utf8"),
@@ -156,6 +186,12 @@ test("known-bad transcript fixtures trigger expected validation flags", () => {
   );
   const actorLeakageTurns = JSON.parse(
     readFileSync(resolve("runtime/validation/fixtures/transcripts/actor-knows-too-much.json"), "utf8"),
+  );
+  const closingEvaluatorCollapseTurns = JSON.parse(
+    readFileSync(resolve("runtime/validation/fixtures/transcripts/closing-evaluator-boundary-collapse.json"), "utf8"),
+  );
+  const playerEntryViolationTurns = JSON.parse(
+    readFileSync(resolve("runtime/validation/fixtures/transcripts/player-entry-violation.json"), "utf8"),
   );
 
   assert.equal(facilitatorOveruse(facilitatorTurns), true);
@@ -167,6 +203,10 @@ test("known-bad transcript fixtures trigger expected validation flags", () => {
     actorLeakageTurns.some((turn: { text: string }) => hasActorKnowledgeLeakage(turn.text) || hasScoringLeakage(turn.text)),
     true,
   );
+  assert.equal(hasClosingEvaluatorBoundaryCollapse(closingEvaluatorCollapseTurns), true);
+  assert.equal(hasPlayerEntryViolation(playerEntryViolationTurns), true);
+  assert.equal(hasInitializationWrapperLeakage("OpenAI Adapter Harness\nTurns Executed: 2"), true);
+  assert.equal(hasOrchestrationTextVisible("Selection Reason: overlap-reaction\nPrompt Preview: ..."), true);
 });
 
 test("initialization brief exposes player-facing start guidance without spoiler logic", () => {
@@ -193,6 +233,109 @@ test("session driver blocks live execution until a valid start signal appears", 
   assert.equal(result.rejection_reason, "start-signal-required");
   assert.equal(result.live_results.length, 0);
   assert.match(result.initialization_brief, /Session Initialization/);
+});
+
+test("initialize and start keep session setup separate before live turns", () => {
+  const initialized = initializeSession("interactive-init-test");
+  assert.equal(initialized.room_state.scene_phase, "initialization");
+  assert.equal(initialized.room_state.active_speaker, null);
+
+  const started = startSession(initialized.room_state, "Start");
+  assert.equal(started.accepted, true);
+  assert.equal(started.room_state.scene_phase, "opening");
+  assert.equal(started.room_state.active_speaker, "mika");
+});
+
+test("acceptPlayerMessage applies real player input instead of generated player text", () => {
+  const initialized = initializeSession("interactive-player-test");
+  const started = startSession(initialized.room_state, "Start");
+  const nextState = acceptPlayerMessage(started.room_state, "We should start with one narrow onboarding path.");
+
+  assert.equal(nextState.turn_index, started.room_state.turn_index + 1);
+  assert.equal(nextState.recent_transcript.at(-1)?.speaker_id, "player");
+  assert.match(nextState.recent_transcript.at(-1)?.text ?? "", /narrow onboarding path/);
+});
+
+test("interactive agent turn can use responder-backed opening instead of local opening", async () => {
+  const initialized = initializeSession("interactive-opening-test");
+  const started = startSession(initialized.room_state, "Let's start");
+  const responder = new AdapterBackedResponder(new MockModelAdapter());
+
+  const openingTurn = await runNextAgentTurn(started.room_state, responder, { opening_mode: "responder" });
+
+  assert.equal(openingTurn.turn_log.selected_speaker, "mika");
+  assert.equal(openingTurn.turn_log.agent_output_summary.delivery_mode, "responder");
+});
+
+test("visible transcript renders clean blocks without orchestration wrapper text", () => {
+  const initialized = initializeSession("presentation-boundary-test");
+  const started = startSession(initialized.room_state, "Start");
+  const afterPlayerMessage = acceptPlayerMessage(started.room_state, "We should begin with one narrow onboarding path.");
+  const visible = renderVisibleTranscript({
+    initializationBrief: initialized.initialization_brief,
+    transcriptTurns: afterPlayerMessage.recent_transcript,
+  });
+
+  assert.match(visible, /Session Initialization/);
+  assert.match(visible, /Player: We should begin with one narrow onboarding path\./);
+  assert.equal(hasInitializationWrapperLeakage(visible), false);
+  assert.equal(hasOrchestrationTextVisible(visible), false);
+});
+
+test("closing facilitator turn transitions meeting to post-game and local evaluator starts after close", async () => {
+  const responder = new AdapterBackedResponder(new MockModelAdapter());
+  const roomState = createInitialRoomState("closing-boundary-test");
+  roomState.scene_phase = "discussion";
+  roomState.close_readiness = {
+    ready: true,
+    reason: "bounded-next-step-visible",
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "I think we have enough to close with one bounded next step.",
+    },
+  ];
+
+  const closingTurn = await runNextAgentTurn(roomState, responder, { opening_mode: "responder" });
+
+  assert.equal(closingTurn.turn_log.selected_speaker, "mika");
+  assert.equal(closingTurn.turn_log.intervention_reason, "closing-transition");
+  assert.equal(closingTurn.room_state.scene_phase, "post-game");
+
+  const evaluation = evaluateIfSessionClosed(closingTurn.room_state, {
+    scenario: closingTurn.room_state.session_setup.scenario,
+    role: "Player",
+  });
+
+  assert.ok(evaluation);
+  assert.equal(evaluation?.prose_shaping_mode, "local-first");
+});
+
+test("local evaluator builds evidence packet only after close", () => {
+  const roomState = createInitialRoomState("local-evaluator-test");
+  roomState.scene_phase = "post-game";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "Thanks everyone. We will close here.",
+    },
+  ];
+
+  const evaluation = evaluateClosedSessionLocally(roomState, {
+    scenario: roomState.session_setup.scenario,
+    role: "Player",
+  });
+
+  assert.equal(evaluation.evidence_packet.scene_phase_at_close, "post-game");
+  assert.equal(evaluation.evidence_packet.closing_turn?.speaker_id, "mika");
+  assert.match(formatReflectionReport(evaluation.reflection_report), /Structural Progress: `/);
 });
 
 test("session driver enters live session after a valid start signal", async () => {

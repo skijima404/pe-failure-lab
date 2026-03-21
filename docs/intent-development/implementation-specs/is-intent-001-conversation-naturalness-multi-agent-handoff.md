@@ -23,6 +23,7 @@ Provide a development handoff for possible multi-agent runtime designs focused o
 This document is intentionally comparative.
 For the tactical MVP implementation contract, use:
 - `docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md`
+- `docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md`
 
 For the reusable runtime foundation, use:
 - `docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md`

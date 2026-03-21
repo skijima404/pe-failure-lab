@@ -1,6 +1,13 @@
 import { AdapterBackedResponder, OpenAIResponsesAdapter } from "../runtime/execution/model-client.ts";
-import { runSessionFromPlayerStart } from "../runtime/execution/session-driver.ts";
-import { createInitialRoomState } from "../runtime/state/schema.ts";
+import {
+  acceptPlayerMessage,
+  evaluateIfSessionClosed,
+  initializeSession,
+  runNextAgentTurn,
+  startSession,
+} from "../runtime/execution/session-driver.ts";
+import { formatReflectionReport } from "../runtime/evaluation/report.ts";
+import { renderVisibleTranscript } from "../runtime/presentation/visible-transcript.ts";
 import { loadRepoEnv, parseReasoningEffort, requiredEnv } from "./_env.mjs";
 
 async function main() {
@@ -10,6 +17,9 @@ async function main() {
   const model = process.env.OPENAI_MODEL ?? "gpt-5";
   const reasoningEffort = parseReasoningEffort(process.env.OPENAI_REASONING_EFFORT);
   const startMessage = process.argv[2] ?? "Let's start";
+  const playerMessage =
+    process.argv[3] ??
+    "I think we should start with one narrow onboarding path that teams can try first, without turning the platform team into an open-ended support desk.";
 
   const adapter = new OpenAIResponsesAdapter({
     apiKey,
@@ -18,40 +28,33 @@ async function main() {
   });
 
   const responder = new AdapterBackedResponder(adapter);
-  const result = await runSessionFromPlayerStart(createInitialRoomState("openai-e2e-session"), startMessage, responder, 2);
+  const initialized = initializeSession("openai-e2e-session");
+  const started = startSession(initialized.room_state, startMessage);
 
-  console.log("OpenAI Adapter Harness");
-  console.log("======================");
-  console.log(`Model: ${model}`);
-  console.log(`Start Message: ${startMessage}`);
-  console.log(`Accepted: ${result.accepted}`);
-
-  if (!result.accepted) {
-    console.log(`Rejection Reason: ${result.rejection_reason}`);
+  if (!started.accepted) {
+    console.log(initialized.initialization_brief);
+    console.log("");
+    console.log(`Start failed: ${started.rejection_reason}`);
     process.exitCode = 1;
     return;
   }
-
-  console.log(result.initialization_brief);
-  console.log("");
-  console.log(`Turns Executed: ${result.live_results.length}`);
-
-  result.live_results.forEach((step, index) => {
-    console.log(`Turn ${index + 1}`);
-    console.log(`  Speaker: ${step.turn_log.selected_speaker}`);
-    console.log(`  Selection Reason: ${step.turn_log.selection_reason}`);
-    console.log(`  Prompt Preview: ${step.turn_log.prompt_input_summary.prompt_text_preview}`);
-    if (typeof step.turn_log.prompt_input_summary.prompt_text_excerpt === "string") {
-      console.log("  Prompt Excerpt:");
-      console.log(
-        String(step.turn_log.prompt_input_summary.prompt_text_excerpt)
-          .split("\n")
-          .map((line) => `    ${line}`)
-          .join("\n"),
-      );
-    }
-    console.log(`  Output: ${JSON.stringify(step.turn_log.agent_output_summary)}`);
+  const openingResult = await runNextAgentTurn(started.room_state, responder, { opening_mode: "responder" });
+  const afterPlayerMessage = acceptPlayerMessage(openingResult.room_state, playerMessage);
+  const nextAgentResult = await runNextAgentTurn(afterPlayerMessage, responder);
+  const finalRoomState = nextAgentResult.room_state;
+  const evaluation = evaluateIfSessionClosed(finalRoomState, {
+    scenario: finalRoomState.session_setup.scenario,
+    role: "Player",
+    session_mode: finalRoomState.session_setup.session_mode,
   });
+
+  console.log(
+    renderVisibleTranscript({
+      initializationBrief: initialized.initialization_brief,
+      transcriptTurns: finalRoomState.recent_transcript,
+      reflectionText: evaluation ? formatReflectionReport(evaluation.reflection_report) : null,
+    }),
+  );
 }
 
 main().catch((error) => {

@@ -2,6 +2,36 @@
 
 Roleplay-based simulation and assessment lab for exploring failure patterns in Platform Engineering.
 
+## Quick Start
+Use the repository root as the simulation execution entry point.
+
+1. Read the initialization brief:
+
+```bash
+npm run simulate:init
+```
+
+2. Run the mock-backed MVP session driver:
+
+```bash
+npm run simulate:mock
+```
+
+3. Run the OpenAI-backed session driver:
+
+```bash
+cp .env.example .env
+npm run simulate:openai
+```
+
+OpenAI-backed execution reads the repository-root `.env` file and expects:
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL` (optional)
+- `OPENAI_REASONING_EFFORT` (optional)
+
+For playtest notes, use:
+- `docs/templates/playtest/runtime-playtest-note-template.md`
+
 ## Simulation Entry
 Use the repository root as a valid entry point for running the MVP simulation, not only for development.
 

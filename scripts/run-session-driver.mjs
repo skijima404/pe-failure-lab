@@ -1,6 +1,13 @@
 import { AdapterBackedResponder, MockModelAdapter, OpenAIResponsesAdapter } from "../runtime/execution/model-client.ts";
-import { runSessionFromPlayerStart } from "../runtime/execution/session-driver.ts";
-import { createInitialRoomState } from "../runtime/state/schema.ts";
+import {
+  acceptPlayerMessage,
+  evaluateIfSessionClosed,
+  initializeSession,
+  runNextAgentTurn,
+  startSession,
+} from "../runtime/execution/session-driver.ts";
+import { formatReflectionReport } from "../runtime/evaluation/report.ts";
+import { renderVisibleTranscript } from "../runtime/presentation/visible-transcript.ts";
 import { loadRepoEnv, parseReasoningEffort, requiredEnv } from "./_env.mjs";
 
 function parseArgs(argv) {
@@ -18,6 +25,9 @@ function parseArgs(argv) {
   return {
     adapterName,
     startMessage: remaining[0] ?? "Let's start",
+    playerMessage:
+      remaining[1] ??
+      "I think we should start with one narrow onboarding path that teams can try without turning platform into an open-ended support function.",
   };
 }
 
@@ -37,54 +47,40 @@ function createResponder(adapterName) {
   return new AdapterBackedResponder(new MockModelAdapter());
 }
 
-function printTurnSummary(result, index) {
-  console.log(`Turn ${index + 1}`);
-  console.log(`  Speaker: ${result.turn_log.selected_speaker}`);
-  console.log(`  Selection Reason: ${result.turn_log.selection_reason}`);
-  console.log(`  Prompt Preview: ${result.turn_log.prompt_input_summary.prompt_text_preview}`);
-  if (typeof result.turn_log.prompt_input_summary.prompt_text_excerpt === "string") {
-    console.log("  Prompt Excerpt:");
-    console.log(
-      String(result.turn_log.prompt_input_summary.prompt_text_excerpt)
-        .split("\n")
-        .map((line) => `    ${line}`)
-        .join("\n"),
-    );
-  }
-  if (result.turn_log.prompt_input_summary.prompt_focus) {
-    console.log(`  Prompt Focus: ${JSON.stringify(result.turn_log.prompt_input_summary.prompt_focus)}`);
-  }
-  console.log(`  Output: ${JSON.stringify(result.turn_log.agent_output_summary)}`);
-  console.log("");
-}
-
 async function main() {
-  const { adapterName, startMessage } = parseArgs(process.argv.slice(2));
-  const roomState = createInitialRoomState("session-driver-demo");
+  const { adapterName, startMessage, playerMessage } = parseArgs(process.argv.slice(2));
+  const initialized = initializeSession("session-driver-demo");
   const responder = createResponder(adapterName);
 
-  const result = await runSessionFromPlayerStart(roomState, startMessage, responder, 2);
+  const started = startSession(initialized.room_state, startMessage);
 
-  console.log("Session Driver");
-  console.log("==============");
-  console.log(`Adapter: ${adapterName}`);
-  console.log(result.initialization_brief);
-  console.log("");
-  console.log(`Start Message: ${startMessage}`);
-  console.log(`Accepted: ${result.accepted}`);
-
-  if (!result.accepted) {
-    console.log(`Rejection Reason: ${result.rejection_reason}`);
+  if (!started.accepted) {
+    console.log(initialized.initialization_brief);
+    console.log("");
+    console.log(`Start failed: ${started.rejection_reason}`);
     process.exitCode = 1;
     return;
   }
 
-  console.log("");
-  console.log("Live Session");
-  console.log("------------");
-  result.live_results.forEach((step, index) => {
-    printTurnSummary(step, index);
+  const openingResult = await runNextAgentTurn(started.room_state, responder, {
+    opening_mode: adapterName === "openai" ? "responder" : "local",
   });
+  const afterPlayerMessage = acceptPlayerMessage(openingResult.room_state, playerMessage);
+  const nextAgentResult = await runNextAgentTurn(afterPlayerMessage, responder);
+  const finalRoomState = nextAgentResult.room_state;
+  const evaluation = evaluateIfSessionClosed(finalRoomState, {
+    scenario: finalRoomState.session_setup.scenario,
+    role: "Player",
+    session_mode: finalRoomState.session_setup.session_mode,
+  });
+
+  console.log(
+    renderVisibleTranscript({
+      initializationBrief: initialized.initialization_brief,
+      transcriptTurns: finalRoomState.recent_transcript,
+      reflectionText: evaluation ? formatReflectionReport(evaluation.reflection_report) : null,
+    }),
+  );
 }
 
 main().catch((error) => {

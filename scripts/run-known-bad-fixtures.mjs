@@ -3,7 +3,11 @@ import { resolve } from "node:path";
 import {
   countDistinctTopicSignals,
   facilitatorOveruse,
+  hasClosingEvaluatorBoundaryCollapse,
+  hasInitializationWrapperLeakage,
   hasActorKnowledgeLeakage,
+  hasOrchestrationTextVisible,
+  hasPlayerEntryViolation,
   hasScoringLeakage,
   hasTopicSprawl,
 } from "../runtime/validation/transcript-checks.ts";
@@ -33,6 +37,8 @@ async function main() {
   const facilitatorOveruseTurns = loadTranscript("runtime/validation/fixtures/transcripts/facilitator-overuse.json");
   const topicDriftTurns = loadTranscript("runtime/validation/fixtures/transcripts/topic-drift.json");
   const actorKnowsTooMuchTurns = loadTranscript("runtime/validation/fixtures/transcripts/actor-knows-too-much.json");
+  const closingBoundaryCollapseTurns = loadTranscript("runtime/validation/fixtures/transcripts/closing-evaluator-boundary-collapse.json");
+  const playerEntryViolationTurns = loadTranscript("runtime/validation/fixtures/transcripts/player-entry-violation.json");
 
   printFixtureResult("facilitator-overuse", {
     facilitator_overuse: facilitatorOveruse(facilitatorOveruseTurns),
@@ -49,6 +55,19 @@ async function main() {
   printFixtureResult("actor-knows-too-much", {
     actor_knowledge_leakage: leakageTexts.some((text) => hasActorKnowledgeLeakage(text) || hasScoringLeakage(text)),
     leaked_turn_count: leakageTexts.filter((text) => hasActorKnowledgeLeakage(text) || hasScoringLeakage(text)).length,
+  });
+
+  printFixtureResult("closing-evaluator-boundary-collapse", {
+    boundary_collapse: hasClosingEvaluatorBoundaryCollapse(closingBoundaryCollapseTurns),
+  });
+
+  printFixtureResult("player-entry-violation", {
+    player_entry_violation: hasPlayerEntryViolation(playerEntryViolationTurns),
+  });
+
+  printFixtureResult("wrapper-visibility", {
+    initialization_wrapper_leakage: hasInitializationWrapperLeakage("OpenAI Adapter Harness\nTurns Executed: 2"),
+    orchestration_text_visible: hasOrchestrationTextVisible("Selection Reason: overlap-reaction\nPrompt Preview: ..."),
   });
 
   console.log("Result: success");
