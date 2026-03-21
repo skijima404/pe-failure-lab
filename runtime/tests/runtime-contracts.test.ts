@@ -133,6 +133,8 @@ test("actor prompt includes stakeholder working context and pressure background"
   assert.match(preparedTurn.prompt_text, /Working context:/);
   assert.match(preparedTurn.prompt_text, /Day-to-day pressure:/);
   assert.match(preparedTurn.prompt_text, /actual workload, team reality, or delivery context/i);
+  assert.match(preparedTurn.prompt_text, /Session role focus:/);
+  assert.match(preparedTurn.prompt_text, /Current pressure seed:/);
 });
 
 test("voice separation fixtures select platform and delivery as distinct next speakers", () => {
@@ -238,6 +240,17 @@ test("session opening is rendered locally instead of through the responder", asy
   assert.equal(openingTurn?.selected_speaker, "mika");
   assert.equal(openingTurn?.agent_output_summary.delivery_mode, "local-opening");
   assert.match(String(openingTurn?.agent_output_summary.text_preview), /Thanks everyone for making time/);
+});
+
+test("participants receive session-specific setup during initialization", () => {
+  const roomState = createInitialRoomState("agent-setup-test");
+  const facilitator = roomState.participant_states.find((participant) => participant.participant_id === "mika");
+  const platform = roomState.participant_states.find((participant) => participant.participant_id === "platform");
+
+  assert.ok(facilitator?.session_setup);
+  assert.match(facilitator?.session_setup?.likely_first_move ?? "", /open the workshop briefly/i);
+  assert.ok(platform?.session_setup);
+  assert.match(platform?.session_setup?.current_pressure_seed ?? "", /cannot silently absorb more operational or onboarding work/i);
 });
 
 test("evaluator returns fixed report shape with primary x/5 structural result", async () => {

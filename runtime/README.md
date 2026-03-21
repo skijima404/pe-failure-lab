@@ -53,3 +53,8 @@ What does not exist yet:
 - `OPENAI_REASONING_EFFORT` (optional)
 
 The script first checks the current environment, then falls back to a repository-root `.env` file if present.
+
+## E2E Notes
+- `npm run fixture:session-driver` runs initialization -> start signal -> local opening -> live turns
+- `npm run fixture:session-driver -- --adapter=openai` uses the same flow with the OpenAI adapter
+- `npm run fixture:openai-adapter` is the dedicated OpenAI E2E harness for the same entry flow

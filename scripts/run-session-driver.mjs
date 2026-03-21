@@ -1,6 +1,41 @@
-import { AdapterBackedResponder, MockModelAdapter } from "../runtime/execution/model-client.ts";
+import { AdapterBackedResponder, MockModelAdapter, OpenAIResponsesAdapter } from "../runtime/execution/model-client.ts";
 import { runSessionFromPlayerStart } from "../runtime/execution/session-driver.ts";
 import { createInitialRoomState } from "../runtime/state/schema.ts";
+import { loadRepoEnv, parseReasoningEffort, requiredEnv } from "./_env.mjs";
+
+function parseArgs(argv) {
+  let adapterName = "mock";
+  const remaining = [];
+
+  for (const arg of argv) {
+    if (arg.startsWith("--adapter=")) {
+      adapterName = arg.slice("--adapter=".length);
+      continue;
+    }
+    remaining.push(arg);
+  }
+
+  return {
+    adapterName,
+    startMessage: remaining[0] ?? "Let's start",
+  };
+}
+
+function createResponder(adapterName) {
+  if (adapterName === "openai") {
+    loadRepoEnv();
+
+    return new AdapterBackedResponder(
+      new OpenAIResponsesAdapter({
+        apiKey: requiredEnv("OPENAI_API_KEY"),
+        model: process.env.OPENAI_MODEL ?? "gpt-5",
+        reasoningEffort: parseReasoningEffort(process.env.OPENAI_REASONING_EFFORT),
+      }),
+    );
+  }
+
+  return new AdapterBackedResponder(new MockModelAdapter());
+}
 
 function printTurnSummary(result, index) {
   console.log(`Turn ${index + 1}`);
@@ -24,14 +59,15 @@ function printTurnSummary(result, index) {
 }
 
 async function main() {
+  const { adapterName, startMessage } = parseArgs(process.argv.slice(2));
   const roomState = createInitialRoomState("session-driver-demo");
-  const responder = new AdapterBackedResponder(new MockModelAdapter());
-  const startMessage = process.argv[2] ?? "Let's start";
+  const responder = createResponder(adapterName);
 
   const result = await runSessionFromPlayerStart(roomState, startMessage, responder, 2);
 
   console.log("Session Driver");
   console.log("==============");
+  console.log(`Adapter: ${adapterName}`);
   console.log(result.initialization_brief);
   console.log("");
   console.log(`Start Message: ${startMessage}`);

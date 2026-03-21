@@ -1,74 +1,56 @@
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { AdapterBackedResponder, OpenAIResponsesAdapter } from "../runtime/execution/model-client.ts";
-import { runSession } from "../runtime/execution/run-session.ts";
-import { createScriptedSessionInitialState } from "../runtime/validation/fixtures/scripted-session.ts";
-
-function loadRepoEnv() {
-  const envPath = resolve(".env");
-  if (!existsSync(envPath)) {
-    return;
-  }
-
-  const lines = readFileSync(envPath, "utf8").split("\n");
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith("#")) {
-      continue;
-    }
-
-    const separatorIndex = line.indexOf("=");
-    if (separatorIndex === -1) {
-      continue;
-    }
-
-    const key = line.slice(0, separatorIndex).trim();
-    const value = line.slice(separatorIndex + 1).trim().replace(/^['"]|['"]$/g, "");
-    if (key && !process.env[key]) {
-      process.env[key] = value;
-    }
-  }
-}
-
-function requiredEnv(name) {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-
-  return value;
-}
+import { runSessionFromPlayerStart } from "../runtime/execution/session-driver.ts";
+import { createInitialRoomState } from "../runtime/state/schema.ts";
+import { loadRepoEnv, parseReasoningEffort, requiredEnv } from "./_env.mjs";
 
 async function main() {
   loadRepoEnv();
 
   const apiKey = requiredEnv("OPENAI_API_KEY");
   const model = process.env.OPENAI_MODEL ?? "gpt-5";
-  const reasoningEffort = process.env.OPENAI_REASONING_EFFORT;
+  const reasoningEffort = parseReasoningEffort(process.env.OPENAI_REASONING_EFFORT);
+  const startMessage = process.argv[2] ?? "Let's start";
 
   const adapter = new OpenAIResponsesAdapter({
     apiKey,
     model,
-    reasoningEffort:
-      reasoningEffort === "low" || reasoningEffort === "medium" || reasoningEffort === "high"
-        ? reasoningEffort
-        : undefined,
+    reasoningEffort,
   });
 
   const responder = new AdapterBackedResponder(adapter);
-  const results = await runSession(createScriptedSessionInitialState(), responder, 2);
+  const result = await runSessionFromPlayerStart(createInitialRoomState("openai-e2e-session"), startMessage, responder, 2);
 
   console.log("OpenAI Adapter Harness");
   console.log("======================");
   console.log(`Model: ${model}`);
-  console.log(`Turns Executed: ${results.length}`);
+  console.log(`Start Message: ${startMessage}`);
+  console.log(`Accepted: ${result.accepted}`);
 
-  results.forEach((result, index) => {
+  if (!result.accepted) {
+    console.log(`Rejection Reason: ${result.rejection_reason}`);
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(result.initialization_brief);
+  console.log("");
+  console.log(`Turns Executed: ${result.live_results.length}`);
+
+  result.live_results.forEach((step, index) => {
     console.log(`Turn ${index + 1}`);
-    console.log(`  Speaker: ${result.turn_log.selected_speaker}`);
-    console.log(`  Selection Reason: ${result.turn_log.selection_reason}`);
-    console.log(`  Prompt Preview: ${result.turn_log.prompt_input_summary.prompt_text_preview}`);
-    console.log(`  Output: ${JSON.stringify(result.turn_log.agent_output_summary)}`);
+    console.log(`  Speaker: ${step.turn_log.selected_speaker}`);
+    console.log(`  Selection Reason: ${step.turn_log.selection_reason}`);
+    console.log(`  Prompt Preview: ${step.turn_log.prompt_input_summary.prompt_text_preview}`);
+    if (typeof step.turn_log.prompt_input_summary.prompt_text_excerpt === "string") {
+      console.log("  Prompt Excerpt:");
+      console.log(
+        String(step.turn_log.prompt_input_summary.prompt_text_excerpt)
+          .split("\n")
+          .map((line) => `    ${line}`)
+          .join("\n"),
+      );
+    }
+    console.log(`  Output: ${JSON.stringify(step.turn_log.agent_output_summary)}`);
   });
 }
 

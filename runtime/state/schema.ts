@@ -3,6 +3,7 @@ import type {
   CloseReadiness,
   ExchangeState,
   NextTurnOption,
+  ParticipantSessionSetup,
   ParticipantState,
   RoomState,
   StructuralState,
@@ -130,11 +131,14 @@ export const DEFAULT_PARTICIPANTS: ParticipantState[] = [
 
 export function createDefaultParticipants(): ParticipantState[] {
   const personaSlices = loadDefaultRuntimePersonaSlices();
+  const sceneSetup = loadDefaultSceneSetup();
+  const playerInitialization = loadDefaultPlayerInitialization();
 
   return DEFAULT_PARTICIPANTS.map((participant) => {
     const runtimePersona = personaSlices[participant.participant_id];
+    const sessionSetup = createParticipantSessionSetup(participant, sceneSetup.meeting_goal, playerInitialization.player_goal);
     if (!runtimePersona) {
-      return { ...participant };
+      return { ...participant, session_setup: sessionSetup };
     }
 
     return {
@@ -144,6 +148,7 @@ export function createDefaultParticipants(): ParticipantState[] {
       current_concern_label: runtimePersona.core_concern || participant.current_concern_label,
       cooperation_condition: runtimePersona.cooperation_condition || participant.cooperation_condition,
       runtime_persona: runtimePersona,
+      session_setup: sessionSetup,
     };
   });
 }
@@ -172,5 +177,63 @@ export function createInitialRoomState(sessionId: string, language = "en"): Room
     recent_transcript: [],
     next_turn_options: [...DEFAULT_NEXT_TURN_OPTIONS],
     close_readiness: { ...DEFAULT_CLOSE_READINESS },
+  };
+}
+
+function createParticipantSessionSetup(
+  participant: ParticipantState,
+  meetingGoal: string,
+  playerGoal: string,
+): ParticipantSessionSetup {
+  if (participant.role_type === "player") {
+    return {
+      session_role_focus: "state the current direction in a workable draft form and keep it bounded",
+      current_pressure_seed: playerGoal,
+      interaction_posture: "enter the room ready to clarify, not to give a polished long speech",
+      likely_first_move: "start with where the room can begin today and let others react from there",
+    };
+  }
+
+  if (participant.role_type === "facilitator") {
+    return {
+      session_role_focus: "keep the room moving on one active topic without taking over the content",
+      current_pressure_seed: meetingGoal,
+      interaction_posture: "stay unobtrusive until flow or ownership becomes unclear",
+      likely_first_move: "open the workshop briefly and hand the room to the player",
+    };
+  }
+
+  if (participant.participant_id === "exec") {
+    return {
+      session_role_focus: "test whether the initial direction is credible enough to matter at enterprise scale",
+      current_pressure_seed: "avoid broad commitment without a believable first move and practical logic",
+      interaction_posture: "curious first, then narrowing toward practical business meaning",
+      likely_first_move: "ask what the first usable scope or boundary actually is",
+    };
+  }
+
+  if (participant.participant_id === "platform") {
+    return {
+      session_role_focus: "check whether the initial path quietly expands platform-side support burden",
+      current_pressure_seed: "the team is already busy and cannot silently absorb more operational or onboarding work",
+      interaction_posture: "plainspoken, field-aware, and wary of invisible extra work",
+      likely_first_move: "ask what the platform side is really committing to first",
+    };
+  }
+
+  if (participant.participant_id === "delivery") {
+    return {
+      session_role_focus: "check whether the proposed path helps a delivery team move now",
+      current_pressure_seed: "active roadmap pressure makes it hard to adopt a path that adds interpretation overhead before helping",
+      interaction_posture: "practical and open, but impatient with vague helpfulness",
+      likely_first_move: "ask what becomes easier for the team right away",
+    };
+  }
+
+  return {
+    session_role_focus: "react from your local role in the meeting",
+    current_pressure_seed: meetingGoal,
+    interaction_posture: "stay within your own role and visible concern",
+    likely_first_move: "react from your current role in the room",
   };
 }

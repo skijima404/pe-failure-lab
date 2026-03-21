@@ -60,6 +60,13 @@ export interface RuntimePlayerInitialization {
   opening_move_guidance: string;
 }
 
+export interface ParticipantSessionSetup {
+  session_role_focus: string;
+  current_pressure_seed: string;
+  interaction_posture: string;
+  likely_first_move: string;
+}
+
 export interface ActiveTopic {
   topic_id: string;
   label: string;
@@ -94,6 +101,7 @@ export interface ParticipantState {
   pending_question: string | null;
   last_reaction_type: ReactionType;
   runtime_persona?: RuntimePersonaSlice;
+  session_setup?: ParticipantSessionSetup;
 }
 
 export interface StructuralState {
