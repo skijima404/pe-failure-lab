@@ -5,12 +5,14 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-20
-- updated_at: 2026-03-20
+- updated_at: 2026-03-21
+- related_decisions:
+  - docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md
 - enables:
   - intent-001
 
 ## Purpose
-Define the durable runtime foundation needed so that simulation features can use multiple agents without collapsing into prompt sprawl, duplicated memory, or evaluator-like live dialogue.
+Define the durable runtime foundation needed so that simulation features can use multiple agents when appropriate without collapsing into prompt sprawl, duplicated memory, or evaluator-like live dialogue.
 
 ## Problem
 Without a shared multi-agent runtime foundation, each simulation feature is likely to reinvent:
@@ -28,6 +30,8 @@ That drift would make the repository harder to reason about and would increase t
 ## Asset Definition
 This enabler defines the reusable runtime substrate for multi-agent simulation.
 
+It does not require remote execution as the default live-runtime posture.
+
 It should become the durable reference for:
 - canonical agent roles in a simulation runtime
 - shared `room_state` structure
@@ -41,6 +45,7 @@ The initial asset boundary is:
 - shared state should be explicit, bounded, and machine-readable
 - evaluation should remain separate from live turn generation
 - routing is allowed, but visible traffic-control behavior should be minimized
+- local-first execution remains valid as long as responsibility and context boundaries hold
 
 Current working storage for these assets:
 - `docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md`
@@ -108,6 +113,7 @@ Using multiple agents has real downside.
 - more prompts, more state transforms, and more failure points
 - harder debugging because errors may emerge from interaction between components rather than one bad prompt
 - more implementation overhead before the first playable version feels stable
+- remote execution can add cost and confusion without delivering proportional product value
 
 ### Consistency risk
 - actor voices may still converge if persona slices are weak
@@ -150,6 +156,7 @@ Using multiple agents has real downside.
 ## Open Questions
 - [ ] Which parts of `room_state` should be formalized as schema files before runtime code starts?
 - [ ] When should a simulation prefer single-agent runtime even if naturalness is a concern?
+- [ ] Which adjacent subsystems, such as scenario generation or failure pattern matching, benefit more from stronger multi-agent separation than the live simulation loop does?
 
 ## Evidence / References
 - `docs/intent-development/feature-proposals/fp-intent-001-platform-engineering-failure-simulation-core-loop.md`

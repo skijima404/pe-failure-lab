@@ -15,12 +15,14 @@
   - docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md
   - docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md
   - docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md
+- related_decisions:
+  - docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md
 - depends_on_enablers:
   - intent-000
   - intent-007
 
 ## Enabler Alignment
-This implementation spec operationalizes the shared multi-agent runtime foundation by defining how runtime responsibilities should be split into modules inside a modular monolith.
+This implementation spec operationalizes the shared runtime foundation by defining how runtime responsibilities should be split into modules inside a local-first modular monolith.
 
 It exists to keep traceability explicit between:
 - canonical room state
@@ -33,10 +35,10 @@ It exists to keep traceability explicit between:
 - observability and validation
 
 ## Goal
-Define a module structure that makes multi-agent runtime behavior understandable, debuggable, and evolvable without requiring distributed infrastructure.
+Define a module structure that makes the live runtime understandable, debuggable, and evolvable without requiring distributed infrastructure.
 
 ## Problem Statement
-Without an explicit module structure, multi-agent implementation is likely to blur:
+Without an explicit module structure, live runtime implementation is likely to blur:
 - where canonical state lives
 - who decides the next turn
 - where prompt shaping happens
@@ -117,7 +119,7 @@ Must not contain:
 
 ### `runtime/agents/`
 Purpose:
-- define prompt adapters and output normalization for speaking agents
+- define prompt adapters and output normalization for speaking runtime actors
 - isolate actor, facilitator, and evaluator prompt contracts
 
 Recommended substructure:
@@ -141,7 +143,7 @@ Must not contain:
 ### `runtime/execution/`
 Purpose:
 - run the turn lifecycle
-- call the model client
+- call the model client when needed
 - apply orchestrator decisions
 - commit state updates
 
@@ -153,6 +155,10 @@ Should contain:
 Must not become:
 - a second orchestration layer
 - a hidden state schema layer
+
+Execution preference:
+- the default MVP live loop should remain local-first
+- remote generation should be treated as an optional transport under `execution/`, not as the architectural center of the runtime
 
 ### `runtime/transcripts/`
 Purpose:
@@ -274,7 +280,9 @@ runtime/orchestration/topic-management.ts
 runtime/agents/actor/prompt.ts
 runtime/agents/facilitator/prompt.ts
 runtime/agents/evaluator/prompt.ts
-runtime/execution/run-turn.ts
+runtime/execution/prepare-runtime-turn.ts
+runtime/execution/runtime-responder.ts
+runtime/execution/run-session.ts
 runtime/transcripts/compaction.ts
 runtime/transcripts/evidence-packet.ts
 runtime/presentation/filter-visible-events.ts

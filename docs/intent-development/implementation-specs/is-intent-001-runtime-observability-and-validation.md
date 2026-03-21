@@ -71,6 +71,7 @@ Each turn should emit a structured record with at least:
 - `selected_speaker`
 - `selection_reason`
 - `intervention_reason` when applicable
+- `layer_trace`
 - `prompt_input_summary`
 - `agent_output_summary`
 - `state_changes`
@@ -98,6 +99,23 @@ It should log:
 - exchange state summary
 - recent transcript turn count
 - major response constraints
+
+### `layer_trace`
+This should make the architecture layer explicit so the word `multi-agent` is not ambiguous in logs.
+
+Minimum shape:
+- `operator_layer`
+- `orchestration_layer`
+- `speaker_layer`
+- `response_layer`
+- `evaluator_layer`
+
+For the current MVP remote runtime, preferred values are:
+- `operator_layer: local-codex-session`
+- `orchestration_layer: local-room-orchestrator`
+- `speaker_layer: runtime-actor` or `player`
+- `response_layer: remote-response-chain`, `local-opening`, or `local-player-input`
+- `evaluator_layer: local-first`
 
 ### `state_changes`
 This should describe what changed, not dump the whole room state every turn.

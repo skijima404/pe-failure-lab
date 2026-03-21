@@ -9,6 +9,8 @@ export interface ActorPromptInput {
   scene_phase: RoomState["scene_phase"];
   active_topic: RoomState["active_topic"];
   exchange_state_summary: RoomState["exchange_state"];
+  visible_unresolved_items: string[];
+  close_readiness: RoomState["close_readiness"];
   recent_transcript: TranscriptContext;
   response_constraints: PromptConstraint[];
 }
@@ -31,6 +33,8 @@ export function buildActorPromptInput(
     scene_phase: roomState.scene_phase,
     active_topic: roomState.active_topic,
     exchange_state_summary: roomState.exchange_state,
+    visible_unresolved_items: roomState.structural_state.open_risks.slice(0, 3),
+    close_readiness: roomState.close_readiness,
     recent_transcript: compactTranscript(roomState),
     response_constraints: [
       { key: "main-point-count", value: "1" },
@@ -49,6 +53,10 @@ export function renderActorPrompt(input: ActorPromptInput): string {
     .map((turn) => `${turn.speaker_name}: ${turn.text}`)
     .join("\n");
   const constraints = input.response_constraints.map((item) => `- ${item.key}: ${item.value}`).join("\n");
+  const unresolved = input.visible_unresolved_items.map((item) => `- ${item}`).join("\n") || "- none";
+  const closeReadiness = input.close_readiness.ready
+    ? `ready (${input.close_readiness.reason ?? "no-reason"})`
+    : "not-ready";
 
   return [
     `You are ${input.speaker_runtime_slice.display_name}.`,
@@ -56,6 +64,8 @@ export function renderActorPrompt(input: ActorPromptInput): string {
     `Turn role: ${input.turn_role}`,
     `Scene phase: ${input.scene_phase}`,
     `Active topic: ${input.active_topic.label}`,
+    `Active topic depth: ${input.active_topic.depth}`,
+    `Close readiness: ${closeReadiness}`,
     "",
     "Runtime persona:",
     `- Core concern: ${persona?.core_concern ?? input.speaker_runtime_slice.current_concern_label ?? "the current topic"}`,
@@ -79,9 +89,13 @@ export function renderActorPrompt(input: ActorPromptInput): string {
     "- Stay on the active topic.",
     "- Do not mention scores, rubrics, or hidden system logic.",
     "- Let your concern come from your actual workload, team reality, or delivery context, not from abstract best-practice debate alone.",
+    "- If close readiness is visible, either confirm bounded support or surface one final concrete concern. Do not reopen the whole meeting.",
     "",
     "Do not overdo:",
     doNotOverdo,
+    "",
+    "Visible unresolved items:",
+    unresolved,
     "",
     "Recent transcript:",
     recentTurns || "(none)",

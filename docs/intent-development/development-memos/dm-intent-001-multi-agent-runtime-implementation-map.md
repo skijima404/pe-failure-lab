@@ -5,10 +5,12 @@
 - owner: shared
 - status: active
 - created_at: 2026-03-20
-- updated_at: 2026-03-20
+- updated_at: 2026-03-21
 - related_enablers:
   - intent-000
   - intent-007
+- related_decisions:
+  - docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md
 - related_feature_proposal: docs/intent-development/feature-proposals/fp-intent-001-platform-engineering-failure-simulation-core-loop.md
 - related_implementation_specs:
   - docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md
@@ -20,10 +22,11 @@
   - docs/templates/playtest/runtime-playtest-note-template.md
 
 ## Purpose
-Give a high-level implementation map for the current multi-agent runtime work.
+Give a high-level implementation map for the exploration-phase runtime work.
 
 This memo is for orientation.
 It is not the durable contract layer.
+It is retained as a historical implementation map and should be read alongside the accepted local-first ADR.
 
 Use it to answer:
 - what the runtime is trying to implement
@@ -32,31 +35,43 @@ Use it to answer:
 - what is still missing
 
 ## Current Runtime Direction
-The current direction is:
+Exploration-phase direction at the time this memo was written:
 - modular monolith
 - one canonical `room_state`
 - one hidden orchestrator
 - separate speaking agents for facilitator and stakeholders
 - evaluator kept outside live turn generation
+- local-first execution as the default live-runtime posture
+- optional remote-backed actor generation only when explicitly enabled
 
 This is intentionally not:
 - distributed services
 - free agent-to-agent autonomy
 - per-agent independent memory ownership
+- remote execution as the architectural center of the runtime
 
-## Why Runtime Uses API Calls
-This repository's multi-agent runtime should be understood as an application runtime, not as one long ChatGPT conversation.
+Current decision boundary:
+- the live runtime is local-first by default
+- remote response chains are optional transport details
+- this memo describes the earlier exploration path, not the current architectural center
 
-The current development chat is the design and implementation workspace.
-The live simulation runtime is separate.
+## Why Runtime Used API Calls During Exploration
+This repository's runtime was explored as an application runtime, not as one long ChatGPT conversation.
+
+The development chat was the design and implementation workspace.
+The live simulation runtime was separate.
 
 That means:
 - this chat is where the system is built
 - the runtime later creates bounded prompts for each role
-- those role prompts are sent through a model API one turn at a time
+- those role prompts were explored through a model API one turn at a time
 
-The runtime does not need to resend the entire development chat.
-It sends only the bounded prompt for the current role and current turn.
+The runtime did not need to resend the entire development chat.
+It sent only the bounded prompt for the current role and current turn.
+
+Historical note:
+- the API-centric framing below reflects an exploration-phase implementation path
+- it is not a statement that remote execution is the preferred architectural center after the local-first ADR
 
 ## High-Level Turn Sequence
 For one live runtime turn, the intended sequence is:
@@ -86,7 +101,8 @@ Examples:
 - post-game evaluation -> one evaluator prompt -> one API call
 
 This is why API usage is the natural execution model for multi-agent runtime.
-The system needs role-separated calls, not one monolithic conversation stream.
+This was one possible execution model for the exploration phase.
+The system needed role-separated calls, not one monolithic conversation stream.
 
 ## Cost Hotspots
 For demo and event use, the main cost drivers are:
@@ -131,6 +147,7 @@ But it wants to avoid the main multi-agent failure modes:
 - evaluator-like live dialogue
 
 So the current design uses central state and orchestration, with agent separation only where it improves runtime behavior.
+Later architectural review narrowed the live runtime to a local-first stance and moved stronger multi-agent usage toward adjacent subsystems such as scenario generation and failure pattern matching.
 
 ## Spec to Code Map
 ### `intent-007` Multi-Agent Simulation Runtime Foundation
@@ -215,9 +232,9 @@ Purpose:
 - run a short scripted session
 
 Current files:
-- `run-turn.ts`
+- `prepare-runtime-turn.ts`
+- `runtime-responder.ts`
 - `run-session.ts`
-- `model-client.ts`
 
 ### `runtime/transcripts/`
 Purpose:
@@ -277,7 +294,7 @@ If you want the simplest reading order:
 1. `runtime/state/types.ts`
 2. `runtime/state/schema.ts`
 3. `runtime/orchestration/select-next-turn.ts`
-4. `runtime/execution/run-turn.ts`
+4. `runtime/execution/prepare-runtime-turn.ts`
 5. `runtime/execution/run-session.ts`
 6. `runtime/observability/event-log.ts`
 7. `runtime/validation/fixture-runner.ts`

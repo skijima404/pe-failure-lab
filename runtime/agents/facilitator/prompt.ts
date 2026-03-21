@@ -6,8 +6,10 @@ export interface FacilitatorPromptInput {
   runtime_persona: ParticipantState["runtime_persona"];
   intervention_reason: string;
   active_topic: RoomState["active_topic"];
+  close_readiness: RoomState["close_readiness"];
   recent_transcript: TranscriptContext;
   visible_unresolved_items: string[];
+  parked_topic_labels: string[];
   transition_goal: string;
   response_constraints: PromptConstraint[];
 }
@@ -30,8 +32,10 @@ export function buildFacilitatorPromptInput(
     runtime_persona: facilitator?.runtime_persona,
     intervention_reason: interventionReason,
     active_topic: roomState.active_topic,
+    close_readiness: roomState.close_readiness,
     recent_transcript: compactTranscript(roomState),
     visible_unresolved_items: roomState.structural_state.open_risks.slice(0, 3),
+    parked_topic_labels: roomState.parking_lot.map((topic) => topic.label),
     transition_goal: transitionGoal,
     response_constraints: [
       { key: "tone", value: "calm-neutral-brief" },
@@ -47,9 +51,13 @@ export function renderFacilitatorPrompt(input: FacilitatorPromptInput): string {
     .map((turn) => `${turn.speaker_name}: ${turn.text}`)
     .join("\n");
   const unresolved = input.visible_unresolved_items.map((item) => `- ${item}`).join("\n") || "- none";
+  const parkedTopics = input.parked_topic_labels.map((item) => `- ${item}`).join("\n") || "- none";
   const constraints = input.response_constraints.map((item) => `- ${item.key}: ${item.value}`).join("\n");
   const voiceCues = persona?.voice_cues.join(", ") ?? "calm, brief, neutral";
   const doNotOverdo = persona?.do_not_overdo.map((item) => `- ${item}`).join("\n") ?? "- Do not over-facilitate.";
+  const closeReadiness = input.close_readiness.ready
+    ? `ready (${input.close_readiness.reason ?? "no-reason"})`
+    : "not-ready";
 
   return [
     `You are ${persona?.display_name ?? "Mika"}, the facilitator.`,
@@ -58,6 +66,8 @@ export function renderFacilitatorPrompt(input: FacilitatorPromptInput): string {
     `Intervention reason: ${input.intervention_reason}`,
     `Transition goal: ${input.transition_goal}`,
     `Active topic: ${input.active_topic.label}`,
+    `Active topic depth: ${input.active_topic.depth}`,
+    `Close readiness: ${closeReadiness}`,
     "",
     "Runtime stance:",
     `- Core concern: ${persona?.core_concern ?? "Keep the meeting legible and moving."}`,
@@ -83,6 +93,9 @@ export function renderFacilitatorPrompt(input: FacilitatorPromptInput): string {
     "",
     "Visible unresolved items:",
     unresolved,
+    "",
+    "Parked topics:",
+    parkedTopics,
     "",
     "Recent transcript:",
     recentTurns || "(none)",

@@ -39,3 +39,20 @@ export function requiredEnv(name) {
 export function parseReasoningEffort(value) {
   return value === "low" || value === "medium" || value === "high" ? value : undefined;
 }
+
+export function parseBooleanEnv(value, defaultValue = false) {
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(normalized)) {
+    return true;
+  }
+
+  if (["0", "false", "no", "off"].includes(normalized)) {
+    return false;
+  }
+
+  return defaultValue;
+}

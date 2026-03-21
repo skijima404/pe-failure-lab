@@ -1,5 +1,5 @@
-import { ScriptedResponder } from "../execution/model-client.ts";
-import { runSession, type SessionStepResult } from "../execution/run-session.ts";
+import { ScriptedResponder } from "../execution/runtime-responder.ts";
+import { runRuntimeSession, type SessionStepResult } from "../execution/run-session.ts";
 import { createInitialRoomState } from "../state/schema.ts";
 import type { RoomState, ScriptedTurnOutcome } from "../state/types.ts";
 
@@ -15,7 +15,7 @@ export async function runScriptedFixture(
 ): Promise<FixtureRunResult> {
   const roomState = initialRoomState ?? createInitialRoomState(sessionId);
   const responder = new ScriptedResponder(scriptedOutcomes);
-  const results = await runSession(roomState, responder, scriptedOutcomes.length);
+  const results = await runRuntimeSession(roomState, responder, scriptedOutcomes.length);
 
   const mismatches = results.flatMap((result, index) => {
     const expected = scriptedOutcomes[index]?.expected_selection_reason;

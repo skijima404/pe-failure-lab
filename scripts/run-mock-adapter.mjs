@@ -1,9 +1,9 @@
-import { AdapterBackedResponder, MockModelAdapter } from "../runtime/execution/model-client.ts";
-import { runSession } from "../runtime/execution/run-session.ts";
+import { AdapterBackedResponder, MockModelAdapter } from "../runtime/execution/runtime-responder.ts";
+import { runRuntimeSession } from "../runtime/execution/run-session.ts";
 import { createScriptedSessionInitialState } from "../runtime/validation/fixtures/scripted-session.ts";
 
 function printHeader() {
-  console.log("Mock Adapter Harness");
+  console.log("Local Adapter Harness");
   console.log("====================");
   console.log("Purpose: run the runtime through an adapter-backed responder without scripted outcomes.");
   console.log("");
@@ -14,7 +14,7 @@ async function main() {
 
   const initialState = createScriptedSessionInitialState();
   const responder = new AdapterBackedResponder(new MockModelAdapter());
-  const results = await runSession(initialState, responder, 2);
+  const results = await runRuntimeSession(initialState, responder, 2);
 
   results.forEach((result, index) => {
     console.log(`Turn ${index + 1}`);

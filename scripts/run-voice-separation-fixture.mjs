@@ -1,5 +1,5 @@
-import { AdapterBackedResponder, MockModelAdapter } from "../runtime/execution/model-client.ts";
-import { runSession } from "../runtime/execution/run-session.ts";
+import { AdapterBackedResponder, MockModelAdapter } from "../runtime/execution/runtime-responder.ts";
+import { runRuntimeSession } from "../runtime/execution/run-session.ts";
 import {
   createDeliveryPressureInitialState,
   createPlatformPressureInitialState,
@@ -39,8 +39,8 @@ async function main() {
   console.log("Purpose: compare platform-side and delivery-side stakeholder turns under a similar active topic.");
   console.log("");
 
-  const platformResults = await runSession(createPlatformPressureInitialState(), responder, 1);
-  const deliveryResults = await runSession(createDeliveryPressureInitialState(), responder, 1);
+  const platformResults = await runRuntimeSession(createPlatformPressureInitialState(), responder, 1);
+  const deliveryResults = await runRuntimeSession(createDeliveryPressureInitialState(), responder, 1);
 
   printTurn("Platform Case", platformResults[0]);
   printTurn("Delivery Case", deliveryResults[0]);

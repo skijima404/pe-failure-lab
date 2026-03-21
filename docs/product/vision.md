@@ -91,6 +91,9 @@ The repository should support simulations where different stakeholders express:
 
 This makes structural failure visible.
 
+The repository does not require remote multi-agent execution as the primary way to represent those actors.
+What matters is that the runtime can represent multiple bounded stakeholder roles with explicit state, context, and turn ownership.
+
 ### Observable Structural Change
 The system should capture not only dialogue, but also structural shifts such as:
 - scope expansion
@@ -134,6 +137,12 @@ The goal is not to start generic, but to build a strong, concrete simulation in 
 
 Generalization to broader organizational change or role-based simulations can happen later.
 
+### Local-First Runtime
+The live runtime is intentionally local-first.
+
+Role separation, turn ownership, and evaluator boundaries matter more than whether every speaking role is generated through a remote agent.
+Remote-backed execution can be useful for specific validation or experimentation modes, but it is not the center of the product vision.
+
 ## Success Indicators
 The system is successful if:
 - users immediately recognize realistic Platform Engineering failure patterns
@@ -149,5 +158,6 @@ The repository becomes less like a static demo and more like a living environmen
 - failure patterns can be modeled
 - decision quality can be evaluated
 - organizational learning can be accelerated through simulation
+- scenario generation and other higher-independence subsystems can be expanded when they add clear value
 
 It becomes a place where complex roles can be practiced before they are lived.

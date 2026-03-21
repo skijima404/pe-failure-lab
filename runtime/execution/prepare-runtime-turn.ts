@@ -3,7 +3,7 @@ import { buildFacilitatorPrompt } from "../agents/facilitator/prompt.ts";
 import { selectNextTurn, type NextTurnDecision } from "../orchestration/select-next-turn.ts";
 import type { ParticipantState, RoomState } from "../state/types.ts";
 
-export interface PreparedTurn {
+export interface PreparedRuntimeTurn {
   decision: NextTurnDecision;
   prompt_input: unknown;
   prompt_text: string;
@@ -19,13 +19,17 @@ function findParticipant(roomState: RoomState, participantId: string): Participa
   return participant;
 }
 
-export function prepareNextTurn(roomState: RoomState): PreparedTurn {
+export function prepareNextRuntimeTurn(roomState: RoomState): PreparedRuntimeTurn {
   const decision = selectNextTurn(roomState);
 
   if (decision.owner === "facilitator") {
     const transitionGoal =
       decision.intervention_reason === "session-opening"
         ? "open-workshop-and-hand-off-to-player"
+        : decision.intervention_reason === "closing-transition"
+          ? "close-the-current-topic-and-end-the-meeting"
+          : decision.intervention_reason === "exchange-settled"
+            ? "mark-the-current-topic-resolved-enough-and-transition-cleanly"
         : "clarify-turn-owner";
     const facilitatorPrompt = buildFacilitatorPrompt(
       roomState,

@@ -5,6 +5,11 @@ Roleplay-based simulation and assessment lab for exploring failure patterns in P
 ## Quick Start
 Use the repository root as the simulation execution entry point.
 
+Current runtime stance:
+- the live simulation runtime is `local-first`
+- remote OpenAI-backed modes are optional playtest and validation modes
+- visible Codex child sessions are operator tooling, not simulation actors
+
 1. Read the initialization brief:
 
 ```bash
@@ -14,20 +19,33 @@ npm run simulate:init
 2. Run the mock-backed MVP session driver:
 
 ```bash
-npm run simulate:mock
+npm run simulate:local
 ```
 
-3. Run the OpenAI-backed session driver:
+3. Run an OpenAI-backed mode only when you intentionally want remote generation:
 
 ```bash
 cp .env.example .env
-npm run simulate:openai
+npm run simulate:remote:smoke
+```
+
+For remote-backed interactive play:
+
+```bash
+npm run simulate:remote:interactive
+```
+
+For remote-backed end-to-end validation:
+
+```bash
+npm run simulate:remote:full
 ```
 
 OpenAI-backed execution reads the repository-root `.env` file and expects:
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL` (optional)
 - `OPENAI_REASONING_EFFORT` (optional)
+- `OPENAI_REMOTE_MULTI_AGENT` (optional, enables per-speaker remote response chains)
 
 For playtest notes, use:
 - `docs/templates/playtest/runtime-playtest-note-template.md`
@@ -58,6 +76,10 @@ Suggested root-level execution flow:
 4. Wait for explicit start.
 5. Run the meeting simulation.
 6. Produce game-end output and enter post-game discussion mode
+
+Execution note:
+- prefer the local-first flow when checking runtime structure, prompt boundaries, or orchestration behavior
+- use remote-backed modes when validating optional actor-generation behavior, not as the default mental model for the runtime
 
 ## Vision
 - `docs/product/vision.md`: repo-level epic hypothesis and long-term direction
@@ -105,3 +127,6 @@ This repository uses an intent-driven development flow:
 - `docs/intent-development/ui-specs/` and `docs/intent-development/implementation-specs/` must reference the enablers they depend on.
 - `docs/decisions/` stores ADRs for major architecture changes, especially when failure, repeated evidence, or implementation breakdown explains why the shift happened.
 - `failure-model/` defines what success, symptom emergence, and failure causality mean for the simulation itself.
+
+Recent architecture decision:
+- `docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md`: live runtime is local-first, while stronger multi-agent separation is better reserved for higher-independence subsystems such as scenario generation or failure pattern matching

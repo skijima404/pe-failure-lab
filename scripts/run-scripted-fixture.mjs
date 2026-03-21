@@ -5,9 +5,9 @@ import {
 } from "../runtime/validation/fixtures/scripted-session.ts";
 
 function printHeader() {
-  console.log("Scripted Fixture Harness");
+  console.log("Scripted Runtime Harness");
   console.log("========================");
-  console.log("Purpose: run a fixed multi-agent session fixture and show turn-by-turn runtime decisions.");
+  console.log("Purpose: run a fixed runtime fixture and show turn-by-turn runtime decisions.");
   console.log("");
 }
 

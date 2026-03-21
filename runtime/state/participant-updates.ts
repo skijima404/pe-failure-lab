@@ -1,4 +1,5 @@
 import type { ParticipantState, RoomState, TurnOutcome } from "./types.ts";
+import { hasExplicitQuestion } from "./text-signals.ts";
 
 function deriveReactionType(text: string): ParticipantState["last_reaction_type"] {
   const normalized = text.toLowerCase();
@@ -9,7 +10,7 @@ function deriveReactionType(text: string): ParticipantState["last_reaction_type"
   if (normalized.includes("concern") || normalized.includes("worry") || normalized.includes("risk")) {
     return "concern";
   }
-  if (normalized.includes("?")) {
+  if (hasExplicitQuestion(text)) {
     return "curiosity";
   }
   if (normalized.includes("surpr")) {
@@ -24,7 +25,9 @@ function deriveReactionType(text: string): ParticipantState["last_reaction_type"
 
 function updateSpeakingParticipant(participant: ParticipantState, roomState: RoomState, outcome: TurnOutcome): ParticipantState {
   const nextPendingQuestion =
-    outcome.turn_owner === "initiating_actor" || outcome.turn_owner === "reacting_actor" ? outcome.text : null;
+    (outcome.turn_owner === "initiating_actor" || outcome.turn_owner === "reacting_actor") && hasExplicitQuestion(outcome.text)
+      ? outcome.text
+      : null;
 
   return {
     ...participant,
@@ -47,7 +50,7 @@ export function deriveParticipantStates(roomState: RoomState, outcome: TurnOutco
       return updateSpeakingParticipant(participant, roomState, outcome);
     }
 
-    if (outcome.turn_owner === "player" && participant.role_type === "stakeholder") {
+    if ((outcome.turn_owner === "player" || outcome.turn_owner === "facilitator") && participant.role_type === "stakeholder") {
       return clearPendingQuestionForPlayer(participant);
     }
 

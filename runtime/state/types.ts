@@ -126,6 +126,7 @@ export interface TurnOutcome {
   speaker_name: string;
   turn_owner: TurnOwner;
   text: string;
+  response_metadata?: Record<string, unknown>;
   updates?: Partial<{
     active_speaker: string | null;
     scene_phase: ScenePhase;

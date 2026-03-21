@@ -1,9 +1,9 @@
-import { AdapterBackedResponder, MockModelAdapter, OpenAIResponsesAdapter } from "../runtime/execution/model-client.ts";
+import { AdapterBackedResponder, MockModelAdapter, OpenAIResponsesAdapter } from "../runtime/execution/runtime-responder.ts";
 import {
   acceptPlayerMessage,
   evaluateIfSessionClosed,
   initializeSession,
-  runNextAgentTurn,
+  runNextRuntimeActorTurnFromState,
   startSession,
 } from "../runtime/execution/session-driver.ts";
 import { formatReflectionReport } from "../runtime/evaluation/report.ts";
@@ -47,8 +47,19 @@ function createResponder(adapterName) {
   return new AdapterBackedResponder(new MockModelAdapter());
 }
 
+function printHeader(adapterName) {
+  console.log("Session Driver");
+  console.log("==============");
+  console.log("Default mode: local-first runtime walkthrough.");
+  console.log(
+    `Actor generation mode: ${adapterName === "openai" ? "remote-backed OpenAI adapter (optional)" : "local mock adapter (default)"}`,
+  );
+  console.log("");
+}
+
 async function main() {
   const { adapterName, startMessage, playerMessage } = parseArgs(process.argv.slice(2));
+  printHeader(adapterName);
   const initialized = initializeSession("session-driver-demo");
   const responder = createResponder(adapterName);
 
@@ -62,11 +73,11 @@ async function main() {
     return;
   }
 
-  const openingResult = await runNextAgentTurn(started.room_state, responder, {
+  const openingResult = await runNextRuntimeActorTurnFromState(started.room_state, responder, {
     opening_mode: adapterName === "openai" ? "responder" : "local",
   });
   const afterPlayerMessage = acceptPlayerMessage(openingResult.room_state, playerMessage);
-  const nextAgentResult = await runNextAgentTurn(afterPlayerMessage, responder);
+  const nextAgentResult = await runNextRuntimeActorTurnFromState(afterPlayerMessage, responder);
   const finalRoomState = nextAgentResult.room_state;
   const evaluation = evaluateIfSessionClosed(finalRoomState, {
     scenario: finalRoomState.session_setup.scenario,

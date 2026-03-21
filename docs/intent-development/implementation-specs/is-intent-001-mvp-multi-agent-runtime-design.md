@@ -17,6 +17,8 @@
   - docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md
 - related_enabler_proposals:
   - docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md
+- related_decisions:
+  - docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md
 - related_product_contracts:
   - docs/product/contracts/mvp-simulation-contract.md
   - docs/product/contracts/facilitator-role-contract.md
@@ -32,11 +34,12 @@ It keeps the current product direction intact:
 - natural conversation as top live-runtime priority
 - visible structural pressure without evaluator-like live dialogue
 - facilitator routing allowed when it remains natural
+- local-first execution for the live simulation loop
 
 ## Goal
-Define how the shared multi-agent runtime foundation should be used in the current MVP scene.
+Define how the shared runtime foundation should be used in the current MVP scene.
 
-For remote transcript hygiene, facilitator/evaluator separation, and remote turn-boundary rules, use:
+For transcript hygiene, facilitator/evaluator separation, and optional remote turn-boundary rules, use:
 - `docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md`
 
 ## Problem Statement
@@ -44,7 +47,7 @@ The foundation-level runtime substrate is now defined separately.
 The remaining scene-specific problem is how to apply that foundation so this workshop stays natural, legible, and phase-appropriate.
 
 ## MVP Runtime Decision
-Adopt a hybrid runtime with hidden orchestration.
+Adopt a local-first hybrid runtime with hidden orchestration.
 
 Runtime shape:
 - one hidden `room-orchestrator`
@@ -52,16 +55,23 @@ Runtime shape:
 - one speaking `actor-agent` per stakeholder
 - one post-game `local evaluator`
 
+Execution stance:
+- orchestration remains local
+- live actor separation is primarily a responsibility boundary
+- remote response chains are optional, not the architectural center of the MVP live loop
+- evaluator remains local-first
+
 Decision rationale:
 - per-actor agents improve voice separation
 - the orchestrator protects one-topic-at-a-time meeting flow
 - the facilitator remains an in-world speaker, not the whole control plane
 - evaluation stays fully outside the live scene
 - evaluator judgment remains local so failure-signal reading does not collapse into remote write-up generation
+- local-first execution keeps the runtime easier to debug, test, and explain
 
 ## Scope
 - In scope:
-  - one-scene MVP application of the multi-agent runtime foundation
+  - one-scene MVP application of the runtime foundation
   - scene-specific turn-selection constraints
   - MVP participant count and role usage
   - validation plan for this workshop-style conversation
@@ -172,6 +182,18 @@ Recommended first stakeholder set:
 - platform-side stakeholder
 - one delivery-side stakeholder
 
+### Execution preference
+For MVP live runtime, prefer:
+- one local orchestrator
+- one local execution loop
+- explicit role and context partition between facilitator, stakeholders, player, and evaluator
+- optional remote generation only when it clearly improves the live experience enough to justify added complexity
+
+Do not assume:
+- remote execution is required for actor distinctness
+- visible child sessions are part of simulation-facing runtime behavior
+- stronger execution separation automatically improves communication quality
+
 ## Smallest Implementable Slice
 Implement the MVP runtime in this order:
 
@@ -191,6 +213,7 @@ Do not implement yet:
 - more than one overlapping actor reaction
 - hidden sub-conversations
 - dynamic spawning of extra agents
+- stronger remote actor-runtime separation without explicit product justification
 - remote evaluator judgment as the default MVP path
 
 ## Risks
@@ -248,6 +271,7 @@ Do not implement yet:
 - Risks:
   - prompt design may be over-tuned before enough transcript evidence exists
   - room-state schemas may drift unless runtime code uses the same field names
+  - remote execution may be overvalued relative to clearer local-first boundary design
 
 ## Implementation Outline
 1. Finalize the tactical runtime contract in docs.

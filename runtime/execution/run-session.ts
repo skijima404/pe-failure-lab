@@ -1,8 +1,9 @@
 import { createTurnDebugDump, type TurnDebugDump } from "../observability/debug-dump.ts";
 import { createTurnLog, type TurnLog } from "../observability/event-log.ts";
 import { createLocalOpeningOutcome } from "./local-opening.ts";
-import { prepareNextTurn } from "./run-turn.ts";
-import type { RuntimeResponder } from "./model-client.ts";
+import { prepareNextRuntimeTurn } from "./prepare-runtime-turn.ts";
+import type { RuntimeResponder } from "./runtime-responder.ts";
+import { summarizePromptInput, summarizeTurnOutcome, type TurnDeliveryMode } from "./turn-summary.ts";
 import { applyTurnOutcome, computeStateChanges } from "../state/reducers.ts";
 import type { RoomState } from "../state/types.ts";
 
@@ -12,40 +13,40 @@ export interface SessionStepResult {
   debug_dump: TurnDebugDump;
 }
 
-export interface AgentTurnOptions {
+export interface RuntimeActorTurnOptions {
   opening_mode?: "local" | "responder";
 }
 
-export async function runAgentTurn(
+export async function runNextRuntimeActorTurn(
   roomState: RoomState,
   responder: RuntimeResponder,
-  options: AgentTurnOptions = {},
+  options: RuntimeActorTurnOptions = {},
 ): Promise<SessionStepResult> {
   if (roomState.scene_phase === "post-game") {
-    throw new Error("runAgentTurn cannot execute after the meeting has ended.");
+    throw new Error("runNextRuntimeActorTurn cannot execute after the meeting has ended.");
   }
 
-  const preparedTurn = prepareNextTurn(roomState);
+  const preparedTurn = prepareNextRuntimeTurn(roomState);
 
   if (preparedTurn.decision.owner === "player") {
-    throw new Error("runAgentTurn cannot execute a player-owned turn. Accept player input first.");
+    throw new Error("runNextRuntimeActorTurn cannot execute a player-owned turn. Accept player input first.");
   }
 
   return executePreparedTurn(roomState, preparedTurn, responder, options.opening_mode ?? "local");
 }
 
-export async function runSessionStep(roomState: RoomState, responder: RuntimeResponder): Promise<SessionStepResult> {
-  const preparedTurn = prepareNextTurn(roomState);
+export async function runRuntimeSessionStep(roomState: RoomState, responder: RuntimeResponder): Promise<SessionStepResult> {
+  const preparedTurn = prepareNextRuntimeTurn(roomState);
   return executePreparedTurn(roomState, preparedTurn, responder, "local");
 }
 
 async function executePreparedTurn(
   roomState: RoomState,
-  preparedTurn: ReturnType<typeof prepareNextTurn>,
+  preparedTurn: ReturnType<typeof prepareNextRuntimeTurn>,
   responder: RuntimeResponder,
   openingMode: "local" | "responder",
 ): Promise<SessionStepResult> {
-  const deliveryMode =
+  const deliveryMode: TurnDeliveryMode =
     preparedTurn.decision.owner === "facilitator" &&
     preparedTurn.decision.intervention_reason === "session-opening" &&
     openingMode === "local"
@@ -74,7 +75,7 @@ async function executePreparedTurn(
     roomStateAfter: nextRoomState,
     decision: preparedTurn.decision,
     promptInputSummary: summarizePromptInput(preparedTurn.prompt_input, preparedTurn.prompt_text, deliveryMode),
-    agentOutputSummary: summarizeOutcome(lifecycleOutcome, deliveryMode),
+    agentOutputSummary: summarizeTurnOutcome(preparedTurn.decision.speaker_id, lifecycleOutcome, deliveryMode),
     stateChanges,
   });
 
@@ -97,7 +98,7 @@ async function executePreparedTurn(
   };
 }
 
-export async function runSession(
+export async function runRuntimeSession(
   initialRoomState: RoomState,
   responder: RuntimeResponder,
   maxSteps = 5,
@@ -106,7 +107,7 @@ export async function runSession(
   let currentRoomState = initialRoomState;
 
   for (let index = 0; index < maxSteps; index += 1) {
-    const result = await runSessionStep(currentRoomState, responder);
+    const result = await runRuntimeSessionStep(currentRoomState, responder);
     results.push(result);
     currentRoomState = result.room_state;
 
@@ -116,59 +117,4 @@ export async function runSession(
   }
 
   return results;
-}
-
-function summarizePromptInput(
-  promptInput: unknown,
-  promptText: string,
-  deliveryMode: "local-opening" | "responder",
-): Record<string, unknown> {
-  const promptLines = promptText.split("\n").map((line) => line.trim()).filter(Boolean);
-  const promptExcerpt = promptLines.slice(0, 14).join("\n");
-
-  if (!promptInput || typeof promptInput !== "object") {
-    return {
-      kind: "unknown",
-      delivery_mode: deliveryMode,
-      prompt_text_preview: promptText.slice(0, 180),
-      prompt_text_excerpt: promptExcerpt,
-    };
-  }
-
-  const record = promptInput as Record<string, unknown>;
-  return {
-    delivery_mode: deliveryMode,
-    speaker_id: record.speaker_id ?? null,
-    turn_role: record.turn_role ?? null,
-    active_topic:
-      typeof record.active_topic === "object" && record.active_topic
-        ? (record.active_topic as Record<string, unknown>).label ?? null
-        : record.active_topic ?? null,
-    transition_goal: record.transition_goal ?? null,
-    runtime_persona_core_concern:
-      record.runtime_persona && typeof record.runtime_persona === "object"
-        ? ((record.runtime_persona as Record<string, unknown>).core_concern ?? null)
-        : null,
-    prompt_focus:
-      record.runtime_persona && typeof record.runtime_persona === "object"
-        ? {
-            core_concern: (record.runtime_persona as Record<string, unknown>).core_concern ?? null,
-            day_to_day_pressure: (record.runtime_persona as Record<string, unknown>).day_to_day_pressure ?? null,
-            protection_target: (record.runtime_persona as Record<string, unknown>).protection_target ?? null,
-          }
-        : null,
-    prompt_text_preview: promptText.slice(0, 180),
-    prompt_text_excerpt: promptExcerpt,
-  };
-}
-
-function summarizeOutcome(
-  outcome: { speaker_id: string; text: string },
-  deliveryMode: "local-opening" | "responder",
-): Record<string, unknown> {
-  return {
-    delivery_mode: deliveryMode,
-    speaker_id: outcome.speaker_id,
-    text_preview: outcome.text.slice(0, 140),
-  };
 }

@@ -1,8 +1,13 @@
 import { buildInitializationBrief, formatInitializationBrief, isStartSignal } from "./initialization.ts";
-import { runAgentTurn, runSession, type SessionStepResult, type AgentTurnOptions } from "./run-session.ts";
+import {
+  runNextRuntimeActorTurn,
+  runRuntimeSession,
+  type SessionStepResult,
+  type RuntimeActorTurnOptions,
+} from "./run-session.ts";
 import { createInitialRoomState } from "../state/schema.ts";
 import { applyTurnOutcome } from "../state/reducers.ts";
-import type { RuntimeResponder } from "./model-client.ts";
+import type { RuntimeResponder } from "./runtime-responder.ts";
 import type { RoomState, TurnOutcome } from "../state/types.ts";
 import { evaluateClosedSessionLocally, type LocalEvaluationResult } from "../evaluation/local-evaluator.ts";
 import type { EvaluationContext } from "../evaluation/report.ts";
@@ -97,12 +102,12 @@ export function acceptPlayerMessage(
   return applyTurnOutcome(roomState, playerOutcome);
 }
 
-export async function runNextAgentTurn(
+export async function runNextRuntimeActorTurnFromState(
   roomState: RoomState,
   responder: RuntimeResponder,
-  options: AgentTurnOptions = {},
+  options: RuntimeActorTurnOptions = {},
 ): Promise<SessionStepResult> {
-  return runAgentTurn(roomState, responder, options);
+  return runNextRuntimeActorTurn(roomState, responder, options);
 }
 
 export function evaluateIfSessionClosed(
@@ -133,7 +138,7 @@ export async function runSessionFromPlayerStart(
     };
   }
 
-  const liveResults = await runSession(startResult.room_state, responder, maxSteps);
+  const liveResults = await runRuntimeSession(startResult.room_state, responder, maxSteps);
 
   return {
     accepted: true,

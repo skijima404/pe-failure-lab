@@ -1,5 +1,5 @@
-import { ScriptedResponder } from "../runtime/execution/model-client.ts";
-import { runSession } from "../runtime/execution/run-session.ts";
+import { ScriptedResponder } from "../runtime/execution/runtime-responder.ts";
+import { runRuntimeSession } from "../runtime/execution/run-session.ts";
 import { evaluateSession, formatReflectionReport } from "../runtime/evaluation/report.ts";
 import {
   createScriptedSessionInitialState,
@@ -8,7 +8,11 @@ import {
 
 async function main() {
   const initialState = createScriptedSessionInitialState();
-  const results = await runSession(initialState, new ScriptedResponder(SCRIPTED_SESSION_FIXTURE), SCRIPTED_SESSION_FIXTURE.length);
+  const results = await runRuntimeSession(
+    initialState,
+    new ScriptedResponder(SCRIPTED_SESSION_FIXTURE),
+    SCRIPTED_SESSION_FIXTURE.length,
+  );
   const finalState = results.at(-1)?.room_state ?? initialState;
 
   const report = evaluateSession(finalState, {

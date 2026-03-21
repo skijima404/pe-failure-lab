@@ -6,20 +6,20 @@ import test from "node:test";
 import { evaluateSession, formatReflectionReport } from "../evaluation/report.ts";
 import { evaluateClosedSessionLocally } from "../evaluation/local-evaluator.ts";
 import { buildInitializationBrief, formatInitializationBrief, isStartSignal } from "../execution/initialization.ts";
-import { MockModelAdapter, AdapterBackedResponder } from "../execution/model-client.ts";
-import { prepareNextTurn } from "../execution/run-turn.ts";
+import { MockModelAdapter, AdapterBackedResponder, OpenAIResponsesAdapter } from "../execution/runtime-responder.ts";
+import { prepareNextRuntimeTurn } from "../execution/prepare-runtime-turn.ts";
 import {
   acceptPlayerMessage,
   evaluateIfSessionClosed,
   initializeSession,
-  runNextAgentTurn,
+  runNextRuntimeActorTurnFromState,
   runSessionFromPlayerStart,
   startSession,
 } from "../execution/session-driver.ts";
 import { renderVisibleTranscript } from "../presentation/visible-transcript.ts";
 import { loadDefaultSceneSetup } from "../scene/setup-loader.ts";
 import { loadDefaultPlayerInitialization } from "../scene/player-initialization-loader.ts";
-import { applyTurnOutcome } from "../state/reducers.ts";
+import { applyTurnOutcome, computeStateChanges } from "../state/reducers.ts";
 import { createInitialRoomState } from "../state/schema.ts";
 import { loadRuntimePersonaSlice } from "../personas/runtime-slice-loader.ts";
 import { runScriptedFixture } from "../validation/fixture-runner.ts";
@@ -95,7 +95,7 @@ test("player response can generate same-topic overlap candidates from session co
   assert.deepEqual(afterPlayerTurn.exchange_state.handoff_candidate_actor_ids, ["platform"]);
   assert.equal(afterPlayerTurn.exchange_state.awaiting_reaction_from, null);
 
-  const preparedTurn = prepareNextTurn(afterPlayerTurn);
+  const preparedTurn = prepareNextRuntimeTurn(afterPlayerTurn);
   assert.equal(preparedTurn.decision.owner, "reacting_actor");
   assert.equal(preparedTurn.decision.speaker_id, "platform");
 });
@@ -138,6 +138,7 @@ test("player initialization loader reads the thin player-start asset", () => {
 test("player prompt preparation includes initialization and opening guidance", () => {
   const roomState = createInitialRoomState("player-turn-test");
   roomState.exchange_state.initiating_actor_id = "exec";
+  roomState.exchange_state.should_continue_current_exchange = true;
   roomState.active_speaker = "player";
   roomState.next_turn_options = [];
   roomState.recent_transcript = [
@@ -150,7 +151,7 @@ test("player prompt preparation includes initialization and opening guidance", (
     },
   ];
 
-  const preparedTurn = prepareNextTurn(roomState);
+  const preparedTurn = prepareNextRuntimeTurn(roomState);
 
   assert.equal(preparedTurn.decision.owner, "player");
   assert.match(preparedTurn.prompt_text, /Session purpose:/);
@@ -162,8 +163,14 @@ test("actor prompt includes stakeholder working context and pressure background"
   const roomState = createInitialRoomState("actor-context-test");
   roomState.scene_phase = "discussion";
   roomState.exchange_state.awaiting_reaction_from = "platform";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    label: "Onboarding support boundary",
+    depth: 2,
+  };
+  roomState.structural_state.open_risks = ["support-boundary-not-yet-clear"];
 
-  const preparedTurn = prepareNextTurn(roomState);
+  const preparedTurn = prepareNextRuntimeTurn(roomState);
 
   assert.equal(preparedTurn.decision.speaker_id, "platform");
   assert.match(preparedTurn.prompt_text, /Working context:/);
@@ -171,11 +178,13 @@ test("actor prompt includes stakeholder working context and pressure background"
   assert.match(preparedTurn.prompt_text, /actual workload, team reality, or delivery context/i);
   assert.match(preparedTurn.prompt_text, /Session role focus:/);
   assert.match(preparedTurn.prompt_text, /Current pressure seed:/);
+  assert.match(preparedTurn.prompt_text, /Active topic depth: 2/);
+  assert.match(preparedTurn.prompt_text, /Visible unresolved items:/);
 });
 
 test("voice separation fixtures select platform and delivery as distinct next speakers", () => {
-  const platformTurn = prepareNextTurn(createPlatformPressureInitialState());
-  const deliveryTurn = prepareNextTurn(createDeliveryPressureInitialState());
+  const platformTurn = prepareNextRuntimeTurn(createPlatformPressureInitialState());
+  const deliveryTurn = prepareNextRuntimeTurn(createDeliveryPressureInitialState());
 
   assert.equal(platformTurn.decision.speaker_id, "platform");
   assert.equal(deliveryTurn.decision.speaker_id, "delivery");
@@ -184,18 +193,319 @@ test("voice separation fixtures select platform and delivery as distinct next sp
 });
 
 test("same-topic overlap is allowed after player response when burden stays bounded", () => {
-  const overlapTurn = prepareNextTurn(createSameTopicOverlapInitialState());
+  const overlapTurn = prepareNextRuntimeTurn(createSameTopicOverlapInitialState());
 
   assert.equal(overlapTurn.decision.owner, "reacting_actor");
   assert.equal(overlapTurn.decision.speaker_id, "platform");
   assert.equal(overlapTurn.decision.selection_reason, "overlap-reaction");
 });
 
+test("substantive same-topic turns deepen the active topic", () => {
+  const roomState = createInitialRoomState("topic-depth-growth");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "support-model",
+    depth: 1,
+  };
+
+  const nextState = applyTurnOutcome(roomState, {
+    speaker_id: "player",
+    speaker_name: "Player",
+    turn_owner: "player",
+    text: "We should keep the onboarding support boundary narrow so platform does not absorb exceptions or quiet operational work.",
+  });
+
+  assert.equal(nextState.active_topic.topic_type, "support-model");
+  assert.equal(nextState.active_topic.depth, 2);
+});
+
+test("strong topic drift parks the current topic and opens a new active topic", () => {
+  const roomState = createInitialRoomState("topic-drift-transition");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_id: "topic-support",
+    label: "Support boundary",
+    topic_type: "support-model",
+    depth: 2,
+    status: "active",
+  };
+
+  const nextState = applyTurnOutcome(roomState, {
+    speaker_id: "exec",
+    speaker_name: "Aki Tanaka",
+    turn_owner: "initiating_actor",
+    text: "Who is the owner, sponsor, and decision-maker for this direction?",
+  });
+
+  assert.equal(nextState.parking_lot.at(-1)?.topic_id, "topic-support");
+  assert.equal(nextState.active_topic.topic_type, "ownership");
+  assert.equal(nextState.active_topic.label, "Ownership and sponsorship");
+  assert.equal(nextState.active_topic.depth, 1);
+  assert.equal(nextState.active_topic.opened_by, "exec");
+});
+
+test("support-model topic drift uses a specific reusable label instead of a generic type name", () => {
+  const roomState = createInitialRoomState("topic-labeling");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_id: "topic-scope",
+    label: "Initial platform scope",
+    topic_type: "scope-boundary",
+    depth: 1,
+    status: "active",
+  };
+
+  const nextState = applyTurnOutcome(roomState, {
+    speaker_id: "platform",
+    speaker_name: "Naoki Sato",
+    turn_owner: "reacting_actor",
+    text: "If onboarding exceptions start showing up, what support are we actually committing to?",
+  });
+
+  assert.equal(nextState.active_topic.topic_type, "support-model");
+  assert.equal(nextState.active_topic.label, "Onboarding support boundary");
+});
+
 test("pile-on risk routes to facilitator instead of allowing another stakeholder stack", () => {
-  const pileOnTurn = prepareNextTurn(createPileOnRiskInitialState());
+  const pileOnTurn = prepareNextRuntimeTurn(createPileOnRiskInitialState());
 
   assert.equal(pileOnTurn.decision.owner, "facilitator");
   assert.equal(pileOnTurn.decision.intervention_reason, "pile-on-risk");
+});
+
+test("player does not get selected twice in a row when no clear actor follow-up exists", () => {
+  const roomState = createInitialRoomState("player-repeat-guard");
+  roomState.scene_phase = "discussion";
+  roomState.turn_index = 2;
+  roomState.active_speaker = "player";
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    initiating_actor_id: null,
+    awaiting_reaction_from: null,
+    handoff_candidate_actor_ids: [],
+    should_continue_current_exchange: true,
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "Player, where do you want to start?",
+    },
+    {
+      turn_index: 2,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "I want to start with one bounded onboarding path.",
+    },
+  ];
+
+  const preparedTurn = prepareNextRuntimeTurn(roomState);
+
+  assert.equal(preparedTurn.decision.owner, "facilitator");
+  assert.equal(preparedTurn.decision.intervention_reason, "turn-ownership-unclear");
+});
+
+test("non-question stakeholder reactions do not remain as pending questions", () => {
+  const roomState = createInitialRoomState("pending-question-guard");
+  roomState.scene_phase = "discussion";
+
+  const afterStakeholderTurn = applyTurnOutcome(roomState, {
+    speaker_id: "exec",
+    speaker_name: "Aki Tanaka",
+    turn_owner: "initiating_actor",
+    text: "That helps. I still need a clearer boundary for the first usable scope.",
+  });
+
+  const execState = afterStakeholderTurn.participant_states.find((participant) => participant.participant_id === "exec");
+  assert.equal(execState?.pending_question, null);
+});
+
+test("supportive but unresolved stakeholder follow-up keeps the exchange open", () => {
+  const roomState = createInitialRoomState("implicit-follow-up-guard");
+  roomState.scene_phase = "discussion";
+  roomState.exchange_state.initiating_actor_id = "exec";
+  roomState.exchange_state.awaiting_reaction_from = "exec";
+
+  const afterStakeholderTurn = applyTurnOutcome(roomState, {
+    speaker_id: "exec",
+    speaker_name: "Aki Tanaka",
+    turn_owner: "initiating_actor",
+    text: "That helps. I still need a clearer boundary for the first usable scope.",
+  });
+
+  assert.equal(afterStakeholderTurn.exchange_state.should_continue_current_exchange, true);
+
+  const preparedTurn = prepareNextRuntimeTurn(afterStakeholderTurn);
+  assert.equal(preparedTurn.decision.owner, "player");
+  assert.equal(preparedTurn.decision.selection_reason, "player-clarification-needed");
+});
+
+test("supportive stakeholder acknowledgment without a next ask routes to facilitator instead of another player turn", () => {
+  const roomState = createInitialRoomState("exchange-settled-guard");
+  roomState.scene_phase = "discussion";
+  roomState.turn_index = 2;
+  roomState.exchange_state.initiating_actor_id = "exec";
+  roomState.exchange_state.last_player_answer_turn = 2;
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "We should start with one narrow onboarding path.",
+    },
+    {
+      turn_index: 2,
+      speaker_id: "exec",
+      speaker_name: "Aki Tanaka",
+      turn_owner: "initiating_actor",
+      text: "That helps. I can react to that as a business direction.",
+    },
+  ];
+
+  const preparedTurn = prepareNextRuntimeTurn(roomState);
+  assert.equal(preparedTurn.decision.owner, "facilitator");
+  assert.equal(preparedTurn.decision.intervention_reason, "exchange-settled");
+});
+
+test("exchange-settled facilitator intervention does not re-trigger on the next turn", () => {
+  const roomState = createInitialRoomState("exchange-settled-no-loop");
+  roomState.scene_phase = "discussion";
+  roomState.turn_index = 3;
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    initiating_actor_id: "exec",
+    should_continue_current_exchange: false,
+    awaiting_reaction_from: null,
+    handoff_candidate_actor_ids: [],
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "We should start with one narrow onboarding path.",
+    },
+    {
+      turn_index: 2,
+      speaker_id: "exec",
+      speaker_name: "Aki Tanaka",
+      turn_owner: "initiating_actor",
+      text: "That helps. I can react to that as a business direction.",
+    },
+    {
+      turn_index: 3,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "Sounds settled enough to lock a checkpoint.",
+    },
+  ];
+
+  const preparedTurn = prepareNextRuntimeTurn(roomState);
+  assert.equal(preparedTurn.decision.owner, "player");
+  assert.equal(preparedTurn.decision.intervention_reason, null);
+});
+
+test("close readiness detects bounded next-step phrasing beyond the original exact wording", () => {
+  const roomState = createInitialRoomState("close-readiness-variant");
+  roomState.scene_phase = "discussion";
+
+  const afterStakeholderTurn = applyTurnOutcome(roomState, {
+    speaker_id: "platform",
+    speaker_name: "Naoki Sato",
+    turn_owner: "reacting_actor",
+    text: "That helps. I can support the next step from here after this meeting.",
+  });
+
+  assert.equal(afterStakeholderTurn.close_readiness.ready, true);
+  assert.equal(afterStakeholderTurn.close_readiness.reason, "bounded-next-step-visible");
+});
+
+test("bounded next-step phrasing does not close while visible risk is still unresolved", () => {
+  const roomState = createInitialRoomState("close-risk-guard");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "support-model",
+  };
+  roomState.structural_state = {
+    ...roomState.structural_state,
+    support_model_clarity: 1,
+    open_risks: ["support-boundary-not-yet-clear"],
+  };
+
+  const afterStakeholderTurn = applyTurnOutcome(roomState, {
+    speaker_id: "platform",
+    speaker_name: "Naoki Sato",
+    turn_owner: "reacting_actor",
+    text: "Good. I can support shaping the next step after this meeting.",
+  });
+
+  assert.equal(afterStakeholderTurn.close_readiness.ready, false);
+  assert.equal(afterStakeholderTurn.close_readiness.reason, null);
+});
+
+test("resolved exchange with sufficient structural progress becomes close-ready and marks topic resolved enough", () => {
+  const roomState = createInitialRoomState("exchange-resolved-close");
+  roomState.scene_phase = "discussion";
+  roomState.turn_index = 3;
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "problem-framing",
+    depth: 1,
+  };
+  roomState.structural_state = {
+    ...roomState.structural_state,
+    strategic_clarity: 3,
+    scope_coherence: 3,
+    coalition_stability: 3,
+    open_risks: [],
+  };
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    initiating_actor_id: "exec",
+    should_continue_current_exchange: true,
+  };
+
+  const afterStakeholderTurn = applyTurnOutcome(roomState, {
+    speaker_id: "exec",
+    speaker_name: "Aki Tanaka",
+    turn_owner: "initiating_actor",
+    text: "That helps. I can react to that as a business direction.",
+  });
+
+  assert.equal(afterStakeholderTurn.close_readiness.ready, true);
+  assert.equal(afterStakeholderTurn.close_readiness.reason, "exchange-resolved-enough");
+  assert.equal(afterStakeholderTurn.topic_status, "resolved-enough");
+  assert.equal(afterStakeholderTurn.active_topic.status, "resolved-enough");
+});
+
+test("facilitator intervention clears stale stakeholder pending questions", () => {
+  const roomState = createInitialRoomState("facilitator-clears-pending");
+  roomState.scene_phase = "discussion";
+  roomState.participant_states = roomState.participant_states.map((participant) =>
+    participant.participant_id === "platform"
+      ? { ...participant, pending_question: "What exactly are we committing to?" }
+      : participant,
+  );
+
+  const nextState = applyTurnOutcome(roomState, {
+    speaker_id: "mika",
+    speaker_name: "Mika",
+    turn_owner: "facilitator",
+    text: "Let's stay with the first-use boundary for a moment.",
+  });
+
+  const platformState = nextState.participant_states.find((participant) => participant.participant_id === "platform");
+  assert.equal(platformState?.pending_question, null);
 });
 
 test("known-bad transcript fixtures trigger expected validation flags", () => {
@@ -282,10 +592,99 @@ test("interactive agent turn can use responder-backed opening instead of local o
   const started = startSession(initialized.room_state, "Let's start");
   const responder = new AdapterBackedResponder(new MockModelAdapter());
 
-  const openingTurn = await runNextAgentTurn(started.room_state, responder, { opening_mode: "responder" });
+  const openingTurn = await runNextRuntimeActorTurnFromState(started.room_state, responder, {
+    opening_mode: "responder",
+  });
 
   assert.equal(openingTurn.turn_log.selected_speaker, "mika");
   assert.equal(openingTurn.turn_log.agent_output_summary.delivery_mode, "responder");
+  assert.equal(openingTurn.turn_log.layer_trace.orchestration_layer, "local-room-orchestrator");
+  assert.equal(openingTurn.turn_log.layer_trace.speaker_layer, "runtime-actor");
+  assert.equal(openingTurn.turn_log.visible_output_classification, "simulation-visible");
+});
+
+test("turn log exposes response transport and layer separation for responder-backed turns", async () => {
+  const initialized = initializeSession("layer-trace-test");
+  const started = startSession(initialized.room_state, "Start");
+  const responder = new AdapterBackedResponder(new MockModelAdapter());
+
+  const openingTurn = await runNextRuntimeActorTurnFromState(started.room_state, responder, {
+    opening_mode: "responder",
+  });
+
+  assert.equal(openingTurn.turn_log.agent_output_summary.response_transport, "mock-model-adapter");
+  assert.equal(openingTurn.turn_log.agent_output_summary.response_chain.mode, "unknown");
+  assert.equal(openingTurn.turn_log.layer_trace.response_layer, "unknown");
+  assert.equal(openingTurn.turn_log.evaluation_reference.included_in_evidence_packet, false);
+  assert.equal(openingTurn.turn_log.active_topic_depth_before, 1);
+  assert.equal(openingTurn.turn_log.active_topic_depth_after, 1);
+  assert.equal(openingTurn.turn_log.topic_transition_reason, null);
+});
+
+test("facilitator prompt includes topic depth, close readiness, and parked topics", () => {
+  const roomState = createInitialRoomState("facilitator-prompt-rich-state");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    label: "Ownership and sponsorship",
+    depth: 3,
+  };
+  roomState.close_readiness = {
+    ready: true,
+    reason: "exchange-resolved-enough",
+  };
+  roomState.parking_lot = [
+    {
+      topic_id: "topic-parked",
+      label: "Support boundary",
+      parked_at_turn: 4,
+    },
+  ];
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    should_continue_current_exchange: false,
+    awaiting_reaction_from: null,
+    handoff_candidate_actor_ids: [],
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 4,
+      speaker_id: "exec",
+      speaker_name: "Aki Tanaka",
+      turn_owner: "initiating_actor",
+      text: "That helps. I can react to that as a business direction.",
+    },
+  ];
+
+  const preparedTurn = prepareNextRuntimeTurn(roomState);
+  assert.equal(preparedTurn.decision.owner, "facilitator");
+  assert.match(preparedTurn.prompt_text, /Active topic depth: 3/);
+  assert.match(preparedTurn.prompt_text, /Close readiness: ready \(exchange-resolved-enough\)/);
+  assert.match(preparedTurn.prompt_text, /Parked topics:/);
+  assert.match(preparedTurn.prompt_text, /Support boundary/);
+});
+
+test("state changes and turn log expose topic deepening details", () => {
+  const roomState = createInitialRoomState("topic-observability");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "support-model",
+    depth: 1,
+    label: "Support boundary",
+  };
+
+  const nextState = applyTurnOutcome(roomState, {
+    speaker_id: "player",
+    speaker_name: "Player",
+    turn_owner: "player",
+    text: "We should keep the onboarding support boundary narrow so platform does not absorb exceptions or quiet operational work.",
+  });
+
+  const stateChanges = computeStateChanges(roomState, nextState);
+  assert.deepEqual((stateChanges.topic_transition as Record<string, unknown>).depth_before, 1);
+  assert.deepEqual((stateChanges.topic_transition as Record<string, unknown>).depth_after, 2);
+  assert.equal((stateChanges.topic_transition as Record<string, unknown>).reason, "same-topic-deepening");
 });
 
 test("visible transcript renders clean blocks without orchestration wrapper text", () => {
@@ -321,7 +720,9 @@ test("closing facilitator turn transitions meeting to post-game and local evalua
     },
   ];
 
-  const closingTurn = await runNextAgentTurn(roomState, responder, { opening_mode: "responder" });
+  const closingTurn = await runNextRuntimeActorTurnFromState(roomState, responder, {
+    opening_mode: "responder",
+  });
 
   assert.equal(closingTurn.turn_log.selected_speaker, "mika");
   assert.equal(closingTurn.turn_log.intervention_reason, "closing-transition");
@@ -386,7 +787,7 @@ test("session driver enters live session after a valid start signal", async () =
 
 test("initial opening turn is owned by the facilitator before player articulation", () => {
   const roomState = createInitialRoomState("opening-turn-test");
-  const preparedTurn = prepareNextTurn(roomState);
+  const preparedTurn = prepareNextRuntimeTurn(roomState);
 
   assert.equal(preparedTurn.decision.owner, "facilitator");
   assert.equal(preparedTurn.decision.speaker_id, "mika");
@@ -404,6 +805,7 @@ test("session opening is rendered locally instead of through the responder", asy
   assert.equal(openingTurn?.selected_speaker, "mika");
   assert.equal(openingTurn?.agent_output_summary.delivery_mode, "local-opening");
   assert.match(String(openingTurn?.agent_output_summary.text_preview), /Thanks everyone for making time/);
+  assert.equal(openingTurn?.layer_trace.response_layer, "local-opening");
 });
 
 test("participants receive session-specific setup during initialization", () => {
@@ -438,4 +840,77 @@ test("evaluator returns fixed report shape with primary x/5 structural result", 
   assert.match(formatted, /## 2\. Evaluation Summary/);
   assert.match(formatted, /Structural Progress: `\d\/5`/);
   assert.match(formatted, /## 7\. Suggested Next Steps/);
+});
+
+test("OpenAI adapter can keep separate remote response chains per speaker", async () => {
+  const requests: Array<Record<string, unknown>> = [];
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+    requests.push(body);
+    const responseIndex = requests.length;
+
+    return {
+      ok: true,
+      json: async () => ({
+        id: `resp_${responseIndex}`,
+        output_text: `response ${responseIndex}`,
+        status: "completed",
+      }),
+    } as Response;
+  }) as typeof fetch;
+
+  try {
+    const adapter = new OpenAIResponsesAdapter({
+      apiKey: "test-key",
+      conversationMode: "per-speaker-response-chain",
+    });
+
+    await adapter.generate({
+      session_id: "session-1",
+      speaker_id: "mika",
+      turn_owner: "facilitator",
+      selection_reason: "session-opening",
+      prompt_input: {},
+      prompt_text: "Opening prompt",
+    });
+    await adapter.generate({
+      session_id: "session-1",
+      speaker_id: "exec",
+      turn_owner: "initiating_actor",
+      selection_reason: "stakeholder-reaction",
+      prompt_input: {},
+      prompt_text: "Exec prompt",
+    });
+    await adapter.generate({
+      session_id: "session-1",
+      speaker_id: "mika",
+      turn_owner: "facilitator",
+      selection_reason: "clarify-turn-owner",
+      prompt_input: {},
+      prompt_text: "Follow-up prompt",
+    });
+
+    assert.equal(requests.length, 3);
+    assert.equal(requests[0].previous_response_id, undefined);
+    assert.equal(requests[1].previous_response_id, undefined);
+    assert.equal(requests[2].previous_response_id, "resp_1");
+    assert.equal((requests[2].metadata as Record<string, unknown>).runtime_speaker_id, "mika");
+
+    const followUp = await adapter.generate({
+      session_id: "session-1",
+      speaker_id: "mika",
+      turn_owner: "facilitator",
+      selection_reason: "clarify-turn-owner",
+      prompt_input: {},
+      prompt_text: "Third Mika prompt",
+    });
+
+    assert.equal((followUp.metadata as Record<string, unknown>).conversation_mode, "per-speaker-response-chain");
+    assert.equal((followUp.metadata as Record<string, unknown>).previous_response_id, "resp_3");
+    assert.equal((followUp.metadata as Record<string, unknown>).response_chain_key, "session-1:mika");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

@@ -7,20 +7,25 @@
 - created_at: 2026-03-21
 - updated_at: 2026-03-21
 - related_implementation_spec: docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-multi-agent-handoff.md
+- related_decision: docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md
 
 ## Purpose
-Keep multi-agent-specific playtest observations separate from:
+Keep playtest observations from the stronger multi-agent exploration phase separate from:
 - durable runtime guidance
 - single-agent conversation-naturalness notes
 
 This memo is for:
-- multi-agent orchestration observations
+- remote-backed or stronger actor-separated orchestration observations
 - actor separation issues
-- conductor or facilitator behavior issues specific to multi-agent runs
-- prompt-merging or script-shaping artifacts that appear only after multi-agent rollout
+- conductor or facilitator behavior issues specific to remote-backed runs
+- prompt-merging or script-shaping artifacts that appeared during the stronger multi-agent exploration phase
 
 This file is not a runtime contract.
 It should not be treated as a direct prompting source.
+
+Priority note:
+- after `adr-20260321-local-first-runtime-and-multi-agent-scope`, this memo should be treated as historical troubleshooting evidence rather than the primary architectural direction
+- use it to preserve observed failure patterns and boundary problems, not to imply that stronger remote actor separation remains the default live-runtime goal
 
 ## Observation Notes
 - 2026-03-21:
@@ -121,3 +126,19 @@ It should not be treated as a direct prompting source.
 
 - 2026-03-21:
   During live simulation turns, temporary system-style progress messages may appear between the player's message and the actor response, for example messages equivalent to "generating a response in this direction." This is immersion-breaking. Remote multi-agent mode likely needs a stronger suppression boundary so orchestration or progress text never appears inside the visible simulation dialogue.
+
+- 2026-03-21:
+  Operator guidance for remote OpenAI playtests should default to the full-session harness, not the thin harness. The thin harness is still useful for boundary smoke tests, but it can mislead operators into thinking the simulation stopped early or failed to enter a real multi-agent session. Default assumption:
+  - use `simulate:openai:full` for normal remote playtests
+  - use `simulate:openai` only when intentionally checking the early live-turn boundary
+
+- 2026-03-21:
+  The current remote execution modes have different purposes and should not be treated as interchangeable:
+  - `simulate:openai`
+    - thin smoke test for initialization, opening, first player turn, and first remote agent response
+  - `simulate:openai:full`
+    - scripted-player end-to-end runtime validation through close and local evaluation
+  - a future interactive remote playtest mode is still needed
+    - human player enters each turn manually
+    - remote agents respond one turn at a time
+  Without this distinction, operators can mistake the thin harness for a failed full simulation, or mistake the full harness for a human-playable session.
