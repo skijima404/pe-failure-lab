@@ -1,6 +1,34 @@
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { AdapterBackedResponder, OpenAIResponsesAdapter } from "../runtime/execution/model-client.ts";
 import { runSession } from "../runtime/execution/run-session.ts";
 import { createScriptedSessionInitialState } from "../runtime/validation/fixtures/scripted-session.ts";
+
+function loadRepoEnv() {
+  const envPath = resolve(".env");
+  if (!existsSync(envPath)) {
+    return;
+  }
+
+  const lines = readFileSync(envPath, "utf8").split("\n");
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) {
+      continue;
+    }
+
+    const separatorIndex = line.indexOf("=");
+    if (separatorIndex === -1) {
+      continue;
+    }
+
+    const key = line.slice(0, separatorIndex).trim();
+    const value = line.slice(separatorIndex + 1).trim().replace(/^['"]|['"]$/g, "");
+    if (key && !process.env[key]) {
+      process.env[key] = value;
+    }
+  }
+}
 
 function requiredEnv(name) {
   const value = process.env[name];
@@ -12,6 +40,8 @@ function requiredEnv(name) {
 }
 
 async function main() {
+  loadRepoEnv();
+
   const apiKey = requiredEnv("OPENAI_API_KEY");
   const model = process.env.OPENAI_MODEL ?? "gpt-5";
   const reasoningEffort = process.env.OPENAI_REASONING_EFFORT;

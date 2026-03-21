@@ -39,8 +39,17 @@ What exists now:
 - a runnable initialization harness via `npm run fixture:initialization`
 - a runnable session driver harness via `npm run fixture:session-driver`
 - a runnable mock adapter harness via `npm run fixture:mock-adapter`
+- a runnable OpenAI adapter harness via `npm run fixture:openai-adapter`
 - a runnable evaluator harness via `npm run fixture:evaluator`
 
 What does not exist yet:
 - richer scene asset families beyond the MVP thin runtime slices
 - production-grade evaluator scoring implementation
+
+## Environment Notes
+`npm run fixture:openai-adapter` reads:
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL` (optional)
+- `OPENAI_REASONING_EFFORT` (optional)
+
+The script first checks the current environment, then falls back to a repository-root `.env` file if present.

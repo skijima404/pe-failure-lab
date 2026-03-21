@@ -136,22 +136,66 @@ export class OpenAIResponsesAdapter implements ModelAdapter {
 
     const payload = (await response.json()) as {
       output_text?: string;
+      output?: Array<{
+        type?: string;
+        content?: Array<{
+          type?: string;
+          text?: string;
+        }>;
+      }>;
       id?: string;
       usage?: Record<string, unknown>;
+      status?: string;
     };
+    const text = extractOpenAIResponseText(payload);
 
-    if (!payload.output_text) {
-      throw new Error("OpenAIResponsesAdapter response did not include output_text.");
+    if (!text) {
+      throw new Error(
+        `OpenAIResponsesAdapter response did not include readable text. status=${payload.status ?? "unknown"} id=${payload.id ?? "unknown"}`,
+      );
     }
 
     return {
-      text: payload.output_text,
+      text,
       metadata: {
         response_id: payload.id ?? null,
         usage: payload.usage ?? null,
+        status: payload.status ?? null,
       },
     };
   }
+}
+
+function extractOpenAIResponseText(payload: {
+  output_text?: string;
+  output?: Array<{
+    type?: string;
+    content?: Array<{
+      type?: string;
+      text?: string;
+    }>;
+  }>;
+}): string | null {
+  if (typeof payload.output_text === "string" && payload.output_text.trim()) {
+    return payload.output_text.trim();
+  }
+
+  if (!Array.isArray(payload.output)) {
+    return null;
+  }
+
+  const textParts = payload.output.flatMap((item) => {
+    if (!Array.isArray(item.content)) {
+      return [];
+    }
+
+    return item.content
+      .filter((part) => part?.type === "output_text" || part?.type === "text" || typeof part?.text === "string")
+      .map((part) => part.text?.trim() ?? "")
+      .filter(Boolean);
+  });
+
+  return textParts.length > 0 ? textParts.join("\n").trim() : null;
 }
 
 function extractTopicLabel(activeTopic: unknown): string {
