@@ -1,6 +1,7 @@
 import { createTurnDebugDump, type TurnDebugDump } from "../observability/debug-dump.ts";
 import { createTurnLog, type TurnLog } from "../observability/event-log.ts";
 import { createLocalOpeningOutcome } from "./local-opening.ts";
+import { createLocalFacilitatorOutcome } from "./local-facilitator.ts";
 import { prepareNextRuntimeTurn } from "./prepare-runtime-turn.ts";
 import type { RuntimeResponder } from "./runtime-responder.ts";
 import { summarizePromptInput, summarizeTurnOutcome, type TurnDeliveryMode } from "./turn-summary.ts";
@@ -15,6 +16,7 @@ export interface SessionStepResult {
 
 export interface RuntimeActorTurnOptions {
   opening_mode?: "local" | "responder";
+  facilitator_mode?: "local" | "responder";
 }
 
 export async function runNextRuntimeActorTurn(
@@ -32,12 +34,18 @@ export async function runNextRuntimeActorTurn(
     throw new Error("runNextRuntimeActorTurn cannot execute a player-owned turn. Accept player input first.");
   }
 
-  return executePreparedTurn(roomState, preparedTurn, responder, options.opening_mode ?? "local");
+  return executePreparedTurn(
+    roomState,
+    preparedTurn,
+    responder,
+    options.opening_mode ?? "local",
+    options.facilitator_mode ?? "responder",
+  );
 }
 
 export async function runRuntimeSessionStep(roomState: RoomState, responder: RuntimeResponder): Promise<SessionStepResult> {
   const preparedTurn = prepareNextRuntimeTurn(roomState);
-  return executePreparedTurn(roomState, preparedTurn, responder, "local");
+  return executePreparedTurn(roomState, preparedTurn, responder, "local", "local");
 }
 
 async function executePreparedTurn(
@@ -45,16 +53,21 @@ async function executePreparedTurn(
   preparedTurn: ReturnType<typeof prepareNextRuntimeTurn>,
   responder: RuntimeResponder,
   openingMode: "local" | "responder",
+  facilitatorMode: "local" | "responder",
 ): Promise<SessionStepResult> {
   const deliveryMode: TurnDeliveryMode =
     preparedTurn.decision.owner === "facilitator" &&
     preparedTurn.decision.intervention_reason === "session-opening" &&
     openingMode === "local"
       ? "local-opening"
+      : preparedTurn.decision.owner === "facilitator" && facilitatorMode === "local"
+        ? "local-facilitator"
       : "responder";
   const outcome =
     deliveryMode === "local-opening"
       ? createLocalOpeningOutcome(roomState)
+      : deliveryMode === "local-facilitator"
+        ? createLocalFacilitatorOutcome(roomState, preparedTurn)
       : await responder.respond({ roomState, preparedTurn });
   const lifecycleOutcome =
     preparedTurn.decision.owner === "facilitator" && preparedTurn.decision.intervention_reason === "closing-transition"

@@ -5,7 +5,7 @@ export interface TurnLayerTrace {
   operator_layer: "local-codex-session";
   orchestration_layer: "local-room-orchestrator";
   speaker_layer: "runtime-actor" | "player";
-  response_layer: "local-opening" | "remote-response-chain" | "local-player-input" | "unknown";
+  response_layer: "local-opening" | "local-facilitator" | "remote-response-chain" | "local-player-input" | "unknown";
   evaluator_layer: "local-first";
 }
 
@@ -65,6 +65,8 @@ export function createTurnLog(params: {
           ? "local-player-input"
           : agentOutputSummary.delivery_mode === "local-opening"
             ? "local-opening"
+            : agentOutputSummary.delivery_mode === "local-facilitator"
+              ? "local-facilitator"
             : responseChain && responseChain.mode === "per-speaker-response-chain"
               ? "remote-response-chain"
               : "unknown",

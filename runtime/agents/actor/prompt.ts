@@ -1,5 +1,6 @@
 import type { ParticipantState, PromptConstraint, RoomState } from "../../state/types.ts";
 import { compactTranscript, type TranscriptContext } from "../../transcripts/compaction.ts";
+import type { ProposalReactionCandidate } from "../../sidecars/types.ts";
 
 export interface ActorPromptInput {
   speaker_id: string;
@@ -11,6 +12,7 @@ export interface ActorPromptInput {
   exchange_state_summary: RoomState["exchange_state"];
   visible_unresolved_items: string[];
   close_readiness: RoomState["close_readiness"];
+  sidecar_reaction_candidate: ProposalReactionCandidate | null;
   recent_transcript: TranscriptContext;
   response_constraints: PromptConstraint[];
 }
@@ -35,6 +37,8 @@ export function buildActorPromptInput(
     exchange_state_summary: roomState.exchange_state,
     visible_unresolved_items: roomState.structural_state.open_risks.slice(0, 3),
     close_readiness: roomState.close_readiness,
+    sidecar_reaction_candidate:
+      roomState.sidecar_state.proposal_context?.result.candidates.find((candidate) => candidate.participant_id === speaker.participant_id) ?? null,
     recent_transcript: compactTranscript(roomState),
     response_constraints: [
       { key: "main-point-count", value: "1" },
@@ -57,6 +61,15 @@ export function renderActorPrompt(input: ActorPromptInput): string {
   const closeReadiness = input.close_readiness.ready
     ? `ready (${input.close_readiness.reason ?? "no-reason"})`
     : "not-ready";
+  const sidecarCandidate = input.sidecar_reaction_candidate
+    ? [
+        `- stance: ${input.sidecar_reaction_candidate.stance}`,
+        `- what is good: ${input.sidecar_reaction_candidate.what_is_good ?? "none"}`,
+        `- what is risky: ${input.sidecar_reaction_candidate.what_is_risky ?? "none"}`,
+        `- what is missing: ${input.sidecar_reaction_candidate.what_is_missing ?? "none"}`,
+        `- suggested next question: ${input.sidecar_reaction_candidate.suggested_next_question ?? "none"}`,
+      ].join("\n")
+    : "- none";
 
   return [
     `You are ${input.speaker_runtime_slice.display_name}.`,
@@ -96,6 +109,9 @@ export function renderActorPrompt(input: ActorPromptInput): string {
     "",
     "Visible unresolved items:",
     unresolved,
+    "",
+    "Hidden sidecar reaction candidate:",
+    sidecarCandidate,
     "",
     "Recent transcript:",
     recentTurns || "(none)",

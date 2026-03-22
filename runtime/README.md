@@ -123,8 +123,20 @@ The script first checks the current environment, then falls back to a repository
   - `initializeSession()`
   - `startSession()`
   - `acceptPlayerMessage()`
+  - `acceptPlayerMessageWithJudger()`
   - `runNextRuntimeActorTurnFromState()`
   - `evaluateIfSessionClosed()`
+- player-turn judgment remains main-session-owned:
+  - the default path uses a local judgment boundary
+  - `scripts/run-openai-interactive.mjs -- --player-judger=openai` can use a stateless model-backed player-turn judger without moving canonical state ownership out of the main session
+  - `multi_perspective_needed` is kept as a conservative intervention signal; it can justify bounded sidecar/context preparation without forcing an immediate visible speaker switch
+- the remote interactive harness now keeps facilitator turns local by default:
+  - `Mika` is rendered locally for observability and replay stability
+  - stakeholder turns remain remote-backed
+- the remote interactive harness supports explicit multi-line player input:
+  - enter `/multi` at `Player>` to start a multi-line turn
+  - enter each line of the player turn
+  - enter `/send` to submit the full turn, or `/cancel` to discard it
 - `runtime/execution/prepare-runtime-turn.ts` is the canonical turn-preparation entry point
 - `runtime/execution/runtime-responder.ts` is the canonical runtime response transport boundary
 - observability now records layer-specific traces so operators can distinguish:

@@ -11,6 +11,10 @@ import type { RuntimeResponder } from "./runtime-responder.ts";
 import type { RoomState, TurnOutcome } from "../state/types.ts";
 import { evaluateClosedSessionLocally, type LocalEvaluationResult } from "../evaluation/local-evaluator.ts";
 import type { EvaluationContext } from "../evaluation/report.ts";
+import { buildProposalSidecarPacket } from "../sidecars/packet-builders.ts";
+import { buildLocalProposalSidecarContext } from "../sidecars/local-proposal-sidecar.ts";
+import { buildPlayerTurnJudgmentPacket } from "../orchestration/player-turn-judgment-packet.ts";
+import type { AsyncPlayerTurnJudger } from "../orchestration/adapter-backed-player-turn-judger.ts";
 
 export interface SessionDriverResult {
   accepted: boolean;
@@ -34,6 +38,72 @@ export interface SessionStartResult {
 export interface SessionCloseResult {
   room_state: RoomState;
   evaluation: LocalEvaluationResult | null;
+}
+
+function buildAcceptedPlayerTurnOutcome(
+  roomState: RoomState,
+  text: string,
+  speakerName: string,
+  mainSessionJudgmentOverride?: RoomState["main_session_judgment"],
+): TurnOutcome {
+  const needsInitialStakeholderReaction =
+    roomState.exchange_state.initiating_actor_id === null &&
+    roomState.recent_transcript.at(-1)?.speaker_id === "mika";
+
+  return {
+    speaker_id: "player",
+    speaker_name: speakerName,
+    turn_owner: "player",
+    text,
+    updates: {
+      ...(needsInitialStakeholderReaction
+        ? {
+            exchange_state: {
+              ...roomState.exchange_state,
+              initiating_actor_id: "exec",
+              awaiting_reaction_from: "exec",
+              follow_up_count: 0,
+              handoff_candidate_actor_ids: [],
+              should_continue_current_exchange: true,
+            },
+          }
+        : {}),
+      ...(mainSessionJudgmentOverride ? { main_session_judgment: mainSessionJudgmentOverride } : {}),
+    },
+  };
+}
+
+function finalizeAcceptedPlayerMessage(nextState: RoomState, text: string): RoomState {
+  if (!nextState.main_session_judgment.multi_perspective_needed) {
+    return {
+      ...nextState,
+      sidecar_state: {
+        ...nextState.sidecar_state,
+        proposal_context: null,
+      },
+    };
+  }
+
+  const proposalPacket = buildProposalSidecarPacket(nextState, text);
+  const proposalContext = buildLocalProposalSidecarContext(nextState, proposalPacket);
+
+  return {
+    ...nextState,
+    exchange_state: proposalContext.selected_candidate_participant_id
+      ? {
+          ...nextState.exchange_state,
+          initiating_actor_id: proposalContext.selected_candidate_participant_id,
+          awaiting_reaction_from: proposalContext.selected_candidate_participant_id,
+          follow_up_count: 0,
+          handoff_candidate_actor_ids: [],
+          should_continue_current_exchange: true,
+        }
+      : nextState.exchange_state,
+    sidecar_state: {
+      ...nextState.sidecar_state,
+      proposal_context: proposalContext,
+    },
+  };
 }
 
 export function initializeSession(sessionId: string, language = "en"): SessionInitializationResult {
@@ -77,29 +147,26 @@ export function acceptPlayerMessage(
   text: string,
   speakerName = "Player",
 ): RoomState {
-  const needsInitialStakeholderReaction =
-    roomState.exchange_state.initiating_actor_id === null &&
-    roomState.recent_transcript.at(-1)?.speaker_id === "mika";
-  const playerOutcome: TurnOutcome = {
-    speaker_id: "player",
-    speaker_name: speakerName,
-    turn_owner: "player",
-    text,
-    updates: needsInitialStakeholderReaction
-      ? {
-          exchange_state: {
-            ...roomState.exchange_state,
-            initiating_actor_id: "exec",
-            awaiting_reaction_from: "exec",
-            follow_up_count: 0,
-            handoff_candidate_actor_ids: [],
-            should_continue_current_exchange: true,
-          },
-        }
-      : undefined,
-  };
+  const playerOutcome = buildAcceptedPlayerTurnOutcome(roomState, text, speakerName);
+  return finalizeAcceptedPlayerMessage(applyTurnOutcome(roomState, playerOutcome), text);
+}
 
-  return applyTurnOutcome(roomState, playerOutcome);
+export async function acceptPlayerMessageWithJudger(
+  roomState: RoomState,
+  text: string,
+  judger: AsyncPlayerTurnJudger,
+  speakerName = "Player",
+): Promise<RoomState> {
+  const packet = buildPlayerTurnJudgmentPacket(roomState, text);
+  const judgment = await judger.judgePlayerTurn(packet);
+  const playerOutcome = buildAcceptedPlayerTurnOutcome(roomState, text, speakerName, {
+    meeting_layer: judgment.meeting_layer,
+    last_player_utterance_type: judgment.utterance_type,
+    last_player_intent: judgment.player_intent,
+    multi_perspective_needed: judgment.multi_perspective_needed,
+  });
+
+  return finalizeAcceptedPlayerMessage(applyTurnOutcome(roomState, playerOutcome), text);
 }
 
 export async function runNextRuntimeActorTurnFromState(

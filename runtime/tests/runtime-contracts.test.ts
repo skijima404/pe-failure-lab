@@ -7,9 +7,11 @@ import { evaluateSession, formatReflectionReport } from "../evaluation/report.ts
 import { evaluateClosedSessionLocally } from "../evaluation/local-evaluator.ts";
 import { buildInitializationBrief, formatInitializationBrief, isStartSignal } from "../execution/initialization.ts";
 import { MockModelAdapter, AdapterBackedResponder, OpenAIResponsesAdapter } from "../execution/runtime-responder.ts";
+import { AdapterBackedPlayerTurnJudger } from "../orchestration/adapter-backed-player-turn-judger.ts";
 import { prepareNextRuntimeTurn } from "../execution/prepare-runtime-turn.ts";
 import {
   acceptPlayerMessage,
+  acceptPlayerMessageWithJudger,
   evaluateIfSessionClosed,
   initializeSession,
   runNextRuntimeActorTurnFromState,
@@ -21,6 +23,18 @@ import { loadDefaultSceneSetup } from "../scene/setup-loader.ts";
 import { loadDefaultPlayerInitialization } from "../scene/player-initialization-loader.ts";
 import { applyTurnOutcome, computeStateChanges } from "../state/reducers.ts";
 import { createInitialRoomState } from "../state/schema.ts";
+import {
+  buildProposalSidecarPacket,
+  buildRiskSidecarPacket,
+} from "../sidecars/packet-builders.ts";
+import { buildLocalProposalSidecarContext } from "../sidecars/local-proposal-sidecar.ts";
+import {
+  classifyPlayerUtterance,
+  inferMeetingLayer,
+  inferMultiPerspectiveNeeded,
+} from "../orchestration/player-turn-analysis.ts";
+import { buildPlayerTurnJudgmentPacket } from "../orchestration/player-turn-judgment-packet.ts";
+import { judgePlayerTurnLocally } from "../orchestration/local-player-turn-judger.ts";
 import { loadRuntimePersonaSlice } from "../personas/runtime-slice-loader.ts";
 import { runScriptedFixture } from "../validation/fixture-runner.ts";
 import {
@@ -100,6 +114,299 @@ test("player response can generate same-topic overlap candidates from session co
   assert.equal(preparedTurn.decision.speaker_id, "platform");
 });
 
+test("sidecar packet builders create bounded proposal and risk packets from main-session state", () => {
+  const roomState = createInitialRoomState("proposal-packet-test");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    label: "Initial platform scope",
+    topic_type: "scope-boundary",
+  };
+  roomState.main_session_judgment = {
+    ...roomState.main_session_judgment,
+    meeting_layer: "what",
+    last_player_utterance_type: "proposal",
+    last_player_intent: "propose-bounded-first-move",
+    multi_perspective_needed: true,
+  };
+  roomState.parking_lot = [
+    {
+      topic_id: "topic-parked",
+      label: "Support boundary",
+      parked_at_turn: 3,
+    },
+  ];
+  roomState.structural_state.open_risks = ["ownership-follow-up-not-yet-clear"];
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "exec",
+      speaker_name: "Aki Tanaka",
+      turn_owner: "initiating_actor",
+      text: "The first move should stay narrow enough to matter this quarter.",
+    },
+    {
+      turn_index: 2,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "We should start with one business line and one paved path.",
+    },
+  ];
+
+  const proposalPacket = buildProposalSidecarPacket(
+    roomState,
+    "I think we should start with one bounded v0.1 path for a single business line.",
+  );
+  const riskPacket = buildRiskSidecarPacket(
+    roomState,
+    "I think we should start with one bounded v0.1 path for a single business line.",
+  );
+
+  assert.equal(proposalPacket.packet_kind, "proposal-sidecar");
+  assert.equal(proposalPacket.meeting_layer, "what");
+  assert.equal(proposalPacket.player_utterance_type, "proposal");
+  assert.equal(proposalPacket.player_intent, "propose-bounded-first-move");
+  assert.equal(proposalPacket.multi_perspective_needed, true);
+  assert.deepEqual(proposalPacket.resolved_topics, ["Support boundary"]);
+  assert.equal(proposalPacket.decisions_made.length > 0, true);
+  assert.deepEqual(proposalPacket.target_participant_ids, ["exec", "platform", "delivery"]);
+  assert.equal(riskPacket.packet_kind, "risk-sidecar");
+  assert.deepEqual(riskPacket.visible_risks, ["ownership-follow-up-not-yet-clear"]);
+});
+
+test("player turns update canonical main-session judgment for meeting layer and intent", () => {
+  const roomState = createInitialRoomState("main-session-judgment-test");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "scope-boundary",
+  };
+
+  const nextState = applyTurnOutcome(roomState, {
+    speaker_id: "player",
+    speaker_name: "Player",
+    turn_owner: "player",
+    text: "I think we should start with one bounded v0.1 path for a single business line.",
+  });
+
+  assert.equal(nextState.main_session_judgment.meeting_layer, "what");
+  assert.equal(nextState.main_session_judgment.last_player_utterance_type, "proposal");
+  assert.equal(nextState.main_session_judgment.last_player_intent, "propose-bounded-first-move");
+  assert.equal(nextState.main_session_judgment.multi_perspective_needed, true);
+});
+
+test("player-turn judgment uses a bounded packet before deriving canonical tags", () => {
+  const roomState = createInitialRoomState("player-turn-judgment-packet-test", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    label: "Scope boundary",
+    topic_type: "scope-boundary",
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "Let's clarify the issue before we debate the shape.",
+    },
+  ];
+
+  const packet = buildPlayerTurnJudgmentPacket(
+    roomState,
+    "ではPlatform EngineeringではなくDevOpsを勧めるのはいかがでしょうか",
+  );
+  const result = judgePlayerTurnLocally(packet);
+
+  assert.equal(packet.packet_kind, "player-turn-judgment");
+  assert.equal(packet.current_meeting_layer, "why");
+  assert.equal(packet.active_topic_type, "scope-boundary");
+  assert.equal(result.utterance_type, "proposal");
+  assert.equal(result.multi_perspective_needed, true);
+});
+
+test("proposal player turns seed local sidecar context without forcing immediate speaker reseeding", () => {
+  const roomState = createInitialRoomState("proposal-sidecar-integration");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "support-model",
+    label: "Onboarding support boundary",
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "platform",
+      speaker_name: "Naoki Sato",
+      turn_owner: "initiating_actor",
+      text: "What does the platform side actually provide first?",
+    },
+  ];
+  roomState.exchange_state.initiating_actor_id = "platform";
+
+  const nextState = acceptPlayerMessage(
+    roomState,
+    "I think we should start with one narrow onboarding path and keep support exceptions outside the first offer.",
+  );
+
+  assert.equal(nextState.sidecar_state.proposal_context?.packet.packet_kind, "proposal-sidecar");
+  assert.equal(nextState.sidecar_state.proposal_context?.selected_candidate_participant_id, "exec");
+  assert.equal(nextState.exchange_state.awaiting_reaction_from, "exec");
+});
+
+test("multi-perspective routing prefers a different stakeholder than the previous speaker when available", () => {
+  const roomState = createInitialRoomState("multi-perspective-routing-test");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "scope-boundary",
+    label: "Initial platform scope",
+  };
+  roomState.main_session_judgment = {
+    ...roomState.main_session_judgment,
+    meeting_layer: "what",
+    last_player_utterance_type: "question",
+    last_player_intent: "compare-alternative-framing",
+    multi_perspective_needed: true,
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "exec",
+      speaker_name: "Aki Tanaka",
+      turn_owner: "initiating_actor",
+      text: "We need a bounded first move.",
+    },
+  ];
+
+  const packet = buildProposalSidecarPacket(roomState, "Wouldn't it be better to call this DevOps instead?");
+  const context = buildLocalProposalSidecarContext(roomState, packet);
+
+  assert.notEqual(context.selected_candidate_participant_id, "exec");
+  assert.equal(context.selected_candidate_participant_id, "platform");
+});
+
+test("async player-turn judger can override canonical judgment before routing", async () => {
+  const roomState = createInitialRoomState("async-player-judger-test");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "scope-boundary",
+    label: "Scope boundary",
+  };
+
+  const nextState = await acceptPlayerMessageWithJudger(
+    roomState,
+    "Wouldn't it be better to call this DevOps instead?",
+    {
+      async judgePlayerTurn(packet) {
+        return {
+          packet_id: packet.packet_id,
+          utterance_type: "question",
+          meeting_layer: "what",
+          player_intent: "compare-alternative-framing",
+          multi_perspective_needed: true,
+        };
+      },
+    },
+  );
+
+  assert.equal(nextState.main_session_judgment.last_player_intent, "compare-alternative-framing");
+  assert.equal(nextState.main_session_judgment.multi_perspective_needed, true);
+  assert.equal(nextState.sidecar_state.proposal_context?.packet.player_utterance, "Wouldn't it be better to call this DevOps instead?");
+});
+
+test("meeting layer and utterance classification prefer explicit why/how signals over topic defaults", () => {
+  const roomState = createInitialRoomState("meeting-layer-test");
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "delivery-shape",
+  };
+
+  assert.equal(classifyPlayerUtterance("Why are we doing this now?"), "question");
+  assert.equal(inferMeetingLayer(roomState, "Why are we doing this now?"), "why");
+  assert.equal(classifyPlayerUtterance("I think we should start with a narrow onboarding path."), "proposal");
+  assert.equal(inferMultiPerspectiveNeeded("I think we should start with a narrow onboarding path.", "proposal"), true);
+  assert.equal(inferMeetingLayer(roomState, "How do we roll this out without stalling the launch?"), "how");
+});
+
+test("japanese localization patch maps why-questions and proposal-like phrasing into canonical judgments", () => {
+  const roomState = createInitialRoomState("ja-meeting-layer-test", "ja");
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "scope-boundary",
+  };
+
+  assert.equal(classifyPlayerUtterance("まずはこの流れが何をきっかけにして生まれたのか、大元のIssueを確認しませんか", "ja"), "question");
+  assert.equal(inferMeetingLayer(roomState, "まずはこの流れが何をきっかけにして生まれたのか、大元のIssueを確認しませんか"), "why");
+  assert.equal(classifyPlayerUtterance("ではPlatform EngineeringではなくDevOpsを勧めるのはいかがでしょうか", "ja"), "proposal");
+  assert.equal(
+    inferMultiPerspectiveNeeded("ではPlatform EngineeringではなくDevOpsを勧めるのはいかがでしょうか", "proposal", "ja"),
+    true,
+  );
+});
+
+test("japanese player turns update canonical main-session judgment through localization patch", () => {
+  const roomState = createInitialRoomState("ja-main-session-judgment-test", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "scope-boundary",
+  };
+
+  const nextState = applyTurnOutcome(roomState, {
+    speaker_id: "player",
+    speaker_name: "Player",
+    turn_owner: "player",
+    text: "まずはこの流れが何をきっかけにして生まれたのか、大元のIssueを確認しませんか",
+  });
+
+  assert.equal(nextState.main_session_judgment.meeting_layer, "why");
+  assert.equal(nextState.main_session_judgment.last_player_utterance_type, "question");
+  assert.equal(nextState.main_session_judgment.last_player_intent, "request-trigger-alignment");
+  assert.equal(nextState.main_session_judgment.multi_perspective_needed, false);
+});
+
+test("multi-perspective trigger can fire for non-proposal alternative framing", () => {
+  assert.equal(classifyPlayerUtterance("Wouldn't it be better to call this DevOps instead?"), "question");
+  assert.equal(
+    inferMultiPerspectiveNeeded("Wouldn't it be better to call this DevOps instead?", "question"),
+    true,
+  );
+});
+
+test("adapter-backed player-turn judger parses structured adapter output and falls back on invalid output", async () => {
+  const roomState = createInitialRoomState("adapter-backed-player-judger-test");
+  const packet = buildPlayerTurnJudgmentPacket(roomState, "Why are we doing this now?");
+  const validJudger = new AdapterBackedPlayerTurnJudger({
+    async generate() {
+      return {
+        text: '{"utterance_type":"question","meeting_layer":"why","player_intent":"request-trigger-alignment","multi_perspective_needed":false}',
+      };
+    },
+  });
+  const invalidJudger = new AdapterBackedPlayerTurnJudger({
+    async generate() {
+      return {
+        text: "not-json",
+      };
+    },
+  });
+
+  const valid = await validJudger.judgePlayerTurn(packet);
+  const invalid = await invalidJudger.judgePlayerTurn(packet);
+
+  assert.equal(valid.utterance_type, "question");
+  assert.equal(valid.meeting_layer, "why");
+  assert.equal(valid.player_intent, "request-trigger-alignment");
+  assert.equal(valid.multi_perspective_needed, false);
+
+  assert.equal(invalid.packet_id, packet.packet_id);
+  assert.equal(typeof invalid.player_intent, "string");
+});
+
 test("persona slice loader reads durable runtime persona assets", () => {
   const execPersona = loadRuntimePersonaSlice("exec");
   const facilitatorPersona = loadRuntimePersonaSlice("mika");
@@ -169,6 +476,24 @@ test("actor prompt includes stakeholder working context and pressure background"
     depth: 2,
   };
   roomState.structural_state.open_risks = ["support-boundary-not-yet-clear"];
+  roomState.sidecar_state.proposal_context = {
+    packet: buildProposalSidecarPacket(roomState, "I think we should start with one narrow onboarding path."),
+    result: {
+      packet_id: "actor-context-sidecar",
+      candidates: [
+        {
+          participant_id: "platform",
+          stance: "conditional-support",
+          what_is_good: "the proposal stays bounded enough to discuss",
+          what_is_risky: "support exceptions could still expand",
+          what_is_missing: "the first support boundary",
+          suggested_next_question: "What exactly does platform provide first?",
+          speaker_fit: "high",
+        },
+      ],
+    },
+    selected_candidate_participant_id: "platform",
+  };
 
   const preparedTurn = prepareNextRuntimeTurn(roomState);
 
@@ -180,6 +505,33 @@ test("actor prompt includes stakeholder working context and pressure background"
   assert.match(preparedTurn.prompt_text, /Current pressure seed:/);
   assert.match(preparedTurn.prompt_text, /Active topic depth: 2/);
   assert.match(preparedTurn.prompt_text, /Visible unresolved items:/);
+  assert.match(preparedTurn.prompt_text, /Hidden sidecar reaction candidate:/);
+});
+
+test("mock adapter renders sidecar-aware stakeholder response when proposal context exists", async () => {
+  const initialized = initializeSession("sidecar-local-rendering-test");
+  const started = startSession(initialized.room_state, "Start");
+  const afterOpening = await runNextRuntimeActorTurnFromState(started.room_state, new AdapterBackedResponder(new MockModelAdapter()), {
+    opening_mode: "local",
+  });
+  afterOpening.room_state.active_topic = {
+    ...afterOpening.room_state.active_topic,
+    topic_type: "support-model",
+    label: "Onboarding support boundary",
+  };
+
+  const afterPlayerMessage = acceptPlayerMessage(
+    afterOpening.room_state,
+    "I think we should start with one narrow onboarding path and keep support exceptions outside the first offer.",
+  );
+  const actorTurn = await runNextRuntimeActorTurnFromState(
+    afterPlayerMessage,
+    new AdapterBackedResponder(new MockModelAdapter()),
+  );
+
+  assert.equal(actorTurn.turn_log.selected_speaker, "platform");
+  assert.match(actorTurn.room_state.recent_transcript.at(-1)?.text ?? "", /I can work with that direction if we keep it tight\./);
+  assert.equal(actorTurn.turn_log.agent_output_summary.response_transport, "mock-model-adapter");
 });
 
 test("voice separation fixtures select platform and delivery as distinct next speakers", () => {
@@ -621,6 +973,36 @@ test("turn log exposes response transport and layer separation for responder-bac
   assert.equal(openingTurn.turn_log.topic_transition_reason, null);
 });
 
+test("interactive runtime can keep facilitator turns local while actor turns remain responder-backed", async () => {
+  const roomState = createInitialRoomState("local-facilitator-turn-test");
+  roomState.scene_phase = "discussion";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "I need a moment to think about the tradeoff.",
+    },
+  ];
+  roomState.turn_index = 1;
+  roomState.exchange_state.should_continue_current_exchange = true;
+  roomState.exchange_state.awaiting_reaction_from = null;
+  roomState.exchange_state.handoff_candidate_actor_ids = [];
+
+  const facilitatorTurn = await runNextRuntimeActorTurnFromState(
+    roomState,
+    new AdapterBackedResponder(new MockModelAdapter()),
+    {
+      facilitator_mode: "local",
+    },
+  );
+
+  assert.equal(facilitatorTurn.turn_log.selected_speaker, "mika");
+  assert.equal(facilitatorTurn.turn_log.agent_output_summary.response_transport, "local-facilitator");
+  assert.equal(facilitatorTurn.turn_log.layer_trace.response_layer, "local-facilitator");
+});
+
 test("facilitator prompt includes topic depth, close readiness, and parked topics", () => {
   const roomState = createInitialRoomState("facilitator-prompt-rich-state");
   roomState.scene_phase = "discussion";
@@ -782,7 +1164,11 @@ test("session driver enters live session after a valid start signal", async () =
   assert.equal(result.rejection_reason, null);
   assert.equal(result.live_results.length, 1);
   assert.ok(result.live_results[0]?.turn_log.selected_speaker);
-  assert.ok(["local-opening", "responder"].includes(String(result.live_results[0]?.turn_log.agent_output_summary.delivery_mode)));
+  assert.ok(
+    ["local-opening", "local-facilitator", "responder"].includes(
+      String(result.live_results[0]?.turn_log.agent_output_summary.delivery_mode),
+    ),
+  );
 });
 
 test("initial opening turn is owned by the facilitator before player articulation", () => {

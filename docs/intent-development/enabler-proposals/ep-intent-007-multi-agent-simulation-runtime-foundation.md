@@ -46,6 +46,7 @@ The initial asset boundary is:
 - evaluation should remain separate from live turn generation
 - routing is allowed, but visible traffic-control behavior should be minimized
 - local-first execution remains valid as long as responsibility and context boundaries hold
+- local child-session sidecars are allowed only as bounded helpers and should not become canonical room-state owners
 
 Current working storage for these assets:
 - `docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md`
@@ -99,12 +100,20 @@ The shared runtime state should define at least:
 - the orchestrator may know the full canonical room state
 - speaking agents should receive only the slices required for their next turn
 - evaluator logic must not be a standard part of actor prompts
+- sidecar workers should receive bounded task packets and return candidate reasoning rather than final transcript authority
 
 ### Turn ownership rule
 Before a speaking turn is generated, the runtime should make explicit:
 - who owns the next move
 - why that actor or facilitator is speaking now
 - whether the current topic is continuing, being parked, or being switched
+
+### Sidecar worker rule
+If the runtime uses sidecar workers for proposal evaluation or similar high-coupling moments:
+- the main session remains the canonical owner of room state and visible transcript
+- the sidecar input should be a bounded packet, not the full simulation state by default
+- the sidecar output should be candidate reasoning or reaction structure, not final visible wording
+- sidecar use should be selective and justified by task type, not treated as the default for all turns
 
 ## Negative Effects and Costs
 Using multiple agents has real downside.
@@ -114,6 +123,7 @@ Using multiple agents has real downside.
 - harder debugging because errors may emerge from interaction between components rather than one bad prompt
 - more implementation overhead before the first playable version feels stable
 - remote execution can add cost and confusion without delivering proportional product value
+- sidecar usage can still create hidden packet-design complexity if the main session delegates too much meaning-making
 
 ### Consistency risk
 - actor voices may still converge if persona slices are weak
@@ -136,8 +146,9 @@ Using multiple agents has real downside.
 
 ## Change Contract
 - Allowed Changes:
-  - refine reusable multi-agent role definitions, room-state conventions, and validation guidance
-  - sharpen tradeoff language so downstream teams understand when multi-agent is worth the cost
+- refine reusable multi-agent role definitions, room-state conventions, and validation guidance
+- sharpen tradeoff language so downstream teams understand when multi-agent is worth the cost
+- refine rules for selective sidecar use when a task is too rich for one-pass local rendering but too coupled for full actor independence
 - Forbidden Changes:
   - turning this enabler into a scene-specific runtime script
   - treating multi-agent as mandatory for every simulation feature
@@ -157,6 +168,7 @@ Using multiple agents has real downside.
 - [ ] Which parts of `room_state` should be formalized as schema files before runtime code starts?
 - [ ] When should a simulation prefer single-agent runtime even if naturalness is a concern?
 - [ ] Which adjacent subsystems, such as scenario generation or failure pattern matching, benefit more from stronger multi-agent separation than the live simulation loop does?
+- [ ] What is the minimum bounded packet shape for proposal-turn sidecar workers so they can add perspective without becoming transcript owners?
 
 ## Evidence / References
 - `docs/intent-development/feature-proposals/fp-intent-001-platform-engineering-failure-simulation-core-loop.md`

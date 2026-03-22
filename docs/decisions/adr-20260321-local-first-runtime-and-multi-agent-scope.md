@@ -63,15 +63,31 @@ This means:
 - `Simulation Actor Layer` is treated primarily as a responsibility and context boundary, not as a requirement for remote execution
 - remote response chains are optional implementation details, not the default architectural center of the live runtime
 - `Evaluator Layer` remains local-first and clearly post-game
+- local child sessions may be used selectively as sidecar workers for bounded multi-perspective analysis tasks without becoming simulation-facing runtime actors
 
 For live simulation:
 - prefer local execution and local child-session style decomposition where it helps operator workflow
 - do not treat stronger remote actor separation as the default solution for natural conversation quality
 - optimize first for clear boundaries, observability, testability, and replayability
+- keep the visible utterance surface owned by the main session even when sidecar workers contribute candidate reasoning
 
 For future multi-agent investment:
 - prefer targets that behave more like `Complicated Subsystem` work than tightly coupled live conversation control
 - likely candidates include scenario generation, failure pattern matching, evidence extraction, and related analysis workflows
+
+For multi-perspective live turns:
+- the runtime may use local child-session sidecars to generate stakeholder-specific reaction candidates
+- those sidecars should receive bounded reaction packets rather than full session ownership
+- the main session should remain the canonical owner of room state, turn selection, and final visible phrasing
+- the trigger for extra perspective should stay conservative; missing an occasional expansion is preferable to over-firing and destabilizing the meeting
+- `multi_perspective_needed` should be treated as a signal that intervention is allowed, not as a requirement to immediately reroute visible dialogue
+
+For failure-model support inside live simulation:
+- any risk-detection sidecar should remain an analysis-layer helper, not a speaking actor
+- sidecars may receive bounded packets that include the current utterance, inferred intent, resolved topics, current decisions, and meeting layer
+- sidecars should pre-filter risks that are already resolved or structurally out of layer
+- the orchestrator should still apply a second filter before any risk signal influences visible turn selection or actor shaping
+- analysis output should not be injected directly into visible dialogue
 
 The repository should therefore treat:
 - live communication runtime as a local-first orchestrated system
@@ -82,17 +98,24 @@ The repository should therefore treat:
   - the live runtime architecture becomes easier to explain and debug
   - operator, orchestration, actor, response-chain, and evaluator boundaries can remain explicit without requiring remote execution
   - local child sessions can be used pragmatically for development workflow without being confused with runtime actors
+  - local child sessions can also be used selectively as bounded sidecar workers where multi-perspective reaction evaluation is valuable
+  - failure-model sidecars can surface hidden risk candidates without forcing evaluator-like language into live dialogue
   - the team can invest multi-agent effort where independence is structurally stronger and value is easier to justify
   - replayability work can shift toward scenario variation and failure-pattern coverage
+  - richer persona assets can inform multi-perspective sidecars without forcing the visible meeting loop into full multi-agent execution
 - Negative:
   - the repository steps back from treating remote live actor separation as a primary differentiator
   - some earlier multi-agent framing in docs and code may now read stronger than the adopted direction
   - future truly independent actor-runtime experiments will need explicit justification rather than being implied by current terminology
+  - sidecar-based multi-perspective evaluation adds another bounded subsystem that still needs explicit packet design, ranking rules, and validation
+  - analysis sidecars introduce layer-boundary risk if meeting-layer, resolved-topic, and visible-dialogue rules are not explicit
 - Follow-up work:
   - update intent-001 runtime docs so local-first live runtime becomes the primary description
   - reduce ambiguous use of `agent` in operator-facing and runtime-facing documents
   - identify one or more adjacent subsystems where multi-agent usage is actually advantageous
   - evaluate `failure pattern matching` and `scenario generation` as candidate next areas for multi-agent design
+  - define whether multi-perspective sidecar evaluation becomes the preferred selective use of local child sessions inside the live runtime
+  - define whether failure-model risk sidecars should become the preferred hidden analysis support for live proposal and clarification turns
 
 ## Notes
 Rejected as the primary default direction:

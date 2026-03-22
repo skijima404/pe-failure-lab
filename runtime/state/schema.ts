@@ -7,6 +7,8 @@ import type {
   ParticipantState,
   RoomState,
   StructuralState,
+  MainSessionJudgment,
+  RoomSidecarState,
 } from "./types.ts";
 import { loadDefaultRuntimePersonaSlices } from "../personas/runtime-slice-loader.ts";
 import { loadDefaultSceneSetup } from "../scene/setup-loader.ts";
@@ -44,6 +46,17 @@ const DEFAULT_STRUCTURAL_STATE: StructuralState = {
 const DEFAULT_CLOSE_READINESS: CloseReadiness = {
   ready: false,
   reason: null,
+};
+
+const DEFAULT_MAIN_SESSION_JUDGMENT: MainSessionJudgment = {
+  meeting_layer: "why",
+  last_player_utterance_type: null,
+  last_player_intent: null,
+  multi_perspective_needed: false,
+};
+
+const DEFAULT_SIDECAR_STATE: RoomSidecarState = {
+  proposal_context: null,
 };
 
 const DEFAULT_NEXT_TURN_OPTIONS: NextTurnOption[] = [];
@@ -177,6 +190,8 @@ export function createInitialRoomState(sessionId: string, language = "en"): Room
     recent_transcript: [],
     next_turn_options: [...DEFAULT_NEXT_TURN_OPTIONS],
     close_readiness: { ...DEFAULT_CLOSE_READINESS },
+    main_session_judgment: { ...DEFAULT_MAIN_SESSION_JUDGMENT },
+    sidecar_state: { ...DEFAULT_SIDECAR_STATE },
   };
 }
 

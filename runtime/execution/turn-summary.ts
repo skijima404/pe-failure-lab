@@ -1,6 +1,6 @@
 import type { TurnOutcome } from "../state/types.ts";
 
-export type TurnDeliveryMode = "local-opening" | "responder";
+export type TurnDeliveryMode = "local-opening" | "local-facilitator" | "responder";
 
 export function summarizePromptInput(
   promptInput: unknown,
@@ -65,6 +65,8 @@ export function summarizeTurnOutcome(
         ? responseMetadata.runtime_transport
         : deliveryMode === "local-opening"
           ? "local-opening"
+          : deliveryMode === "local-facilitator"
+            ? "local-facilitator"
           : "unknown",
     response_chain:
       deliveryMode === "responder"

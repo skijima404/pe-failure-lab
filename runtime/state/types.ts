@@ -137,6 +137,7 @@ export interface TurnOutcome {
     participant_states: ParticipantState[];
     structural_state: StructuralState;
     close_readiness: CloseReadiness;
+    main_session_judgment: MainSessionJudgment;
   }>;
 }
 
@@ -166,6 +167,17 @@ export interface CloseReadiness {
   reason: string | null;
 }
 
+export interface MainSessionJudgment {
+  meeting_layer: "why" | "what" | "how";
+  last_player_utterance_type: "question" | "confirmation" | "proposal" | "objection" | "correction" | "clarification" | null;
+  last_player_intent: string | null;
+  multi_perspective_needed: boolean;
+}
+
+export interface RoomSidecarState {
+  proposal_context: import("../sidecars/types.ts").ProposalSidecarContext | null;
+}
+
 export interface RoomState {
   session_id: string;
   session_setup: RuntimeSceneSetup;
@@ -183,4 +195,6 @@ export interface RoomState {
   recent_transcript: TranscriptTurn[];
   next_turn_options: NextTurnOption[];
   close_readiness: CloseReadiness;
+  main_session_judgment: MainSessionJudgment;
+  sidecar_state: RoomSidecarState;
 }

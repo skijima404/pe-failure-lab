@@ -5,6 +5,22 @@ import { computeStateChanges } from "./state-change-summary.ts";
 import { deriveCloseReadiness, deriveStructuralState } from "./structural-state.ts";
 import { appendTranscriptTurn } from "./transcript.ts";
 import { deriveTopicState } from "../orchestration/topic-management.ts";
+import { analyzePlayerTurn } from "../orchestration/player-turn-analysis.ts";
+
+function deriveMainSessionJudgment(roomState: RoomState, outcome: TurnOutcome): RoomState["main_session_judgment"] {
+  if (outcome.turn_owner !== "player") {
+    return roomState.main_session_judgment;
+  }
+
+  const judgment = analyzePlayerTurn(roomState, outcome.text);
+
+  return {
+    meeting_layer: judgment.meeting_layer,
+    last_player_utterance_type: judgment.utterance_type,
+    last_player_intent: judgment.player_intent,
+    multi_perspective_needed: judgment.multi_perspective_needed,
+  };
+}
 
 export function applyTurnOutcome(roomState: RoomState, outcome: TurnOutcome): RoomState {
   const transcriptTurn = appendTranscriptTurn(roomState, outcome);
@@ -12,6 +28,7 @@ export function applyTurnOutcome(roomState: RoomState, outcome: TurnOutcome): Ro
   const participantStates = updates.participant_states ?? deriveParticipantStates(roomState, outcome);
   const exchangeState = updates.exchange_state ?? deriveExchangeState(roomState, outcome);
   const structuralState = updates.structural_state ?? deriveStructuralState(roomState, outcome);
+  const mainSessionJudgment = updates.main_session_judgment ?? deriveMainSessionJudgment(roomState, outcome);
   const derivedTopicState = deriveTopicState(roomState, outcome);
   const activeTopic = updates.active_topic ?? derivedTopicState.active_topic;
   const roomStatePreview = {
@@ -23,6 +40,7 @@ export function applyTurnOutcome(roomState: RoomState, outcome: TurnOutcome): Ro
     exchange_state: exchangeState,
     participant_states: participantStates,
     structural_state: structuralState,
+    main_session_judgment: mainSessionJudgment,
     recent_transcript: [...roomState.recent_transcript, transcriptTurn].slice(-12),
   };
   const closeReadiness = updates.close_readiness ?? deriveCloseReadiness(roomState, outcome, roomStatePreview);
@@ -47,6 +65,7 @@ export function applyTurnOutcome(roomState: RoomState, outcome: TurnOutcome): Ro
     participant_states: participantStates,
     structural_state: structuralState,
     close_readiness: closeReadiness,
+    main_session_judgment: mainSessionJudgment,
     recent_transcript: [...roomState.recent_transcript, transcriptTurn].slice(-12),
   };
 }

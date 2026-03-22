@@ -56,6 +56,7 @@ Current Platform Engineering learning materials can explain failure patterns, bu
 - Learning design:
   - the system must evaluate judgment and sustainability, not just conversational fluency
   - runtime naturalness should be preserved before neat round-robin turn efficiency
+  - when multi-perspective reaction evaluation needs extra perspective, the main session should still own the final visible utterance so dialogue remains coherent
 
 ## Change Contract
 - Allowed Changes:
@@ -78,6 +79,7 @@ Current Platform Engineering learning materials can explain failure patterns, bu
   - Initial answer is defined in `docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md` through the `room_state`, `participant_states`, `exchange_state`, and `structural_state` sections.
 - [ ] Should observers and learners share the same interface in the first iteration?
 - [ ] How much persona detail should remain in runtime prompts versus durable source assets?
+- [ ] Should bounded local child-session sidecars be triggered by multi-perspective need rather than strict proposal classification while the main session keeps final utterance authority?
 - [ ] Which scenarios require visible pre-read or scope / ownership artifacts to remain fair and natural in chat-first runtime?
 
 ## Evidence / References
