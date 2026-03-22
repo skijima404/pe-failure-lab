@@ -455,6 +455,7 @@ test("local player-turn judger updates canonical judgment and seeds whispers on 
   assert.equal(nextState.main_session_judgment.last_player_utterance_type, "proposal");
   assert.equal(nextState.main_session_judgment.multi_perspective_needed, true);
   assert.equal(nextState.sidecar_state.active_whispers.length >= 1, true);
+  assert.equal(nextState.sidecar_state.active_whispers.every((whisper) => typeof whisper.context_pressure_tag !== "undefined"), true);
 });
 
 test("multi-perspective trigger can fire for non-proposal alternative framing", () => {
@@ -588,6 +589,7 @@ test("actor prompt includes stakeholder working context and pressure background"
       expires_after_turn: roomState.turn_index + 2,
       source_reason: "player-turn-made-support-boundary-salient",
       angle_shift: "boundary-clarity",
+      context_pressure_tag: "support-function-misread",
       temperature_shift: "more-concerned",
       priority_hint: "use-if-selected",
       optional_question_seed: "What exactly does platform provide first?",

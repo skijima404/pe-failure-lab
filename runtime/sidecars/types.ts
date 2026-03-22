@@ -70,6 +70,7 @@ export interface WhisperInjection {
   expires_after_turn: number;
   source_reason: string;
   angle_shift: string;
+  context_pressure_tag: string | null;
   temperature_shift: WhisperTemperatureShift;
   priority_hint: WhisperPriorityHint;
   optional_question_seed: string | null;

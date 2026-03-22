@@ -2,6 +2,7 @@ import type { ModelAdapter, ModelAdapterRequest, ModelAdapterResponse } from "./
 
 interface SidecarReactionCandidateLike {
   angle_shift?: unknown;
+  context_pressure_tag?: unknown;
   temperature_shift?: unknown;
   optional_question_seed?: unknown;
 }
@@ -42,6 +43,23 @@ function translateWhisperAngle(angleShift: string | null, language: string): str
   };
 
   return translations[angleShift] ?? angleShift;
+}
+
+function translateContextPressureTag(tag: string | null, language: string): string | null {
+  if (!tag || !language.startsWith("ja")) {
+    return tag;
+  }
+
+  const translations: Record<string, string> = {
+    "legacy-inertia": "既存運用の慣性",
+    "vendor-mediated-delivery": "ベンダ越しの進め方",
+    "uneven-modernization": "モダナイゼーションのばらつき",
+    "commitment-hardens-quickly": "会議の約束が既定化しやすいこと",
+    "support-function-misread": "Platform が中央支援窓口に見られやすいこと",
+    "operational-default-not-target-standard": "実務の既定と戦略標準がずれていること",
+  };
+
+  return translations[tag] ?? tag;
 }
 
 function translateTopic(activeTopic: string, language: string): string {
@@ -128,16 +146,19 @@ function renderSidecarCandidateResponse(
   candidate: SidecarReactionCandidateLike,
 ): string | null {
   const angleShift = typeof candidate.angle_shift === "string" ? candidate.angle_shift : null;
+  const contextPressureTag = typeof candidate.context_pressure_tag === "string" ? candidate.context_pressure_tag : null;
   const temperatureShift = typeof candidate.temperature_shift === "string" ? candidate.temperature_shift : null;
   const nextQuestion = typeof candidate.optional_question_seed === "string" ? candidate.optional_question_seed : null;
   const variant = hashText(`${sessionId}:${speakerId}:${angleShift ?? "none"}:${nextQuestion ?? "none"}`) % 2;
   const translatedAngleShift = translateWhisperAngle(angleShift, language);
+  const translatedContextPressure = translateContextPressureTag(contextPressureTag, language);
 
   if (language.startsWith("ja")) {
     if (speakerId === "platform") {
       return [
         variant === 0 ? "その方向なら受け止め方は整理できます。" : "その切り方なら現場運用としてはまだ見えます。",
         translatedAngleShift ? `ただ、今は ${translatedAngleShift} を先に揃えたいです。` : null,
+        translatedContextPressure ? `${translatedContextPressure} も少し気になります。` : null,
         temperatureShift === "more-concerned" ? "入口を広げすぎると、あとで支援負荷が膨らみます。" : null,
         nextQuestion,
       ]
@@ -149,6 +170,7 @@ function renderSidecarCandidateResponse(
       return [
         variant === 0 ? "それなら現場でも試す余地はあります。" : "そこまで絞るなら現場の判断はしやすいです。",
         translatedAngleShift ? `気になるのは ${translatedAngleShift} です。` : null,
+        translatedContextPressure ? `${translatedContextPressure} も前提として無視しにくいです。` : null,
         nextQuestion,
       ]
         .filter(Boolean)
@@ -159,6 +181,7 @@ function renderSidecarCandidateResponse(
       return [
         variant === 0 ? "その一歩目なら経営判断の土台にはなります。" : "その切り方なら最初の判断材料としては扱えます。",
         translatedAngleShift ? `ただし、${translatedAngleShift} の見え方は押さえたいです。` : null,
+        translatedContextPressure ? `${translatedContextPressure} も踏まえておきたいです。` : null,
         nextQuestion,
       ]
         .filter(Boolean)
@@ -170,6 +193,7 @@ function renderSidecarCandidateResponse(
     return [
       "I can work with that direction if we keep it tight.",
       angleShift ? `The angle I still care about is ${angleShift}.` : null,
+      contextPressureTag ? `The enterprise pressure I still feel is ${contextPressureTag}.` : null,
       temperatureShift ? `I am coming at it ${temperatureShift.replaceAll("-", " ")}.` : null,
       nextQuestion,
     ]
@@ -181,6 +205,7 @@ function renderSidecarCandidateResponse(
     return [
       "That could help if the first step is usable quickly.",
       angleShift ? `I am still thinking about ${angleShift}.` : null,
+      contextPressureTag ? `The background pressure still feels like ${contextPressureTag}.` : null,
       nextQuestion,
     ]
       .filter(Boolean)
@@ -191,6 +216,7 @@ function renderSidecarCandidateResponse(
     return [
       "That sounds credible enough for a first move.",
       angleShift ? `I want to anchor it in ${angleShift}.` : null,
+      contextPressureTag ? `I also want to keep ${contextPressureTag} in view.` : null,
       nextQuestion,
     ]
       .filter(Boolean)

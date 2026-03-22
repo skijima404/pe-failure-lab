@@ -71,6 +71,7 @@ export function renderActorPrompt(input: ActorPromptInput): string {
     ? [
         `- source reason: ${input.active_whisper.source_reason}`,
         `- temporary angle shift: ${input.active_whisper.angle_shift}`,
+        `- enterprise context pressure tag: ${input.active_whisper.context_pressure_tag ?? "none"}`,
         `- temperature shift: ${input.active_whisper.temperature_shift}`,
         `- priority hint: ${input.active_whisper.priority_hint}`,
         `- optional question seed: ${input.active_whisper.optional_question_seed ?? "none"}`,
