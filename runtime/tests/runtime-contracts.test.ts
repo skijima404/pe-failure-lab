@@ -1042,8 +1042,9 @@ test("initialization brief exposes player-facing start guidance without spoiler 
   const brief = buildInitializationBrief(roomState);
   const formatted = formatInitializationBrief(brief);
 
-  assert.match(formatted, /Session Initialization/);
-  assert.match(formatted, /Workshop Goal:/);
+  assert.match(formatted, /Situation Brief/);
+  assert.match(formatted, /Who Is In The Room:/);
+  assert.match(formatted, /Mika: facilitator/);
   assert.match(formatted, /You Are Not Expected To Know:/);
   assert.equal(formatted.includes("hidden stakeholder thresholds"), true);
   assert.equal(isStartSignal("Start", roomState), true);
@@ -1056,8 +1057,9 @@ test("japanese initialization brief and start aliases are localized for ja sessi
   const brief = buildInitializationBrief(roomState);
   const formatted = formatInitializationBrief(brief);
 
-  assert.match(formatted, /セッション初期化/);
-  assert.match(formatted, /ワークショップのゴール:/);
+  assert.match(formatted, /状況説明/);
+  assert.match(formatted, /登場人物:/);
+  assert.match(formatted, /Mika: ファシリテーター/);
   assert.match(formatted, /この時点で知らなくてよいこと:/);
   assert.equal(isStartSignal("始めます", roomState), true);
   assert.equal(isStartSignal("開始", roomState), true);
@@ -1072,7 +1074,7 @@ test("session driver blocks live execution until a valid start signal appears", 
   assert.equal(result.accepted, false);
   assert.equal(result.rejection_reason, "start-signal-required");
   assert.equal(result.live_results.length, 0);
-  assert.match(result.initialization_brief, /Session Initialization/);
+  assert.match(result.initialization_brief, /Situation Brief/);
 });
 
 test("initialize and start keep session setup separate before live turns", () => {
@@ -1270,7 +1272,7 @@ test("visible transcript renders clean blocks without orchestration wrapper text
     transcriptTurns: afterPlayerMessage.recent_transcript,
   });
 
-  assert.match(visible, /Session Initialization/);
+  assert.match(visible, /Situation Brief/);
   assert.match(visible, /Player: We should begin with one narrow onboarding path\./);
   assert.equal(hasInitializationWrapperLeakage(visible), false);
   assert.equal(hasOrchestrationTextVisible(visible), false);
@@ -1415,8 +1417,19 @@ test("evaluator returns fixed report shape with primary x/5 structural result", 
 
   assert.match(report.structural_progress, /^[1-5]\/5$/);
   assert.ok(["Stable", "Strained", "Drifting", "Failed"].includes(report.structural_result));
+  assert.equal(report.structural_aspects.length, 5);
+  assert.deepEqual(
+    report.structural_aspects.map((aspect) => aspect.aspect),
+    ["Investment", "Adoption", "Interfaces", "Operations", "Measurement"],
+  );
+  assert.equal(
+    Number(report.structural_progress.split("/")[0]),
+    report.structural_aspects.reduce((total, aspect) => total + aspect.score, 0),
+  );
   assert.match(formatted, /## 2\. Evaluation Summary/);
   assert.match(formatted, /Structural Progress: `\d\/5`/);
+  assert.match(formatted, /Aspect Checks:/);
+  assert.match(formatted, /Investment: `\d` - /);
   assert.match(formatted, /## 7\. Suggested Next Steps/);
 });
 

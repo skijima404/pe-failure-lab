@@ -29,18 +29,6 @@ cp .env.example .env
 npm run simulate:remote:smoke
 ```
 
-For remote-backed interactive play:
-
-```bash
-npm run simulate:remote:interactive
-```
-
-For remote-backed end-to-end validation:
-
-```bash
-npm run simulate:remote:full
-```
-
 OpenAI-backed execution reads the repository-root `.env` file and expects:
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL` (optional)

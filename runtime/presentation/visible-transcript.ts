@@ -35,40 +35,90 @@ export function renderVisibleTranscript(params: {
 }
 
 export function renderVisibleReflectionReport(report: SimulationReflectionReport): string {
+  const isJapanese = report.overview.language.startsWith("ja");
+
   return [
-    `# ${report.title}`,
+    `# ${isJapanese ? `シミュレーション振り返りレポート: ${report.overview.scenario} - ${report.overview.role}` : report.title}`,
     "",
-    "## 1. Overview",
-    `- Scenario: ${report.overview.scenario}`,
-    `- Role: ${report.overview.role}`,
-    `- Date: ${report.overview.date}`,
-    `- Session mode: ${report.overview.session_mode}`,
-    `- Turn count: ${report.overview.turn_count}`,
+    isJapanese ? "## 1. 概要" : "## 1. Overview",
+    `- ${isJapanese ? "シナリオ" : "Scenario"}: ${report.overview.scenario}`,
+    `- ${isJapanese ? "役割" : "Role"}: ${report.overview.role}`,
+    `- ${isJapanese ? "日付" : "Date"}: ${report.overview.date}`,
+    `- ${isJapanese ? "セッションモード" : "Session mode"}: ${report.overview.session_mode}`,
+    `- ${isJapanese ? "ターン数" : "Turn count"}: ${report.overview.turn_count}`,
     "",
-    "## 2. Evaluation Summary",
-    `- Structural Progress: \`${report.structural_progress}\``,
-    `- Structural Result: \`${report.structural_result}\``,
+    isJapanese ? "## 2. 評価サマリー" : "## 2. Evaluation Summary",
+    `- ${isJapanese ? "Structural Progress" : "Structural Progress"}: \`${report.structural_progress}\``,
+    `- ${isJapanese ? "Structural Result" : "Structural Result"}: \`${isJapanese ? localizeResultLabel(report.structural_result) : report.structural_result}\``,
     "",
-    "Summary:",
+    isJapanese ? "Summary:" : "Summary:",
     report.evaluation_summary,
     "",
-    "## 3. Draft Progress",
-    `- \`${report.draft_progress}\``,
+    isJapanese ? "Aspect Checks:" : "Aspect Checks:",
+    ...report.structural_aspects.map(
+      (aspect) => `- ${isJapanese ? localizeAspectLabel(aspect.aspect) : aspect.aspect}: \`${aspect.score}\` - ${aspect.evidence}`,
+    ),
+    "",
+    isJapanese ? "## 3. ドラフト進捗" : "## 3. Draft Progress",
+    `- \`${isJapanese ? localizeDraftProgressLabel(report.draft_progress) : report.draft_progress}\``,
     report.draft_progress_summary,
     "",
-    "## 4. Key Decisions Made",
+    isJapanese ? "## 4. 主な判断" : "## 4. Key Decisions Made",
     ...report.key_decisions_made.map((item) => `- ${item}`),
     "",
-    "## 5. Strengths Observed",
+    isJapanese ? "## 5. 良かった点" : "## 5. Strengths Observed",
     ...report.strengths_observed.map((item) => `- ${item}`),
     "",
-    "## 6. Areas to Improve",
+    isJapanese ? "## 6. 改善余地" : "## 6. Areas to Improve",
     ...report.areas_to_improve.map((item) => `- ${item}`),
     "",
-    "## 7. Suggested Next Steps",
+    isJapanese ? "## 7. 次の一手" : "## 7. Suggested Next Steps",
     ...report.suggested_next_steps.map((item) => `- ${item}`),
     ...(report.optional_log_highlights.length > 0
-      ? ["", "## 8. Optional Log Highlights", ...report.optional_log_highlights.map((item) => `- ${item}`)]
+      ? [
+          "",
+          isJapanese ? "## 8. ログハイライト" : "## 8. Optional Log Highlights",
+          ...report.optional_log_highlights.map((item) => `- ${item}`),
+        ]
       : []),
   ].join("\n");
+}
+
+function localizeResultLabel(result: SimulationReflectionReport["structural_result"]): string {
+  switch (result) {
+    case "Stable":
+      return "安定";
+    case "Strained":
+      return "前進したが緊張あり";
+    case "Drifting":
+      return "漂流気味";
+    case "Failed":
+      return "失敗寄り";
+  }
+}
+
+function localizeDraftProgressLabel(progress: SimulationReflectionReport["draft_progress"]): string {
+  switch (progress) {
+    case "Fragmented":
+      return "断片的";
+    case "Advancing":
+      return "前進";
+    case "Coalescing":
+      return "収束中";
+  }
+}
+
+function localizeAspectLabel(aspect: SimulationReflectionReport["structural_aspects"][number]["aspect"]): string {
+  switch (aspect) {
+    case "Investment":
+      return "投資";
+    case "Adoption":
+      return "導入";
+    case "Interfaces":
+      return "利用インターフェース";
+    case "Operations":
+      return "運用";
+    case "Measurement":
+      return "計測";
+  }
 }

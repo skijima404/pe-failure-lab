@@ -65,7 +65,6 @@ What exists now:
 - a runnable session driver harness via `npm run fixture:session-driver`
 - a runnable mock adapter harness via `npm run fixture:mock-adapter`
 - a runnable OpenAI adapter harness via `npm run fixture:openai-adapter`
-- a runnable full-session OpenAI playtest harness via `npm run fixture:openai-full-session`
 - a runnable evaluator harness via `npm run fixture:evaluator`
 
 What does not exist yet:
@@ -86,26 +85,13 @@ The script first checks the current environment, then falls back to a repository
 ## E2E Notes
 - Default operator guidance:
   - use `npm run simulate:mock` or `npm run fixture:session-driver` when checking the local-first runtime shape
-  - use `npm run simulate:openai:interactive` only when you intentionally want remote-backed human play
-  - use `npm run simulate:openai:full` when you intentionally want remote-backed end-to-end validation
   - use `npm run simulate:openai` only when you intentionally want the thin early-turn harness
 - Runtime mode roles:
-  - `simulate:openai`
+- `simulate:openai`
     - thin remote smoke test
     - runs initialization -> opening -> one player turn -> one agent response
     - use when checking early-turn boundary, OpenAI wiring, or visible transcript hygiene
     - not intended as a full meeting playtest
-- `simulate:openai:interactive`
-    - human-in-the-loop remote-backed playtest mode
-    - runs initialization, then waits for the human player to enter each player turn while remote-backed actors respond one turn at a time
-    - defaults to per-speaker remote response chains when `OPENAI_REMOTE_MULTI_AGENT` is not set
-    - use when explicitly comparing local-first orchestration with remote-backed actor generation
-  - `simulate:openai:full`
-    - scripted-player remote-backed end-to-end runtime validation
-    - runs initialization -> live session autoplay -> close -> local evaluator
-    - defaults to per-speaker remote response chains when `OPENAI_REMOTE_MULTI_AGENT` is not set
-    - use when checking lifecycle integrity, close/evaluator separation, and end-to-end remote runtime stability
-    - not intended as a human-in-the-loop player experience
 - Local-first interpretation:
   - orchestration remains local in all supported modes
   - player input remains local in interactive human-play modes
@@ -115,7 +101,6 @@ The script first checks the current environment, then falls back to a repository
 - `npm run fixture:session-driver` now prints a clean simulation-facing transcript by default
 - `npm run fixture:session-driver -- --adapter=openai` uses the same flow with the OpenAI adapter
 - `npm run fixture:openai-adapter` is the dedicated OpenAI E2E harness for the same entry flow
-- `npm run fixture:openai-full-session` runs a durable scripted-player full session from initialization through close and local evaluation
 - closing and evaluator are now separated:
   - facilitator owns the close turn
   - local evaluator starts only after `scene_phase === post-game`
@@ -128,15 +113,7 @@ The script first checks the current environment, then falls back to a repository
   - `evaluateIfSessionClosed()`
 - player-turn judgment remains main-session-owned:
   - the default path uses a local judgment boundary
-  - `scripts/run-openai-interactive.mjs -- --player-judger=openai` can use a stateless model-backed player-turn judger without moving canonical state ownership out of the main session
   - `multi_perspective_needed` is kept as a conservative intervention signal; it can justify bounded sidecar/context preparation without forcing an immediate visible speaker switch
-- the remote interactive harness now keeps facilitator turns local by default:
-  - `Mika` is rendered locally for observability and replay stability
-  - stakeholder turns remain remote-backed
-- the remote interactive harness supports explicit multi-line player input:
-  - enter `/multi` at `Player>` to start a multi-line turn
-  - enter each line of the player turn
-  - enter `/send` to submit the full turn, or `/cancel` to discard it
 - `runtime/execution/prepare-runtime-turn.ts` is the canonical turn-preparation entry point
 - `runtime/execution/runtime-responder.ts` is the canonical runtime response transport boundary
 - observability now records layer-specific traces so operators can distinguish:

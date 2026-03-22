@@ -49,6 +49,13 @@ The preferred format is:
 Summary:
 - 2-4 sentences describing what moved forward, what stayed fragile, and what that score means.
 
+Aspect Checks:
+- Investment: `0|1` - short evidence
+- Adoption: `0|1` - short evidence
+- Interfaces: `0|1` - short evidence
+- Operations: `0|1` - short evidence
+- Measurement: `0|1` - short evidence
+
 ## 3. Draft Progress
 - `Fragmented | Advancing | Coalescing`
 - Short explanation of how the draft changed during the session.
@@ -81,6 +88,7 @@ Summary:
 - use the CNCF Platform Engineering Maturity Model based structural progress as the primary score
 - keep this to one score only: `Structural Progress: x/5`
 - optionally add the qualitative structural result: `Stable`, `Strained`, `Drifting`, or `Failed`
+- always expose the five aspect checks with `0|1` and one short evidence line each
 - include only a short summary paragraph, not a second full evaluation layer
 - score the session relative to its current phase: `Coalition -> Strategic Vision drafting`
 - reward the learner for surfacing important failure signals and advancing strategic-level decisions on the day's active topic
