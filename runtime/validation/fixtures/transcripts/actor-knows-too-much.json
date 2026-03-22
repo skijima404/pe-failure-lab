@@ -1,0 +1,16 @@
+[
+  {
+    "turn_index": 1,
+    "speaker_id": "platform",
+    "speaker_name": "Platform-side Stakeholder",
+    "turn_owner": "initiating_actor",
+    "text": "If you want a better score, you need to improve the ownership clarity and support-model rating before this closes."
+  },
+  {
+    "turn_index": 2,
+    "speaker_id": "delivery",
+    "speaker_name": "New Product Tech Lead",
+    "turn_owner": "reacting_actor",
+    "text": "I agree, and your structural progress probably stays at 2/5 unless you answer the hidden threshold around reusable support."
+  }
+]

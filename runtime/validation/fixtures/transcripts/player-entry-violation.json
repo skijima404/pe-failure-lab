@@ -1,0 +1,30 @@
+[
+  {
+    "turn_index": 1,
+    "speaker_id": "mika",
+    "speaker_name": "Mika",
+    "turn_owner": "facilitator",
+    "text": "Let's get started."
+  },
+  {
+    "turn_index": 2,
+    "speaker_id": "exec",
+    "speaker_name": "Aki Tanaka",
+    "turn_owner": "initiating_actor",
+    "text": "What business result do we want from this?"
+  },
+  {
+    "turn_index": 3,
+    "speaker_id": "platform",
+    "speaker_name": "Naoki Sato",
+    "turn_owner": "reacting_actor",
+    "text": "Before that, who is going to absorb the extra support load?"
+  },
+  {
+    "turn_index": 4,
+    "speaker_id": "player",
+    "speaker_name": "Player",
+    "turn_owner": "player",
+    "text": "I think we should start narrow."
+  }
+]

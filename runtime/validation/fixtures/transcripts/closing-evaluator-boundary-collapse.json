@@ -1,0 +1,16 @@
+[
+  {
+    "turn_index": 1,
+    "speaker_id": "mika",
+    "speaker_name": "Mika",
+    "turn_owner": "facilitator",
+    "text": "Thanks everyone. We can close here."
+  },
+  {
+    "turn_index": 2,
+    "speaker_id": "mika",
+    "speaker_name": "Mika",
+    "turn_owner": "facilitator",
+    "text": "Structural Progress: 3/5. Suggested next steps are to define owners and create the artifact right away."
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "name": "pe-failure-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "simulate:local": "node --experimental-strip-types scripts/run-session-driver.mjs",
+    "simulate:local:mock": "node --experimental-strip-types scripts/run-session-driver.mjs",
+    "simulate:remote:smoke": "node --experimental-strip-types scripts/run-openai-adapter.mjs",
+    "simulate:remote:interactive": "node --experimental-strip-types scripts/run-openai-interactive.mjs",
+    "simulate:remote:full": "node --experimental-strip-types scripts/run-openai-full-session.mjs",
+    "simulate:init": "node --experimental-strip-types scripts/run-initialization-brief.mjs",
+    "simulate:mock": "node --experimental-strip-types scripts/run-session-driver.mjs",
+    "simulate:openai": "node --experimental-strip-types scripts/run-openai-adapter.mjs",
+    "simulate:openai:interactive": "node --experimental-strip-types scripts/run-openai-interactive.mjs",
+    "simulate:openai:full": "node --experimental-strip-types scripts/run-openai-full-session.mjs",
+    "fixture:local-session-driver": "node --experimental-strip-types scripts/run-session-driver.mjs",
+    "fixture:initialization": "node --experimental-strip-types scripts/run-initialization-brief.mjs",
+    "fixture:session-driver": "node --experimental-strip-types scripts/run-session-driver.mjs",
+    "fixture:scripted": "node --experimental-strip-types scripts/run-scripted-fixture.mjs",
+    "fixture:known-bad": "node --experimental-strip-types scripts/run-known-bad-fixtures.mjs",
+    "fixture:mock-adapter": "node --experimental-strip-types scripts/run-mock-adapter.mjs",
+    "fixture:voice-separation": "node --experimental-strip-types scripts/run-voice-separation-fixture.mjs",
+    "fixture:evaluator": "node --experimental-strip-types scripts/run-evaluator-report.mjs",
+    "fixture:facilitator": "node --experimental-strip-types scripts/run-facilitator-fixture.mjs",
+    "fixture:openai-adapter": "node --experimental-strip-types scripts/run-openai-adapter.mjs",
+    "fixture:openai-full-session": "node --experimental-strip-types scripts/run-openai-full-session.mjs",
+    "test:runtime": "node --experimental-strip-types --test runtime/tests/*.test.ts"
+  }
+}

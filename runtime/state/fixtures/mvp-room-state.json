@@ -1,0 +1,160 @@
+{
+  "session_id": "session-mvp-001",
+  "scene_phase": "discussion",
+  "language": "en",
+  "turn_index": 4,
+  "active_speaker": "player",
+  "active_topic": {
+    "topic_id": "topic-002",
+    "label": "Initial platform scope",
+    "opened_by": "exec",
+    "opened_at_turn": 1,
+    "topic_type": "scope-boundary",
+    "depth": 1,
+    "status": "active"
+  },
+  "topic_status": "active",
+  "parking_lot": [
+    {
+      "topic_id": "topic-003",
+      "label": "Detailed service onboarding flow",
+      "parked_at_turn": 3
+    }
+  ],
+  "exchange_state": {
+    "initiating_actor_id": "exec",
+    "last_player_answer_turn": 4,
+    "follow_up_count": 1,
+    "stance_movement": "partial",
+    "awaiting_reaction_from": "exec",
+    "handoff_candidate_actor_ids": [
+      "platform"
+    ],
+    "should_continue_current_exchange": true
+  },
+  "participant_states": [
+    {
+      "participant_id": "player",
+      "role_type": "player",
+      "display_name": "Player",
+      "stance_level": 0,
+      "engagement_level": 3,
+      "last_spoke_turn": 4,
+      "current_concern_label": null,
+      "cooperation_condition": null,
+      "escalation_trigger_visible": false,
+      "pending_question": null,
+      "last_reaction_type": "none"
+    },
+    {
+      "participant_id": "mika",
+      "role_type": "facilitator",
+      "display_name": "Mika",
+      "stance_level": 0,
+      "engagement_level": 3,
+      "last_spoke_turn": 0,
+      "current_concern_label": "meeting flow",
+      "cooperation_condition": "keep the room legible",
+      "escalation_trigger_visible": false,
+      "pending_question": null,
+      "last_reaction_type": "none"
+    },
+    {
+      "participant_id": "exec",
+      "role_type": "stakeholder",
+      "display_name": "Executive Stakeholder",
+      "stance_level": 3,
+      "engagement_level": 3,
+      "last_spoke_turn": 3,
+      "current_concern_label": "business clarity",
+      "cooperation_condition": "understand strategic value and scale",
+      "escalation_trigger_visible": false,
+      "pending_question": "What is the first practical boundary of this platform move?",
+      "last_reaction_type": "curiosity"
+    },
+    {
+      "participant_id": "platform",
+      "role_type": "stakeholder",
+      "display_name": "Platform-side Stakeholder",
+      "stance_level": 2,
+      "engagement_level": 3,
+      "last_spoke_turn": 2,
+      "current_concern_label": "operating-model sustainability",
+      "cooperation_condition": "clear boundaries and support mode",
+      "escalation_trigger_visible": false,
+      "pending_question": null,
+      "last_reaction_type": "concern"
+    },
+    {
+      "participant_id": "delivery",
+      "role_type": "stakeholder",
+      "display_name": "Delivery-side Stakeholder",
+      "stance_level": 2,
+      "engagement_level": 2,
+      "last_spoke_turn": null,
+      "current_concern_label": "delivery practicality",
+      "cooperation_condition": "visible path to usable next step",
+      "escalation_trigger_visible": false,
+      "pending_question": null,
+      "last_reaction_type": "none"
+    },
+    {
+      "participant_id": "evaluator",
+      "role_type": "evaluator",
+      "display_name": "Evaluator",
+      "stance_level": 0,
+      "engagement_level": 0,
+      "last_spoke_turn": null,
+      "current_concern_label": null,
+      "cooperation_condition": null,
+      "escalation_trigger_visible": false,
+      "pending_question": null,
+      "last_reaction_type": "none"
+    }
+  ],
+  "structural_state": {
+    "strategic_clarity": 3,
+    "scope_coherence": 2,
+    "ownership_clarity": 1,
+    "support_model_clarity": 1,
+    "coalition_stability": 3,
+    "open_risks": [
+      "support-boundary-not-yet-clear"
+    ]
+  },
+  "recent_transcript": [
+    {
+      "turn_index": 1,
+      "speaker_id": "exec",
+      "speaker_name": "Executive Stakeholder",
+      "turn_owner": "initiating_actor",
+      "text": "Before we go too far, what is the first usable scope you want us to align around?"
+    },
+    {
+      "turn_index": 2,
+      "speaker_id": "player",
+      "speaker_name": "Player",
+      "turn_owner": "player",
+      "text": "I want to start with a narrow developer enablement offer rather than a broad platform promise."
+    },
+    {
+      "turn_index": 3,
+      "speaker_id": "exec",
+      "speaker_name": "Executive Stakeholder",
+      "turn_owner": "initiating_actor",
+      "text": "That is directionally helpful. I still need a clearer boundary for what teams should expect first."
+    },
+    {
+      "turn_index": 4,
+      "speaker_id": "player",
+      "speaker_name": "Player",
+      "turn_owner": "player",
+      "text": "The first move is standardizing a limited onboarding path, not taking over full delivery support."
+    }
+  ],
+  "next_turn_options": [],
+  "close_readiness": {
+    "ready": false,
+    "reason": null
+  }
+}
