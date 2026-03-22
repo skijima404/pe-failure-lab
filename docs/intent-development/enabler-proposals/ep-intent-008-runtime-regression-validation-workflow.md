@@ -3,13 +3,23 @@
 - intent_id: intent-008
 - title: Runtime Regression Validation Workflow
 - owner: shared
-- status: draft
+- status: archived
 - created_at: 2026-03-20
-- updated_at: 2026-03-20
+- updated_at: 2026-03-22
 - related_decisions:
   - docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md
 - enables:
   - intent-001
+
+## Archive Note
+This proposal is preserved as historical exploration material from the frozen runtime carry-forward phase.
+
+It should not be treated as current intent truth because:
+- its `intent_id` collides with the active `intent-008` feature line for local whisper runtime variation
+- it was never promoted into the current intent registry as an active enabler
+- the current branch is validating local-whisper runtime behavior first, not reintroducing the frozen exploration workflow as an active enabler
+
+If this validation workflow is reintroduced later, it should return under a new non-conflicting intent id.
 
 ## Purpose
 Define the durable validation workflow needed so that runtime, prompt, and persona changes can be checked consistently before they create silent regressions in the local-first runtime.

@@ -2,8 +2,9 @@
 
 - id: dm-20260322-frozen-runtime-exploration-carry-forward-plan
 - title: Frozen runtime exploration branch and carry-forward plan for main
-- status: active
+- status: archived
 - created_at: 2026-03-22
+- updated_at: 2026-03-22
 - related_branch_refs:
   - local: `codex/frozen-multi-agent-runtime-foundation-20260322`
   - source_local: `codex/multi-agent-runtime-foundation`
@@ -15,7 +16,15 @@
   - local-first live runtime is easier to observe and explain than remote-heavy live routing
   - facilitator stability matters more than remote actor separation
   - player input packaging quality can dominate perceived conversation quality
-  - `multi_perspective_needed` is safer as an intervention signal than as a strong routing override
+- `multi_perspective_needed` is safer as an intervention signal than as a strong routing override
+
+## Archive Note
+This memo remains useful as learning history, but it is no longer active operating guidance for the current branch.
+
+The active implementation line now lives in:
+- `docs/intent-development/intents/in-intent-008-local-whisper-runtime-variation.md`
+- `docs/intent-development/feature-proposals/fp-intent-008-local-whisper-runtime-variation.md`
+- `docs/intent-development/implementation-specs/is-intent-008-local-whisper-runtime-design.md`
 
 ## Purpose
 Preserve the exploratory value of the frozen runtime branch without treating that branch as current implementation truth for `main`.

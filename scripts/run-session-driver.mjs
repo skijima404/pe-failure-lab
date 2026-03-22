@@ -1,6 +1,6 @@
 import { AdapterBackedResponder, MockModelAdapter, OpenAIResponsesAdapter } from "../runtime/execution/runtime-responder.ts";
 import {
-  acceptPlayerMessage,
+  acceptPlayerMessageWithLocalJudger,
   evaluateIfSessionClosed,
   initializeSession,
   runNextRuntimeActorTurnFromState,
@@ -30,10 +30,12 @@ function parseArgs(argv) {
   return {
     adapterName,
     language,
-    startMessage: remaining[0] ?? "Let's start",
+    startMessage: remaining[0] ?? (language.startsWith("ja") ? "始めます" : "Let's start"),
     playerMessage:
       remaining[1] ??
-      "I think we should start with one narrow onboarding path that teams can try without turning platform into an open-ended support function.",
+      (language.startsWith("ja")
+        ? "まずは一つのオンボーディング導線に絞って、Platform が無制限の支援窓口にならない形で試したいです。"
+        : "I think we should start with one narrow onboarding path that teams can try without turning platform into an open-ended support function."),
   };
 }
 
@@ -53,7 +55,18 @@ function createResponder(adapterName) {
   return new AdapterBackedResponder(new MockModelAdapter());
 }
 
-function printHeader(adapterName) {
+function printHeader(adapterName, language) {
+  if (language.startsWith("ja")) {
+    console.log("セッションドライバ");
+    console.log("==================");
+    console.log("既定モード: ローカルファースト runtime の簡易ウォークスルー。");
+    console.log(
+      `アクター生成モード: ${adapterName === "openai" ? "OpenAI リモートアダプタ（任意）" : "ローカル mock アダプタ（既定）"}`,
+    );
+    console.log("");
+    return;
+  }
+
   console.log("Session Driver");
   console.log("==============");
   console.log("Default mode: local-first runtime walkthrough.");
@@ -65,7 +78,7 @@ function printHeader(adapterName) {
 
 async function main() {
   const { adapterName, language, startMessage, playerMessage } = parseArgs(process.argv.slice(2));
-  printHeader(adapterName);
+  printHeader(adapterName, language);
   const initialized = initializeSession("session-driver-demo", language);
   const responder = createResponder(adapterName);
 
@@ -74,7 +87,7 @@ async function main() {
   if (!started.accepted) {
     console.log(initialized.initialization_brief);
     console.log("");
-    console.log(`Start failed: ${started.rejection_reason}`);
+    console.log(language.startsWith("ja") ? `開始に失敗しました: ${started.rejection_reason}` : `Start failed: ${started.rejection_reason}`);
     process.exitCode = 1;
     return;
   }
@@ -82,7 +95,7 @@ async function main() {
   const openingResult = await runNextRuntimeActorTurnFromState(started.room_state, responder, {
     opening_mode: adapterName === "openai" ? "responder" : "local",
   });
-  const afterPlayerMessage = acceptPlayerMessage(openingResult.room_state, playerMessage);
+  const afterPlayerMessage = acceptPlayerMessageWithLocalJudger(openingResult.room_state, playerMessage);
   const nextAgentResult = await runNextRuntimeActorTurnFromState(afterPlayerMessage, responder);
   const finalRoomState = nextAgentResult.room_state;
   const evaluation = evaluateIfSessionClosed(finalRoomState, {

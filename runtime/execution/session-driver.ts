@@ -15,6 +15,7 @@ import { buildWhisperSidecarPacket } from "../sidecars/packet-builders.ts";
 import { generateLocalWhispers } from "../sidecars/local-whisper-sidecar.ts";
 import { buildPlayerTurnJudgmentPacket } from "../orchestration/player-turn-judgment-packet.ts";
 import type { AsyncPlayerTurnJudger } from "../orchestration/adapter-backed-player-turn-judger.ts";
+import { judgePlayerTurnLocally } from "../orchestration/local-player-turn-judger.ts";
 
 export interface SessionDriverResult {
   accepted: boolean;
@@ -149,6 +150,23 @@ export async function acceptPlayerMessageWithJudger(
 ): Promise<RoomState> {
   const packet = buildPlayerTurnJudgmentPacket(roomState, text);
   const judgment = await judger.judgePlayerTurn(packet);
+  const playerOutcome = buildAcceptedPlayerTurnOutcome(roomState, text, speakerName, {
+    meeting_layer: judgment.meeting_layer,
+    last_player_utterance_type: judgment.utterance_type,
+    last_player_intent: judgment.player_intent,
+    multi_perspective_needed: judgment.multi_perspective_needed,
+  });
+
+  return finalizeAcceptedPlayerMessage(applyTurnOutcome(roomState, playerOutcome), text);
+}
+
+export function acceptPlayerMessageWithLocalJudger(
+  roomState: RoomState,
+  text: string,
+  speakerName = "Player",
+): RoomState {
+  const packet = buildPlayerTurnJudgmentPacket(roomState, text);
+  const judgment = judgePlayerTurnLocally(packet);
   const playerOutcome = buildAcceptedPlayerTurnOutcome(roomState, text, speakerName, {
     meeting_layer: judgment.meeting_layer,
     last_player_utterance_type: judgment.utterance_type,

@@ -1,6 +1,6 @@
 import { AdapterBackedResponder, OpenAIResponsesAdapter } from "../runtime/execution/runtime-responder.ts";
 import {
-  acceptPlayerMessage,
+  acceptPlayerMessageWithLocalJudger,
   evaluateIfSessionClosed,
   initializeSession,
   runNextRuntimeActorTurnFromState,
@@ -52,7 +52,7 @@ async function main() {
   const openingResult = await runNextRuntimeActorTurnFromState(started.room_state, responder, {
     opening_mode: "responder",
   });
-  const afterPlayerMessage = acceptPlayerMessage(openingResult.room_state, playerMessage);
+  const afterPlayerMessage = acceptPlayerMessageWithLocalJudger(openingResult.room_state, playerMessage);
   const nextAgentResult = await runNextRuntimeActorTurnFromState(afterPlayerMessage, responder);
   const finalRoomState = nextAgentResult.room_state;
   const evaluation = evaluateIfSessionClosed(finalRoomState, {

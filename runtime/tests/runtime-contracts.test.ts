@@ -11,6 +11,7 @@ import { AdapterBackedPlayerTurnJudger } from "../orchestration/adapter-backed-p
 import { prepareNextRuntimeTurn } from "../execution/prepare-runtime-turn.ts";
 import {
   acceptPlayerMessage,
+  acceptPlayerMessageWithLocalJudger,
   acceptPlayerMessageWithJudger,
   evaluateIfSessionClosed,
   initializeSession,
@@ -437,6 +438,25 @@ test("japanese player turns update canonical main-session judgment through local
   assert.equal(nextState.main_session_judgment.multi_perspective_needed, false);
 });
 
+test("local player-turn judger updates canonical judgment and seeds whispers on the default path", () => {
+  const roomState = createInitialRoomState("local-player-judger-default-path", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "scope-boundary",
+    label: "Support boundary",
+  };
+
+  const nextState = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "まずは一つのオンボーディング導線に絞って、Platform 側が例外対応を抱え込まない形で始めたいです。",
+  );
+
+  assert.equal(nextState.main_session_judgment.last_player_utterance_type, "proposal");
+  assert.equal(nextState.main_session_judgment.multi_perspective_needed, true);
+  assert.equal(nextState.sidecar_state.active_whispers.length >= 1, true);
+});
+
 test("multi-perspective trigger can fire for non-proposal alternative framing", () => {
   assert.equal(classifyPlayerUtterance("Wouldn't it be better to call this DevOps instead?"), "question");
   assert.equal(
@@ -501,6 +521,14 @@ test("scene setup loader reads the thin runtime scene asset", () => {
   assert.equal(sceneSetup.enterprise_context_summary.length > 0, true);
 });
 
+test("scene setup loader localizes runtime setup for japanese sessions", () => {
+  const sceneSetup = loadDefaultSceneSetup("ja");
+
+  assert.match(sceneSetup.session_mode, /ワークショップ/);
+  assert.match(sceneSetup.meeting_goal, /方向性/);
+  assert.match(sceneSetup.facilitator_opening_frame, /抽象的/);
+});
+
 test("player initialization loader reads the thin player-start asset", () => {
   const playerInitialization = loadDefaultPlayerInitialization();
 
@@ -508,6 +536,14 @@ test("player initialization loader reads the thin player-start asset", () => {
   assert.match(playerInitialization.player_goal, /bounded next step/);
   assert.equal(playerInitialization.player_not_expected_to_know.includes("hidden stakeholder thresholds"), true);
   assert.equal(playerInitialization.start_signal_examples.includes("Start"), true);
+});
+
+test("player initialization loader localizes player-facing runtime copy for japanese sessions", () => {
+  const playerInitialization = loadDefaultPlayerInitialization("ja");
+
+  assert.match(playerInitialization.session_purpose, /ワークショップ型シミュレーション/);
+  assert.match(playerInitialization.player_goal, /次の一手/);
+  assert.equal(playerInitialization.start_signal_examples.includes("始めます"), true);
 });
 
 test("player prompt preparation includes initialization and opening guidance", () => {

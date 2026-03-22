@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 import { AdapterBackedResponder, OpenAIResponsesAdapter } from "../runtime/execution/runtime-responder.ts";
 import {
-  acceptPlayerMessage,
+  acceptPlayerMessageWithLocalJudger,
   evaluateIfSessionClosed,
   initializeSession,
   runNextRuntimeActorTurnFromState,
@@ -182,7 +182,7 @@ async function main() {
 
     if (nextTurn.decision.owner === "player") {
       const playerMessage = choosePlayerTurn(state, playerTurns, bucketIndexes, recentAgentTexts);
-      state = acceptPlayerMessage(state, playerMessage, "Player");
+      state = acceptPlayerMessageWithLocalJudger(state, playerMessage, "Player");
       stepCount += 1;
       continue;
     }

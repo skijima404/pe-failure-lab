@@ -168,8 +168,8 @@ export function createDefaultParticipants(): ParticipantState[] {
 }
 
 export function createInitialRoomState(sessionId: string, language = "en"): RoomState {
-  const sceneSetup = loadDefaultSceneSetup();
-  const playerInitialization = loadDefaultPlayerInitialization();
+  const sceneSetup = loadDefaultSceneSetup(language);
+  const playerInitialization = loadDefaultPlayerInitialization(language);
 
   return {
     session_id: sessionId,

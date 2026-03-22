@@ -29,3 +29,4 @@ Last updated: 2026-03-22
 - `review`: under review
 - `approved`: approved for next stage
 - `superseded`: replaced by a newer intent
+- `archived`: preserved for historical reference but not active current truth
