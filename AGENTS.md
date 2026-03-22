@@ -23,6 +23,11 @@ This repository is AI-native. Documents and structures should be optimized prima
 - Prefer consistent relation names and stable ids.
 - If a new artifact becomes important to downstream reasoning, give it a clear place in the repository instead of leaving it implicit.
 
+## Enabler and ADR Policy
+- Prefer Enabler Proposals as the default format for foundational assets, reusable operating foundations, and architecture substrate that downstream work should depend on.
+- Write an ADR under `docs/decisions/` when a significant architecture change is triggered by failure, repeated evidence, or implementation breakdown and the repository should preserve what happened and why.
+- When both are needed, use the ADR to capture the triggering event and consequences, and use the Enabler to define the durable foundation that later work should reference.
+
 ## Intent-Gated Development Policy
 - Do not introduce new product behavior, durable assets, workflows, repository rules, skills, scripts, or validation helpers unless they are linked to an Intent and Proposal in `docs/intent-development/`.
 - Treat this as the default gate for development work in this repository.
@@ -54,10 +59,10 @@ This repository is AI-native. Documents and structures should be optimized prima
 - Treat the repository root as a valid entry point for simulation execution as well as development work.
 - If the user asks to run, test-play, or simulate from the root, do not assume the task is only about implementation planning.
 - In simulation-execution contexts, prioritize:
-  - `docs/product/contracts/mvp-simulation-contract-v1.md`
-  - `docs/product/concepts/enterprise-context-card-v1.md`
+  - `docs/product/contracts/mvp-simulation-contract.md`
+  - `docs/product/concepts/enterprise-context-card.md`
   - `docs/product/concepts/mvp-simulation-session-concept.md`
-  - `docs/product/contracts/facilitator-role-contract-v1.md`
+  - `docs/product/contracts/facilitator-role-contract.md`
   - `docs/product/personas/`
   - `failure-model/`
 - When simulation and development intents are both plausible, prefer the user's explicit execution request over the repository's development-document bias.
