@@ -29,6 +29,29 @@ export function buildInitializationBrief(roomState: RoomState): InitializationBr
 }
 
 export function formatInitializationBrief(brief: InitializationBrief): string {
+  if (brief.language.startsWith("ja")) {
+    return [
+      "セッション初期化",
+      "================",
+      `セッションの目的: ${brief.session_purpose}`,
+      `ワークショップのゴール: ${brief.workshop_goal}`,
+      `今回この会議が開かれた背景: ${brief.facilitator_opening_frame}`,
+      `プレイヤーの目的: ${brief.player_goal}`,
+      "",
+      "想定しておくこと:",
+      ...brief.player_should_expect.map((item) => `- ${item}`),
+      "",
+      "この場で取ってよい動き:",
+      ...brief.player_allowed_moves.map((item) => `- ${item}`),
+      "",
+      "この時点で知らなくてよいこと:",
+      ...brief.player_not_expected_to_know.map((item) => `- ${item}`),
+      "",
+      `任意の事前確認質問の例: ${brief.optional_setup_question_example}`,
+      `開始シグナル: ${brief.start_signal_examples.join(", ")}, 始めます, 開始`,
+    ].join("\n");
+  }
+
   return [
     "Session Initialization",
     "======================",
@@ -57,7 +80,13 @@ function normalizeStartSignal(text: string): string {
 
 export function isStartSignal(text: string, roomState: RoomState): boolean {
   const normalized = normalizeStartSignal(text);
-  return roomState.player_initialization.start_signal_examples.some(
+  const startSignalExamples = [...roomState.player_initialization.start_signal_examples];
+
+  if (roomState.language.startsWith("ja")) {
+    startSignalExamples.push("始めます", "開始", "始めましょう", "スタート");
+  }
+
+  return startSignalExamples.some(
     (candidate) => normalizeStartSignal(candidate) === normalized,
   );
 }

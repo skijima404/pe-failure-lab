@@ -1015,6 +1015,18 @@ test("initialization brief exposes player-facing start guidance without spoiler 
   assert.equal(isStartSignal("Go ahead", roomState), false);
 });
 
+test("japanese initialization brief and start aliases are localized for ja sessions", () => {
+  const roomState = createInitialRoomState("initialization-brief-ja-test", "ja");
+  const brief = buildInitializationBrief(roomState);
+  const formatted = formatInitializationBrief(brief);
+
+  assert.match(formatted, /セッション初期化/);
+  assert.match(formatted, /ワークショップのゴール:/);
+  assert.match(formatted, /この時点で知らなくてよいこと:/);
+  assert.equal(isStartSignal("始めます", roomState), true);
+  assert.equal(isStartSignal("開始", roomState), true);
+});
+
 test("session driver blocks live execution until a valid start signal appears", async () => {
   const roomState = createInitialRoomState("session-driver-reject-test");
   const responder = new AdapterBackedResponder(new MockModelAdapter());
@@ -1110,6 +1122,41 @@ test("interactive runtime can keep facilitator turns local while actor turns rem
   assert.equal(facilitatorTurn.turn_log.selected_speaker, "mika");
   assert.equal(facilitatorTurn.turn_log.agent_output_summary.response_transport, "local-facilitator");
   assert.equal(facilitatorTurn.turn_log.layer_trace.response_layer, "local-facilitator");
+});
+
+test("local opening and local facilitator are localized for japanese sessions", async () => {
+  const initialized = initializeSession("local-opening-ja-test", "ja");
+  const started = startSession(initialized.room_state, "始めます");
+  assert.equal(started.accepted, true);
+
+  const openingTurn = await runNextRuntimeActorTurnFromState(started.room_state, new AdapterBackedResponder(new MockModelAdapter()), {
+    opening_mode: "local",
+  });
+  assert.match(openingTurn.room_state.recent_transcript.at(-1)?.text ?? "", /今日のゴール/);
+
+  const roomState = createInitialRoomState("local-facilitator-ja-test", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "少し整理したいです。",
+    },
+  ];
+  roomState.turn_index = 1;
+  roomState.exchange_state.should_continue_current_exchange = true;
+  roomState.exchange_state.awaiting_reaction_from = null;
+  roomState.exchange_state.handoff_candidate_actor_ids = [];
+
+  const facilitatorTurn = await runNextRuntimeActorTurnFromState(
+    roomState,
+    new AdapterBackedResponder(new MockModelAdapter()),
+    { facilitator_mode: "local" },
+  );
+
+  assert.match(facilitatorTurn.room_state.recent_transcript.at(-1)?.text ?? "", /まずは一人が直接答えてから広げましょう|論点をはっきりさせたい/);
 });
 
 test("facilitator prompt includes topic depth, close readiness, and parked topics", () => {
