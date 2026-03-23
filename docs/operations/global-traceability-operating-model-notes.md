@@ -81,6 +81,40 @@ The following ideas appear likely to generalize beyond this repository:
 - non-trivial work should be linked into a durable traceability chain
 - the default chain should begin with `Product Vision` and `Value Stream`
 - mutable current-truth assets should be separated from immutable historical decision records
+- production assets, test or validation assets, and requirement or design assets should be separated by default
+- mock, fixture, prototype, and validation-only assets should not be promoted into production paths implicitly
+
+## Asset Boundary Rule
+Repositories should separate asset classes physically when their intended use is different.
+
+Minimum default distinction:
+- production assets
+- test or validation assets
+- requirement or design assets
+
+Additional classes may be introduced when useful, such as:
+- mocks
+- fixtures
+- prototypes
+- generated artifacts
+
+## Why This Matters
+When asset classes are mixed together, temporary or validation-only assets can be mistaken for production truth.
+This creates risk for both humans and AI agents.
+
+Typical failure mode:
+- a mock or validation artifact is created for short-term testing
+- later work reuses it in a production path
+- the repository no longer makes its intended use legible
+- production behavior starts depending on an asset that was never reviewed as production truth
+
+## Boundary Expectations
+- intended asset usage should be inferable from directory placement and naming, not only from local context
+- test or validation mocks, fixtures, and prototypes should remain outside production paths by default
+- if a test or validation asset must be promoted into production use, that promotion should be explicit and reviewed
+- requirement and design documents should remain distinguishable from execution-facing production assets
+
+This rule is especially important in AI-native repositories because agents often infer intended use from physical structure before they infer it from deeper local context.
 
 ## Not Yet Ready for Global Promotion
 The following still need local validation before being promoted:
@@ -137,9 +171,13 @@ They are intentionally deferred for now.
 - evaluate whether `Validation` or `Evidence` should become an explicit cross-cutting asset or relation
 - evaluate whether `Constraints` should be represented more explicitly across proposal and implementation layers
 - evaluate whether `Observability` or `Runtime Learning` should become a first-class part of the operating model
+- evaluate whether asset boundary class should become a first-class metadata field in addition to folder separation
 
 ### Keep Deferred Until the Model Stabilizes Further
 - detailed `Enabler` taxonomy
 - strict folder naming commitments
 - aggressive global standardization of the full chain
 - detailed ADR operating rules
+
+## Related Operating Checks
+- `docs/operations/end-of-day-structure-check.md`: lightweight daily check for asset-boundary integrity and traceability-chain integrity
