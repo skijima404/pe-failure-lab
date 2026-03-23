@@ -1,14 +1,14 @@
-import { AdapterBackedResponder, OpenAIResponsesAdapter } from "../runtime/execution/runtime-responder.ts";
+import { AdapterBackedResponder, OpenAIResponsesAdapter } from "../../runtime/execution/runtime-responder.ts";
 import {
   acceptPlayerMessageWithLocalJudger,
   evaluateIfSessionClosed,
   initializeSession,
   runNextRuntimeActorTurnFromState,
   startSession,
-} from "../runtime/execution/session-driver.ts";
-import { formatReflectionReport } from "../runtime/evaluation/report.ts";
-import { renderVisibleTranscript } from "../runtime/presentation/visible-transcript.ts";
-import { loadRepoEnv, parseBooleanEnv, parseReasoningEffort, requiredEnv } from "./_env.mjs";
+} from "../../runtime/execution/session-driver.ts";
+import { formatReflectionReport } from "../../runtime/evaluation/report.ts";
+import { renderVisibleTranscript } from "../../runtime/presentation/visible-transcript.ts";
+import { loadRepoEnv, parseBooleanEnv, parseReasoningEffort, requiredEnv } from "../shared/_env.mjs";
 
 function printHeader(remoteMultiAgent) {
   console.log("Remote-Backed Smoke Harness");

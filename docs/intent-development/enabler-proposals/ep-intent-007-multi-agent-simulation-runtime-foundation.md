@@ -3,13 +3,23 @@
 - intent_id: intent-007
 - title: Multi-Agent Simulation Runtime Foundation
 - owner: shared
-- status: draft
+- status: archived
 - created_at: 2026-03-20
-- updated_at: 2026-03-21
+- updated_at: 2026-03-24
 - related_decisions:
   - docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md
 - enables:
   - intent-001
+
+## Archive Note
+This enabler is preserved as historical exploration material and should not be treated as active current truth for the live simulation loop.
+
+It is archived because:
+- the current runtime direction is local-first and production-first rather than multi-agent-first
+- the live runtime is being simplified around a thinner kernel, evaluator-first model-asset usage, and explicit stop policies
+- stronger multi-agent framing creates a high risk of accidental over-design relative to the current product direction
+
+If selective child-session or sidecar usage returns later, it should be reintroduced through a narrower, current-state asset rather than by reviving this document as-is.
 
 ## Purpose
 Define the durable runtime foundation needed so that simulation features can use multiple agents when appropriate without collapsing into prompt sprawl, duplicated memory, or evaluator-like live dialogue.

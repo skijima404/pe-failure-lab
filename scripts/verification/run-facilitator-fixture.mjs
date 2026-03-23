@@ -1,8 +1,8 @@
-import { runScriptedFixture } from "../runtime/validation/fixture-runner.ts";
+import { runScriptedFixture } from "../../runtime/validation/fixture-runner.ts";
 import {
   createFacilitatorInterventionInitialState,
   FACILITATOR_INTERVENTION_FIXTURE,
-} from "../runtime/validation/fixtures/scripted-session.ts";
+} from "../../runtime/validation/fixtures/scripted-session.ts";
 
 async function main() {
   const result = await runScriptedFixture(

@@ -5,7 +5,7 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-20
-- updated_at: 2026-03-21
+- updated_at: 2026-03-23
 - related_value_streams:
   - docs/intent-development/value-streams/vs-intent-001-simulation-session-to-reflection.md
 - related_intent: docs/intent-development/intents/in-intent-001-simulation-core-loop.md
@@ -15,8 +15,11 @@
   - docs/intent-development/implementation-specs/is-intent-001-mvp-multi-agent-runtime-design.md
   - docs/intent-development/implementation-specs/is-intent-001-remote-multi-agent-session-boundaries.md
   - docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md
+- related_development_memos:
+  - docs/intent-development/development-memos/dm-20260324-production-runtime-reset-direction.md
 - related_decisions:
   - docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md
+  - docs/decisions/adr-20260323-separate-runtime-verification-assets-from-product-runtime.md
 - depends_on_enablers:
   - intent-000
   - intent-007
@@ -64,6 +67,17 @@ That would make it difficult to answer:
   - infra-level deployment topology
   - non-MVP scenario variations
 
+## Current Operating Truth
+After `adr-20260323-separate-runtime-verification-assets-from-product-runtime`, the repository should be interpreted as follows:
+- modules under `runtime/execution/`, `runtime/orchestration/`, `runtime/state/`, `runtime/agents/`, `runtime/transcripts/`, `runtime/presentation/`, `runtime/evaluation/`, and `runtime/observability/` define product-runtime structure and contracts
+- assets under `runtime/verification/` are verification-oriented runtime scaffolding and must not be treated as product-quality actor runtime behavior
+- product-facing entrypoints should live under `scripts/production/`
+- verification-oriented entrypoints should live under `scripts/verification/`
+- shared script utilities should live under `scripts/shared/`
+- runtime contract tests should live under `tests/runtime/`
+- `simulate:local` and `simulate:local:interactive` should use the product-facing local live actor generation path
+- verification-oriented commands such as `fixture:*` and `simulate:local:mock` may use deterministic verification renderers
+
 ## Recommended Runtime Structure
 Recommended top-level layout:
 
@@ -78,6 +92,13 @@ runtime/
   evaluation/
   observability/
   validation/
+  verification/
+scripts/
+  production/
+  verification/
+  shared/
+tests/
+  runtime/
 ```
 
 ## Module Responsibilities
@@ -231,6 +252,22 @@ Should contain:
 - turn-decision fixtures
 - validation checks
 
+### `runtime/verification/`
+Purpose:
+- hold deterministic verification-only actor rendering or adapter assets
+- support fixture execution and smoke-style harnesses
+- keep non-product-quality text generation out of product runtime modules
+
+Should contain:
+- mock adapters
+- deterministic local verification renderers
+- verification-only responders
+
+Must not contain:
+- canonical state ownership
+- next-turn orchestration
+- product-quality actor generation logic
+
 ## Dependency Rules
 Recommended dependency direction:
 
@@ -238,6 +275,7 @@ Recommended dependency direction:
 state -> no internal runtime dependency
 orchestration -> state
 agents -> state, transcripts
+verification -> execution, state, agents
 execution -> state, orchestration, agents, transcripts, presentation, observability
 transcripts -> state
 presentation -> state, transcripts

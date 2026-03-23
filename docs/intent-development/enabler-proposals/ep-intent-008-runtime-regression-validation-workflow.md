@@ -117,5 +117,5 @@ Current working storage for this asset:
 - `docs/intent-development/enabler-proposals/ep-intent-007-multi-agent-simulation-runtime-foundation.md`
 - `docs/intent-development/implementation-specs/is-intent-001-runtime-observability-and-validation.md`
 - `docs/intent-development/implementation-specs/is-intent-001-runtime-module-structure.md`
-- `runtime/tests/runtime-contracts.test.ts`
+- `tests/runtime/runtime-contracts.test.ts`
 - `package.json`

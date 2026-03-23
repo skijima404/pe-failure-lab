@@ -3,9 +3,9 @@
 - intent_id: intent-008
 - title: Local Whisper Runtime Design
 - owner: shared
-- status: draft
+- status: archived
 - created_at: 2026-03-22
-- updated_at: 2026-03-22
+- updated_at: 2026-03-24
 - related_value_streams:
   - docs/intent-development/value-streams/vs-intent-001-simulation-session-to-reflection.md
 - related_intent: docs/intent-development/intents/in-intent-008-local-whisper-runtime-variation.md
@@ -22,6 +22,14 @@
 - depends_on_enablers:
   - intent-000
   - intent-007
+
+## Archive Note
+This implementation spec is preserved as historical exploration material and should not be treated as the current variation design contract.
+
+It is archived because:
+- the current direction no longer treats whisper packets as the preferred primary mechanism for replay variation
+- the runtime is being simplified toward stop-policy-driven sessions, thinner actor inputs, and evaluator-first model-asset usage
+- keeping whisper-specific rules active would increase the risk of accidental reference to an approach now considered a reset candidate
 
 ## Enabler Alignment
 This implementation spec operationalizes the local-first runtime direction by defining a bounded hidden-variation mechanism that does not turn sidecars into transcript owners or next-speaker authorities.

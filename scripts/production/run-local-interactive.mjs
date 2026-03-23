@@ -1,21 +1,22 @@
 import readline from "node:readline";
 import { stdin as input, stdout as output } from "node:process";
 
-import { AdapterBackedResponder, MockModelAdapter } from "../runtime/execution/runtime-responder.ts";
+import { LocalLiveActorResponder } from "../../runtime/execution/local-live-actor-responder.ts";
 import {
   acceptPlayerMessageWithLocalJudger,
   evaluateIfSessionClosed,
   initializeSession,
   runNextRuntimeActorTurnFromState,
   startSession,
-} from "../runtime/execution/session-driver.ts";
-import { prepareNextRuntimeTurn } from "../runtime/execution/prepare-runtime-turn.ts";
-import { formatReflectionReport } from "../runtime/evaluation/report.ts";
+} from "../../runtime/execution/session-driver.ts";
+import { prepareNextRuntimeTurn } from "../../runtime/execution/prepare-runtime-turn.ts";
+import { formatReflectionReport } from "../../runtime/evaluation/report.ts";
 
 function parseArgs(argv) {
   let language = "en";
   let startMessage = "Let's start";
   let showDebug = true;
+  let openingFlow = "player-first";
 
   for (const arg of argv) {
     if (arg.startsWith("--language=")) {
@@ -28,6 +29,10 @@ function parseArgs(argv) {
     }
     if (arg === "--no-debug") {
       showDebug = false;
+      continue;
+    }
+    if (arg.startsWith("--opening-flow=")) {
+      openingFlow = arg.slice("--opening-flow=".length);
     }
   }
 
@@ -35,15 +40,16 @@ function parseArgs(argv) {
     startMessage = "始めます";
   }
 
-  return { language, startMessage, showDebug };
+  return { language, startMessage, showDebug, openingFlow };
 }
 
-function printHeader(language, showDebug) {
+function printHeader(language, showDebug, openingFlow) {
   if (language.startsWith("ja")) {
     console.log("ローカル対話プレイ");
     console.log("==================");
     console.log("進行権は常に local-first runtime 側にあります。");
     console.log("開始シグナルも Player 発話も自動投入しません。");
+    console.log(`開始フロー: ${openingFlow === "facilitator-recap" ? "facilitator-recap" : "player-first"}`);
     console.log(`デバッグ表示: ${showDebug ? "on" : "off"}`);
     console.log("");
     return;
@@ -53,6 +59,7 @@ function printHeader(language, showDebug) {
   console.log("======================");
   console.log("Turn progression is always owned by the local-first runtime.");
   console.log("No start signal or player turn will be auto-submitted.");
+  console.log(`Opening flow: ${openingFlow}`);
   console.log(`Debug output: ${showDebug ? "on" : "off"}`);
   console.log("");
 }
@@ -134,9 +141,9 @@ class LineReader {
 }
 
 async function main() {
-  const { language, startMessage, showDebug } = parseArgs(process.argv.slice(2));
-  printHeader(language, showDebug);
-  const responder = new AdapterBackedResponder(new MockModelAdapter());
+  const { language, startMessage, showDebug, openingFlow } = parseArgs(process.argv.slice(2));
+  printHeader(language, showDebug, openingFlow);
+  const responder = new LocalLiveActorResponder();
   const initialized = initializeSession("local-interactive-session", language);
   console.log(initialized.initialization_brief);
   printDivider();
@@ -185,7 +192,14 @@ async function main() {
       }
     }
 
-    let state = started.room_state;
+    let state =
+      openingFlow === "player-first"
+        ? {
+            ...started.room_state,
+            scene_phase: "discussion",
+            active_speaker: "player",
+          }
+        : started.room_state;
 
     while (state.scene_phase !== "post-game") {
       const nextTurn = prepareNextRuntimeTurn(state);

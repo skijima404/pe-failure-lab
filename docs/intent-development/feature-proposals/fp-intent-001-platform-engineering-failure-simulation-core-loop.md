@@ -5,7 +5,7 @@
 - owner: shared
 - status: draft
 - created_at: 2026-03-17
-- updated_at: 2026-03-19
+- updated_at: 2026-03-23
 - related_enablers:
   - intent-000
 - related_ui_spec: docs/intent-development/ui-specs/ui-intent-001-simulation-session-flow.md
@@ -14,6 +14,8 @@
 Create the core simulation loop that lets a learner enter a Platform Engineering scenario, respond to stakeholder pressure, and see structural failure signals emerge over time.
 
 The loop may include scenes that work as partially formed coalition brainstorming workshops, not only as approval-oriented meetings.
+
+The loop does not require every session to converge into agreement. Unresolved, looping, or time-boxed endings are valid learning outcomes when they produce usable reflection about scalable Platform Engineering judgment.
 
 ## Problem
 Current Platform Engineering learning materials can explain failure patterns, but they do not let learners practice boundary management under pressure. Without an interactive loop, failure remains abstract and retrospective rather than experiential and discussable.
@@ -24,6 +26,9 @@ Current Platform Engineering learning materials can explain failure patterns, bu
 3. The system supports replay and reflection on decisions that increased or reduced systemic failure.
 4. Live dialogue feels like a plausible enterprise workshop rather than a rigid facilitator-routed interview.
 5. The loop can support brainstorming-style drafting scenes where bounded uncertainty, rough ideas, and follow-up shaping work remain legitimate outcomes.
+6. Product-facing local simulation paths do not silently fall back to verification-only actor rendering.
+7. A session can end with low alignment or forced stop conditions without being treated as an invalid simulation.
+8. Evaluation quality is preserved even when live dialogue stays generative and not all assessment dimensions are spoken explicitly in-world.
 
 ## Scope
 - In scope:
@@ -44,6 +49,7 @@ Current Platform Engineering learning materials can explain failure patterns, bu
 - Learning design:
   - the system must evaluate judgment and sustainability, not just conversational fluency
   - runtime naturalness should be preserved before neat round-robin turn efficiency
+  - the simulation should not require forced conversational convergence to create learning value
 
 ## Change Contract
 - Allowed Changes:
@@ -66,9 +72,11 @@ Current Platform Engineering learning materials can explain failure patterns, bu
 - [ ] Should observers and learners share the same interface in the first iteration?
 - [ ] How much persona detail should remain in runtime prompts versus durable source assets?
 - [ ] Which scenarios require visible pre-read or scope / ownership artifacts to remain fair and natural in chat-first runtime?
+- [ ] Which stop conditions should end the session before agreement, and how should those endings map into evaluator judgment?
 
 ## Evidence / References
 - `docs/product/vision.md`
 - `docs/intent-development/enabler-proposals/ep-intent-000-platform-engineering-failure-model.md`
 - `docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md`
+- `docs/intent-development/implementation-specs/is-intent-001-local-first-live-actor-generation.md`
 - `README.md`

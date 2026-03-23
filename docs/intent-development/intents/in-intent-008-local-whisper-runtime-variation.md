@@ -3,14 +3,22 @@
 - intent_id: intent-008
 - title: Local Whisper Runtime Variation
 - owner: shared
-- status: draft
+- status: archived
 - created_at: 2026-03-22
-- updated_at: 2026-03-22
+- updated_at: 2026-03-24
 - related_value_streams:
   - docs/intent-development/value-streams/vs-intent-001-simulation-session-to-reflection.md
 - related_enablers:
   - intent-000
   - intent-007
+
+## Archive Note
+This intent is preserved as historical exploration material and should not be treated as current implementation truth.
+
+It is archived because:
+- the runtime direction is shifting away from whisper-specific variation as the primary mechanism
+- replay variation is now expected to come from thinner actor inputs, run-level tension selection, and evaluator-first model knowledge
+- the repository is reducing accidental coupling to multi-agent and whisper-centric language
 
 ## Desired Change
 Make repeated simulation runs produce meaningfully different meeting dynamics without giving up local-first orchestration, canonical room-state ownership, or stable persona identity.

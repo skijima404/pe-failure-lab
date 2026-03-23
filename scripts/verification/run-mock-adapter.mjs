@@ -1,6 +1,7 @@
-import { AdapterBackedResponder, MockModelAdapter } from "../runtime/execution/runtime-responder.ts";
-import { runRuntimeSession } from "../runtime/execution/run-session.ts";
-import { createScriptedSessionInitialState } from "../runtime/validation/fixtures/scripted-session.ts";
+import { AdapterBackedResponder } from "../../runtime/execution/runtime-responder.ts";
+import { MockModelAdapter } from "../../runtime/verification/mock-model-adapter.ts";
+import { runRuntimeSession } from "../../runtime/execution/run-session.ts";
+import { createScriptedSessionInitialState } from "../../runtime/validation/fixtures/scripted-session.ts";
 
 function printHeader() {
   console.log("Local Adapter Harness");

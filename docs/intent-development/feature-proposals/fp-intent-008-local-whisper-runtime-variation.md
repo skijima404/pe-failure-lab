@@ -3,13 +3,21 @@
 - intent_id: intent-008
 - title: Local Whisper Runtime Variation
 - owner: shared
-- status: draft
+- status: archived
 - created_at: 2026-03-22
-- updated_at: 2026-03-22
+- updated_at: 2026-03-24
 - related_enablers:
   - intent-000
   - intent-007
 - related_ui_spec: TBD
+
+## Archive Note
+This feature proposal is preserved for historical traceability and should not be used as the active replay-variation proposal.
+
+It is archived because the repository is moving toward:
+- thinner runtime persona and scenario inputs
+- run-level tension and stance planning instead of whisper-first variation
+- evaluator-first use of model assets
 
 ## Intent
 Create a replayable live runtime where repeated plays can surface different stakeholder angles, concern ordering, and meeting texture without turning the main session into a full multi-actor orchestration problem.

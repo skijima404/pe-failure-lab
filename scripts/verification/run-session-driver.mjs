@@ -1,17 +1,18 @@
-import { AdapterBackedResponder, MockModelAdapter, OpenAIResponsesAdapter } from "../runtime/execution/runtime-responder.ts";
+import { AdapterBackedResponder } from "../../runtime/execution/runtime-responder.ts";
+import { LocalActorResponder } from "../../runtime/verification/local-actor-responder.ts";
+import { MockModelAdapter } from "../../runtime/verification/mock-model-adapter.ts";
 import {
   acceptPlayerMessageWithLocalJudger,
   evaluateIfSessionClosed,
   initializeSession,
   runNextRuntimeActorTurnFromState,
   startSession,
-} from "../runtime/execution/session-driver.ts";
-import { formatReflectionReport } from "../runtime/evaluation/report.ts";
-import { renderVisibleTranscript } from "../runtime/presentation/visible-transcript.ts";
-import { loadRepoEnv, parseReasoningEffort, requiredEnv } from "./_env.mjs";
+} from "../../runtime/execution/session-driver.ts";
+import { formatReflectionReport } from "../../runtime/evaluation/report.ts";
+import { renderVisibleTranscript } from "../../runtime/presentation/visible-transcript.ts";
 
 function parseArgs(argv) {
-  let adapterName = "mock";
+  let adapterName = "local";
   let language = "en";
   const remaining = [];
 
@@ -40,46 +41,34 @@ function parseArgs(argv) {
 }
 
 function createResponder(adapterName) {
-  if (adapterName === "openai") {
-    loadRepoEnv();
-
-    return new AdapterBackedResponder(
-      new OpenAIResponsesAdapter({
-        apiKey: requiredEnv("OPENAI_API_KEY"),
-        model: process.env.OPENAI_MODEL ?? "gpt-5",
-        reasoningEffort: parseReasoningEffort(process.env.OPENAI_REASONING_EFFORT),
-      }),
-    );
+  if (adapterName === "mock") {
+    return new AdapterBackedResponder(new MockModelAdapter());
   }
 
-  return new AdapterBackedResponder(new MockModelAdapter());
+  return new LocalActorResponder();
 }
 
 function printHeader(adapterName, language) {
   if (language.startsWith("ja")) {
-    console.log("セッションドライバ");
-    console.log("==================");
-    console.log("既定モード: ローカルファースト runtime の簡易ウォークスルー。");
-    console.log(
-      `アクター生成モード: ${adapterName === "openai" ? "OpenAI リモートアダプタ（任意）" : "ローカル mock アダプタ（既定）"}`,
-    );
+    console.log("検証用セッションドライバ");
+    console.log("========================");
+    console.log("用途: ローカルファースト runtime の verification walkthrough。");
+    console.log(`アダプタ: ${adapterName === "mock" ? "mock adapter" : "verification local responder"}`);
     console.log("");
     return;
   }
 
-  console.log("Session Driver");
-  console.log("==============");
-  console.log("Default mode: local-first runtime walkthrough.");
-  console.log(
-    `Actor generation mode: ${adapterName === "openai" ? "remote-backed OpenAI adapter (optional)" : "local mock adapter (default)"}`,
-  );
+  console.log("Verification Session Driver");
+  console.log("===========================");
+  console.log("Purpose: verification walkthrough over the local-first runtime.");
+  console.log(`Adapter: ${adapterName === "mock" ? "mock adapter" : "verification local responder"}`);
   console.log("");
 }
 
 async function main() {
   const { adapterName, language, startMessage, playerMessage } = parseArgs(process.argv.slice(2));
   printHeader(adapterName, language);
-  const initialized = initializeSession("session-driver-demo", language);
+  const initialized = initializeSession("verification-session-driver-demo", language);
   const responder = createResponder(adapterName);
 
   const started = startSession(initialized.room_state, startMessage);
@@ -93,7 +82,7 @@ async function main() {
   }
 
   const openingResult = await runNextRuntimeActorTurnFromState(started.room_state, responder, {
-    opening_mode: adapterName === "openai" ? "responder" : "local",
+    opening_mode: "local",
   });
   const afterPlayerMessage = acceptPlayerMessageWithLocalJudger(openingResult.room_state, playerMessage);
   const nextAgentResult = await runNextRuntimeActorTurnFromState(afterPlayerMessage, responder);
@@ -114,7 +103,7 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("Session driver failed.");
+  console.error("Verification session driver failed.");
   console.error(error?.stack ?? error);
   process.exitCode = 1;
 });

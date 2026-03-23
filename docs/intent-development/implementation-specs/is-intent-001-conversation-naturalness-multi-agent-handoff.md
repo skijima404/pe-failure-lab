@@ -3,13 +3,21 @@
 - Product: pe-failure-lab
 - Intent: intent-001
 - Artifact Type: implementation-spec
-- Status: draft
-- Updated: 2026-03-20
+- Status: archived
+- Updated: 2026-03-24
 - Related:
   - `docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md`
   - `docs/product/contracts/mvp-simulation-contract-v1.md`
   - `docs/product/contracts/facilitator-role-contract-v1.md`
   - `docs/product/personas/runtime/`
+
+## Archive Note
+This handoff is preserved as historical comparison material only.
+
+Do not use it as the current design basis because:
+- it centers multi-agent choice framing that is no longer the preferred live-runtime direction
+- the current runtime is being simplified around a thinner local-first kernel
+- actor differentiation is now expected to come from lighter runtime slices and generative stance, not from a full multi-agent handoff architecture
 
 ## Purpose
 Provide a development handoff for possible multi-agent runtime designs focused on conversation naturalness.

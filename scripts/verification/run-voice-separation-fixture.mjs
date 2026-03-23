@@ -1,9 +1,10 @@
-import { AdapterBackedResponder, MockModelAdapter } from "../runtime/execution/runtime-responder.ts";
-import { runRuntimeSession } from "../runtime/execution/run-session.ts";
+import { AdapterBackedResponder } from "../../runtime/execution/runtime-responder.ts";
+import { MockModelAdapter } from "../../runtime/verification/mock-model-adapter.ts";
+import { runRuntimeSession } from "../../runtime/execution/run-session.ts";
 import {
   createDeliveryPressureInitialState,
   createPlatformPressureInitialState,
-} from "../runtime/validation/fixtures/scripted-session.ts";
+} from "../../runtime/validation/fixtures/scripted-session.ts";
 
 function printSection(title) {
   console.log(title);

@@ -3,12 +3,14 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 
-import { evaluateSession, formatReflectionReport } from "../evaluation/report.ts";
-import { evaluateClosedSessionLocally } from "../evaluation/local-evaluator.ts";
-import { buildInitializationBrief, formatInitializationBrief, isStartSignal } from "../execution/initialization.ts";
-import { MockModelAdapter, AdapterBackedResponder, OpenAIResponsesAdapter } from "../execution/runtime-responder.ts";
-import { AdapterBackedPlayerTurnJudger } from "../orchestration/adapter-backed-player-turn-judger.ts";
-import { prepareNextRuntimeTurn } from "../execution/prepare-runtime-turn.ts";
+import { evaluateSession, formatReflectionReport } from "../../runtime/evaluation/report.ts";
+import { evaluateClosedSessionLocally } from "../../runtime/evaluation/local-evaluator.ts";
+import { buildInitializationBrief, formatInitializationBrief, isStartSignal } from "../../runtime/execution/initialization.ts";
+import { LocalLiveActorResponder } from "../../runtime/execution/local-live-actor-responder.ts";
+import { AdapterBackedResponder, OpenAIResponsesAdapter } from "../../runtime/execution/runtime-responder.ts";
+import { MockModelAdapter } from "../../runtime/verification/mock-model-adapter.ts";
+import { AdapterBackedPlayerTurnJudger } from "../../runtime/orchestration/adapter-backed-player-turn-judger.ts";
+import { prepareNextRuntimeTurn } from "../../runtime/execution/prepare-runtime-turn.ts";
 import {
   acceptPlayerMessage,
   acceptPlayerMessageWithLocalJudger,
@@ -18,26 +20,26 @@ import {
   runNextRuntimeActorTurnFromState,
   runSessionFromPlayerStart,
   startSession,
-} from "../execution/session-driver.ts";
-import { renderVisibleTranscript } from "../presentation/visible-transcript.ts";
-import { loadDefaultSceneSetup } from "../scene/setup-loader.ts";
-import { loadDefaultPlayerInitialization } from "../scene/player-initialization-loader.ts";
-import { applyTurnOutcome, computeStateChanges } from "../state/reducers.ts";
-import { createInitialRoomState } from "../state/schema.ts";
+} from "../../runtime/execution/session-driver.ts";
+import { renderVisibleTranscript } from "../../runtime/presentation/visible-transcript.ts";
+import { loadDefaultSceneSetup } from "../../runtime/scene/setup-loader.ts";
+import { loadDefaultPlayerInitialization } from "../../runtime/scene/player-initialization-loader.ts";
+import { applyTurnOutcome, computeStateChanges } from "../../runtime/state/reducers.ts";
+import { createInitialRoomState } from "../../runtime/state/schema.ts";
 import {
   buildWhisperSidecarPacket,
   buildRiskSidecarPacket,
-} from "../sidecars/packet-builders.ts";
-import { generateLocalWhispers } from "../sidecars/local-whisper-sidecar.ts";
+} from "../../runtime/sidecars/packet-builders.ts";
+import { generateLocalWhispers } from "../../runtime/sidecars/local-whisper-sidecar.ts";
 import {
   classifyPlayerUtterance,
   inferMeetingLayer,
   inferMultiPerspectiveNeeded,
-} from "../orchestration/player-turn-analysis.ts";
-import { buildPlayerTurnJudgmentPacket } from "../orchestration/player-turn-judgment-packet.ts";
-import { judgePlayerTurnLocally } from "../orchestration/local-player-turn-judger.ts";
-import { loadRuntimePersonaSlice } from "../personas/runtime-slice-loader.ts";
-import { runScriptedFixture } from "../validation/fixture-runner.ts";
+} from "../../runtime/orchestration/player-turn-analysis.ts";
+import { buildPlayerTurnJudgmentPacket } from "../../runtime/orchestration/player-turn-judgment-packet.ts";
+import { judgePlayerTurnLocally } from "../../runtime/orchestration/local-player-turn-judger.ts";
+import { loadRuntimePersonaSlice } from "../../runtime/personas/runtime-slice-loader.ts";
+import { runScriptedFixture } from "../../runtime/validation/fixture-runner.ts";
 import {
   countDistinctTopicSignals,
   facilitatorOveruse,
@@ -48,7 +50,7 @@ import {
   hasPlayerEntryViolation,
   hasScoringLeakage,
   hasTopicSprawl,
-} from "../validation/transcript-checks.ts";
+} from "../../runtime/validation/transcript-checks.ts";
 import {
   createDeliveryPressureInitialState,
   createPileOnRiskInitialState,
@@ -56,7 +58,7 @@ import {
   createSameTopicOverlapInitialState,
   createScriptedSessionInitialState,
   SCRIPTED_SESSION_FIXTURE,
-} from "../validation/fixtures/scripted-session.ts";
+} from "../../runtime/validation/fixtures/scripted-session.ts";
 
 test("scripted fixture completes with zero selection mismatches", async () => {
   const result = await runScriptedFixture(
@@ -1556,6 +1558,49 @@ test("participants receive session-specific setup during initialization", () => 
   assert.match(facilitator?.session_setup?.likely_first_move ?? "", /open the workshop briefly/i);
   assert.ok(platform?.session_setup);
   assert.match(platform?.session_setup?.current_pressure_seed ?? "", /cannot silently absorb more operational or onboarding work/i);
+});
+
+test("local live responder uses product runtime transport instead of verification rendering", async () => {
+  const initialized = initializeSession("live-local-responder-test", "ja");
+  const started = startSession(initialized.room_state, "始めます");
+  assert.equal(started.accepted, true);
+
+  const roomAfterOpening = await runNextRuntimeActorTurnFromState(started.room_state, new AdapterBackedResponder(new MockModelAdapter()), {
+    opening_mode: "local",
+  });
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomAfterOpening.room_state,
+    "まずは一つのオンボーディング導線に絞って、Platform が無制限の支援窓口にならない形で試したいです。",
+    "Player",
+  );
+  const prepared = prepareNextRuntimeTurn(afterPlayer);
+  const responder = new LocalLiveActorResponder();
+  const outcome = responder.respond({ roomState: afterPlayer, preparedTurn: prepared });
+
+  assert.equal(outcome.response_metadata?.runtime_transport, "local-live-responder");
+  assert.equal(outcome.response_metadata?.verification_asset, false);
+  assert.match(outcome.text, /です|ます/);
+});
+
+test("local live scripts avoid runtime verification imports while verification session driver stays explicit", () => {
+  const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { scripts: Record<string, string> };
+  const interactiveScript = readFileSync(resolve("scripts/production/run-local-interactive.mjs"), "utf8");
+  const sessionDriverScript = readFileSync(resolve("scripts/production/run-session-driver.mjs"), "utf8");
+  const verificationDriverScript = readFileSync(resolve("scripts/verification/run-session-driver.mjs"), "utf8");
+  const mockHarnessScript = readFileSync(resolve("scripts/verification/run-mock-adapter.mjs"), "utf8");
+  const runtimeResponder = readFileSync(resolve("runtime/execution/runtime-responder.ts"), "utf8");
+
+  assert.equal(packageJson.scripts["simulate:local"].includes("--adapter=mock"), false);
+  assert.equal(packageJson.scripts["simulate:local:mock"].includes("--adapter=mock"), true);
+  assert.equal(interactiveScript.includes("MockModelAdapter"), false);
+  assert.equal(interactiveScript.includes("runtime/verification"), false);
+  assert.match(interactiveScript, /runtime\/execution\/local-live-actor-responder\.ts/);
+  assert.match(sessionDriverScript, /let adapterName = "live"/);
+  assert.equal(sessionDriverScript.includes("runtime/verification"), false);
+  assert.match(sessionDriverScript, /runtime\/execution\/local-live-actor-responder\.ts/);
+  assert.match(verificationDriverScript, /runtime\/verification\/local-actor-responder\.ts/);
+  assert.match(mockHarnessScript, /runtime\/verification\/mock-model-adapter\.ts/);
+  assert.equal(runtimeResponder.includes("MockModelAdapter"), false);
 });
 
 test("evaluator returns fixed report shape with primary x/5 structural result", async () => {

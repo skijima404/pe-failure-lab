@@ -14,6 +14,7 @@ Default runtime stance:
 - actor separation is primarily a responsibility and context boundary
 - remote response chains are optional transport behavior, not the architectural center of the runtime
 - evaluator remains local-first and post-game
+- product-facing local scripts use a local live actor generation path
 
 ## Purpose
 This directory holds the first code-level runtime substrate for:
@@ -33,6 +34,13 @@ This directory holds the first code-level runtime substrate for:
 - `presentation/`: visible transcript rendering and boundary hygiene
 - `observability/`: structured turn logs and debug dumps
 - `validation/`: deterministic checks and fixtures
+- `verification/`: fixture-only adapters and other non-live verification assets
+
+Repository-level execution split:
+- `scripts/production/`: product-facing entrypoints for playable runtime flows
+- `scripts/verification/`: verification-only harnesses, fixtures, and mock runners
+- `scripts/shared/`: shared script utilities such as environment loading
+- `tests/runtime/`: runtime contract tests that must stay outside production code paths
 
 ## Current Status
 This is a foundation layer, not a full runnable simulation yet.
@@ -63,9 +71,11 @@ What exists now:
 - a runnable scripted fixture harness via `npm run fixture:scripted`
 - a runnable initialization harness via `npm run fixture:initialization`
 - a runnable session driver harness via `npm run fixture:session-driver`
+- a runnable local live actor harness via `npm run simulate:local`
 - a runnable mock adapter harness via `npm run fixture:mock-adapter`
 - a runnable OpenAI adapter harness via `npm run fixture:openai-adapter`
 - a runnable evaluator harness via `npm run fixture:evaluator`
+- explicit folder separation between product entrypoints, verification entrypoints, and runtime tests
 
 What does not exist yet:
 - richer scene asset families beyond the MVP thin runtime slices
@@ -82,10 +92,21 @@ What does not exist yet:
 
 The script first checks the current environment, then falls back to a repository-root `.env` file if present.
 
+Current development preference:
+- use local-first production entrypoints first
+- evaluate local child-session separation before promoting OpenAI-backed paths as the main actor-generation direction
+- keep mock and deterministic assets as verification support, not as the end-state product center
+
 ## E2E Notes
 - Default operator guidance:
-  - use `npm run simulate:mock` or `npm run fixture:session-driver` when checking the local-first runtime shape
-  - use `npm run simulate:openai` only when you intentionally want the thin early-turn harness
+  - use `npm run simulate:local` when checking the product-facing local live path
+  - use `npm run fixture:session-driver` or `npm run simulate:local:mock` when checking verification-oriented deterministic behavior
+  - use `npm run fixture:mock-adapter` only for fixture-style mock verification
+  - use `npm run simulate:openai` only when you intentionally want the optional remote validation harness
+- Boundary reminder:
+  - assets under `runtime/verification/` are not product-quality live runtime assets
+  - verification scripts may import from `runtime/verification/`
+  - product-facing local scripts must not import from `runtime/verification/`
 - Runtime mode roles:
 - `simulate:openai`
     - thin remote smoke test

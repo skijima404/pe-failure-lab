@@ -3,9 +3,9 @@
 - intent_id: intent-001
 - title: MVP Multi-Agent Runtime Application
 - owner: shared
-- status: draft
+- status: archived
 - created_at: 2026-03-20
-- updated_at: 2026-03-21
+- updated_at: 2026-03-24
 - related_value_streams:
   - docs/intent-development/value-streams/vs-intent-001-simulation-session-to-reflection.md
 - related_intent: docs/intent-development/intents/in-intent-001-simulation-core-loop.md
@@ -25,6 +25,19 @@
 - depends_on_enablers:
   - intent-000
   - intent-007
+
+## Archive Note
+This implementation spec is preserved as historical exploration material and should not be used as the default runtime design reference.
+
+It is archived because:
+- the current direction is to slim the runtime kernel rather than keep a multi-agent application model at the center
+- unresolved or time-boxed endings are now valid outcomes, reducing the need for explicit convergence-oriented multi-agent control
+- evaluator and planning layers, not actor runtime, should carry most model-asset semantics
+
+Use these as current references instead:
+- `docs/intent-development/implementation-specs/is-intent-001-local-first-live-actor-generation.md`
+- `docs/intent-development/implementation-specs/is-intent-001-runtime-module-structure.md`
+- `docs/intent-development/development-memos/dm-20260324-production-runtime-reset-direction.md`
 
 ## Enabler Alignment
 This implementation spec applies the shared multi-agent runtime foundation to the current one-scene MVP workshop.

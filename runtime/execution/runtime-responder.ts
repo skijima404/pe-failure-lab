@@ -1,6 +1,5 @@
 import type { PreparedRuntimeTurn } from "./prepare-runtime-turn.ts";
 import type { RoomState, ScriptedTurnOutcome, TurnOutcome } from "../state/types.ts";
-export { MockModelAdapter } from "./mock-model-adapter.ts";
 export { OpenAIResponsesAdapter, type OpenAIResponsesAdapterOptions } from "./openai-responses-adapter.ts";
 
 export interface RuntimeResponder {

@@ -7,8 +7,11 @@ Use the repository root as the simulation execution entry point.
 
 Current runtime stance:
 - the live simulation runtime is `local-first`
-- remote OpenAI-backed modes are optional playtest and validation modes
+- the default local scripts use a product-facing local live actor path
+- verification harnesses remain available as explicit fixture or mock commands
+- OpenAI-backed modes remain optional and should not become the default development center before local child-session separation has been evaluated
 - visible Codex child sessions are operator tooling, not simulation actors
+- the repository is aiming at a production-quality demo for CloudNative Kaigi on 2026-05-14 to 2026-05-15
 
 1. Read the initialization brief:
 
@@ -16,7 +19,7 @@ Current runtime stance:
 npm run simulate:init
 ```
 
-2. Run the mock-backed MVP session driver:
+2. Run the local live session driver:
 
 ```bash
 npm run simulate:local
@@ -26,6 +29,14 @@ For human-in-the-loop local play:
 
 ```bash
 npm run simulate:local:interactive -- --language=ja
+```
+
+The interactive harness defaults to `player-first` opening flow. Use `--opening-flow=facilitator-recap` to restore the older facilitator-led opening.
+
+For fixture-only mock verification:
+
+```bash
+npm run simulate:local:mock
 ```
 
 3. Run an OpenAI-backed mode only when you intentionally want remote generation:
@@ -72,8 +83,8 @@ Suggested root-level execution flow:
 6. Produce game-end output and enter post-game discussion mode
 
 Execution note:
-- prefer the local-first flow when checking runtime structure, prompt boundaries, or orchestration behavior
-- use remote-backed modes when validating optional actor-generation behavior, not as the default mental model for the runtime
+- prefer the local-first live flow when checking session quality, prompt boundaries, or orchestration behavior
+- use remote-backed modes only as optional validation paths after local-first and local child-session options have been checked
 
 ## Vision
 - `docs/product/vision.md`: repo-level epic hypothesis and long-term direction
@@ -92,6 +103,16 @@ Execution note:
 - `docs/intent-development`: intent-driven development documents with traceability from intent to implementation
 - `docs/operations`: operating rules, quality gates, and repo policies
 - `docs/decisions`: architecture and product decisions
+- `scripts/production`: product-facing simulation entrypoints
+- `scripts/verification`: fixture, mock, and regression harness entrypoints
+- `scripts/shared`: script utilities shared by both entrypoint classes
+- `tests/runtime`: runtime contract tests and boundary assertions
+
+## Session Split
+- use one session for architecture management, boundary review, and final structural checks
+- use a separate session for implementation work
+- after implementation, hand back a summary using `docs/templates/implementation-session-handoff-template.md`
+- close implementation work only after checking `docs/operations/architecture-review-checklist.md`
 
 ## Intent Traceability
 This repository uses an intent-driven development flow:
@@ -104,7 +125,7 @@ This repository uses an intent-driven development flow:
 
 ## Current Focus
 - make Platform Engineering failure patterns visible, playable, and discussable
-- design simulation flows before committing to implementation detail
+- make the local-first runtime into a production-grade demo artifact, not only a verification scaffold
 - preserve traceability from product vision to scenario and interaction design
 
 ## Failure Model

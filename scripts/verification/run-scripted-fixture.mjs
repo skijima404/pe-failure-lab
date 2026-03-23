@@ -1,8 +1,8 @@
-import { runScriptedFixture } from "../runtime/validation/fixture-runner.ts";
+import { runScriptedFixture } from "../../runtime/validation/fixture-runner.ts";
 import {
   createScriptedSessionInitialState,
   SCRIPTED_SESSION_FIXTURE,
-} from "../runtime/validation/fixtures/scripted-session.ts";
+} from "../../runtime/validation/fixtures/scripted-session.ts";
 
 function printHeader() {
   console.log("Scripted Runtime Harness");

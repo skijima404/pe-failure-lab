@@ -1,10 +1,10 @@
-import { ScriptedResponder } from "../runtime/execution/runtime-responder.ts";
-import { runRuntimeSession } from "../runtime/execution/run-session.ts";
-import { evaluateSession, formatReflectionReport } from "../runtime/evaluation/report.ts";
+import { ScriptedResponder } from "../../runtime/execution/runtime-responder.ts";
+import { runRuntimeSession } from "../../runtime/execution/run-session.ts";
+import { evaluateSession, formatReflectionReport } from "../../runtime/evaluation/report.ts";
 import {
   createScriptedSessionInitialState,
   SCRIPTED_SESSION_FIXTURE,
-} from "../runtime/validation/fixtures/scripted-session.ts";
+} from "../../runtime/validation/fixtures/scripted-session.ts";
 
 async function main() {
   const initialState = createScriptedSessionInitialState();

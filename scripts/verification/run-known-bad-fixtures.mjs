@@ -10,7 +10,7 @@ import {
   hasPlayerEntryViolation,
   hasScoringLeakage,
   hasTopicSprawl,
-} from "../runtime/validation/transcript-checks.ts";
+} from "../../runtime/validation/transcript-checks.ts";
 
 function loadTranscript(path) {
   return JSON.parse(readFileSync(resolve(path), "utf8"));

@@ -2,8 +2,8 @@ import {
   buildInitializationBrief,
   formatInitializationBrief,
   isStartSignal,
-} from "../runtime/execution/initialization.ts";
-import { createInitialRoomState } from "../runtime/state/schema.ts";
+} from "../../runtime/execution/initialization.ts";
+import { createInitialRoomState } from "../../runtime/state/schema.ts";
 
 async function main() {
   const roomState = createInitialRoomState("initialization-brief-session");
