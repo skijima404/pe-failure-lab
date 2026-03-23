@@ -127,6 +127,8 @@ export function deriveExchangeState(roomState: RoomState, outcome: TurnOutcome):
   if (outcome.turn_owner === "facilitator") {
     return {
       ...current,
+      initiating_actor_id: null,
+      follow_up_count: 0,
       awaiting_reaction_from: null,
       should_continue_current_exchange: false,
       handoff_candidate_actor_ids: [],

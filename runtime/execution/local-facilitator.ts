@@ -62,6 +62,22 @@ function renderLocalFacilitatorText(
       : "That gives us enough to mark this point as tentatively settled. If something material is still open, name that one item; otherwise we can move on.";
   }
 
+  if (interventionReason === "trigger-alignment") {
+    return isJapanese(roomState)
+      ? [
+          "はい、先に背景を短く揃えます。",
+          "この活動が始まったきっかけは、案件ごとに立ち上げ方や支援依頼がばらつき、Platform 側がその都度個別対応していたことです。",
+          "背景の問題は、何を共通化し、どこまでを支援範囲にするのかが曖昧なまま、Platform が中央支援窓口のように見られやすかったことです。",
+          "この前提を踏まえて、どこから始めるのがよいかを置いていきましょう。",
+        ].join("")
+      : [
+          "Yes, let me align the background first.",
+          "This started because teams were repeatedly asking for similar setup and support, but each case was being handled ad hoc.",
+          "The underlying issue was that the shared platform boundary stayed unclear, so the platform group was drifting toward a central help desk role.",
+          "With that framing in place, let's come back to where the first usable move should be.",
+        ].join(" ");
+  }
+
   if (interventionReason === "pile-on-risk") {
     return isJapanese(roomState)
       ? "いったん反応は一つずつにしましょう。論点を積み増す前に、まず一つ明確な応答を確認したいです。"

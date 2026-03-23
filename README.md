@@ -22,6 +22,12 @@ npm run simulate:init
 npm run simulate:local
 ```
 
+For human-in-the-loop local play:
+
+```bash
+npm run simulate:local:interactive -- --language=ja
+```
+
 3. Run an OpenAI-backed mode only when you intentionally want remote generation:
 
 ```bash

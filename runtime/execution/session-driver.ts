@@ -41,6 +41,55 @@ export interface SessionCloseResult {
   evaluation: LocalEvaluationResult | null;
 }
 
+function selectInitialStakeholderReaction(
+  text: string,
+  judgment: RoomState["main_session_judgment"] | undefined,
+): string | null {
+  if (!judgment) {
+    return "exec";
+  }
+
+  if (
+    judgment.last_player_utterance_type === "question" &&
+    (judgment.meeting_layer === "why" || judgment.last_player_intent === "request-trigger-alignment")
+  ) {
+    return null;
+  }
+
+  const normalized = text.toLowerCase();
+
+  if (
+    /support|boundary|platform|onboarding|exception|absorb|capacity|operate|operational/.test(normalized) ||
+    /支援|境界|例外対応|抱え込|プラットフォーム|運用負荷|オンボーディング/.test(text)
+  ) {
+    return "platform";
+  }
+
+  if (
+    /team|delivery|roadmap|workflow|adopt|use this|next month|sprint/.test(normalized) ||
+    /現場|導入|チーム|ロードマップ|ワークフロー|使える|使い始め/.test(text)
+  ) {
+    return "delivery";
+  }
+
+  if (
+    /business|value|investment|credible|scale|sponsor|direction|enterprise/.test(normalized) ||
+    /事業|価値|投資|展開性|経営|全社/.test(text)
+  ) {
+    return "exec";
+  }
+
+  if (judgment.meeting_layer === "how") {
+    return "platform";
+  }
+
+  if (judgment.meeting_layer === "what" && judgment.last_player_utterance_type === "proposal") {
+    return "platform";
+  }
+
+  return "exec";
+}
+
 function buildAcceptedPlayerTurnOutcome(
   roomState: RoomState,
   text: string,
@@ -50,6 +99,10 @@ function buildAcceptedPlayerTurnOutcome(
   const needsInitialStakeholderReaction =
     roomState.exchange_state.initiating_actor_id === null &&
     roomState.recent_transcript.at(-1)?.speaker_id === "mika";
+  const initialReactionTarget = needsInitialStakeholderReaction
+    ? selectInitialStakeholderReaction(text, mainSessionJudgmentOverride)
+    : null;
+  const shouldRouteInitialQuestionToFacilitator = needsInitialStakeholderReaction && initialReactionTarget === null;
 
   return {
     speaker_id: "player",
@@ -57,12 +110,23 @@ function buildAcceptedPlayerTurnOutcome(
     turn_owner: "player",
     text,
     updates: {
-      ...(needsInitialStakeholderReaction
+      ...(shouldRouteInitialQuestionToFacilitator
         ? {
             exchange_state: {
               ...roomState.exchange_state,
-              initiating_actor_id: "exec",
-              awaiting_reaction_from: "exec",
+              initiating_actor_id: null,
+              awaiting_reaction_from: null,
+              follow_up_count: 0,
+              handoff_candidate_actor_ids: [],
+              should_continue_current_exchange: false,
+            },
+          }
+        : needsInitialStakeholderReaction
+        ? {
+            exchange_state: {
+              ...roomState.exchange_state,
+              initiating_actor_id: initialReactionTarget,
+              awaiting_reaction_from: initialReactionTarget,
               follow_up_count: 0,
               handoff_candidate_actor_ids: [],
               should_continue_current_exchange: true,

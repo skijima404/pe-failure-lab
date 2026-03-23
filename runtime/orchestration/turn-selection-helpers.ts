@@ -83,6 +83,17 @@ export function requiresFacilitatorIntervention(roomState: RoomState): string | 
   }
 
   if (
+    lastTranscriptSpeaker(roomState) === "player" &&
+    roomState.main_session_judgment.last_player_utterance_type === "question" &&
+    roomState.main_session_judgment.last_player_intent === "request-trigger-alignment" &&
+    roomState.exchange_state.awaiting_reaction_from === null &&
+    roomState.exchange_state.handoff_candidate_actor_ids.length === 0 &&
+    !roomState.exchange_state.should_continue_current_exchange
+  ) {
+    return "trigger-alignment";
+  }
+
+  if (
     roomState.recent_transcript.length > 0 &&
     !facilitatorJustHandledSettledExchange(roomState) &&
     !roomState.exchange_state.should_continue_current_exchange &&

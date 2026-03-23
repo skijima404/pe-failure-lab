@@ -28,6 +28,8 @@ export function prepareNextRuntimeTurn(roomState: RoomState): PreparedRuntimeTur
         ? "open-workshop-and-hand-off-to-player"
         : decision.intervention_reason === "closing-transition"
           ? "close-the-current-topic-and-end-the-meeting"
+          : decision.intervention_reason === "trigger-alignment"
+            ? "restate-the-trigger-and-background-briefly-then-hand-back-to-player"
           : decision.intervention_reason === "exchange-settled"
             ? "mark-the-current-topic-resolved-enough-and-transition-cleanly"
         : "clarify-turn-owner";

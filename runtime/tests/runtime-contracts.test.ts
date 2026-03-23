@@ -438,6 +438,109 @@ test("japanese player turns update canonical main-session judgment through local
   assert.equal(nextState.main_session_judgment.multi_perspective_needed, false);
 });
 
+test("initial why-question after opening routes back to facilitator instead of forcing exec first", () => {
+  const roomState = createInitialRoomState("initial-why-question-routes-facilitator", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "今日はありがとうございます。どこから始めるのがよさそうか共有してください。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "まずこの活動は、どう言うきっかけで始まり、その背景にあった問題はなんだったかを教えてもらえますか",
+  );
+  const preparedTurn = prepareNextRuntimeTurn(afterPlayer);
+
+  assert.equal(afterPlayer.main_session_judgment.last_player_utterance_type, "question");
+  assert.equal(afterPlayer.main_session_judgment.meeting_layer, "why");
+  assert.equal(afterPlayer.main_session_judgment.last_player_intent, "request-trigger-alignment");
+  assert.equal(preparedTurn.decision.owner, "facilitator");
+  assert.equal(preparedTurn.decision.speaker_id, "mika");
+  assert.equal(preparedTurn.decision.selection_reason, "facilitator-intervention");
+  assert.equal(preparedTurn.decision.intervention_reason, "trigger-alignment");
+});
+
+test("initial boundary proposal after opening routes first reaction to platform", () => {
+  const roomState = createInitialRoomState("initial-boundary-routes-platform", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "今日はありがとうございます。どこから始めるのがよさそうか共有してください。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "まずは一つのオンボーディング導線に絞って、Platform 側が例外対応を抱え込まない境界から始めたいです。",
+  );
+  const preparedTurn = prepareNextRuntimeTurn(afterPlayer);
+
+  assert.equal(afterPlayer.exchange_state.initiating_actor_id, "platform");
+  assert.equal(afterPlayer.exchange_state.awaiting_reaction_from, "platform");
+  assert.equal(preparedTurn.decision.owner, "initiating_actor");
+  assert.equal(preparedTurn.decision.speaker_id, "platform");
+});
+
+test("initial delivery-shaped proposal after opening routes first reaction to delivery", () => {
+  const roomState = createInitialRoomState("initial-delivery-routes-delivery", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "今日はありがとうございます。どこから始めるのがよさそうか共有してください。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "最初は現場チームが今のロードマップの中でも使い始められる軽い workflow から始めたいです。",
+  );
+  const preparedTurn = prepareNextRuntimeTurn(afterPlayer);
+
+  assert.equal(afterPlayer.exchange_state.initiating_actor_id, "delivery");
+  assert.equal(afterPlayer.exchange_state.awaiting_reaction_from, "delivery");
+  assert.equal(preparedTurn.decision.owner, "initiating_actor");
+  assert.equal(preparedTurn.decision.speaker_id, "delivery");
+});
+
+test("initial investment-framed proposal after opening routes first reaction to exec", () => {
+  const roomState = createInitialRoomState("initial-investment-routes-exec", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "今日はありがとうございます。どこから始めるのがよさそうか共有してください。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "最初は投資判断として説明しやすい一歩に絞って、事業価値と展開性を見せたいです。",
+  );
+  const preparedTurn = prepareNextRuntimeTurn(afterPlayer);
+
+  assert.equal(afterPlayer.exchange_state.initiating_actor_id, "exec");
+  assert.equal(afterPlayer.exchange_state.awaiting_reaction_from, "exec");
+  assert.equal(preparedTurn.decision.owner, "initiating_actor");
+  assert.equal(preparedTurn.decision.speaker_id, "exec");
+});
+
 test("local player-turn judger updates canonical judgment and seeds whispers on the default path", () => {
   const roomState = createInitialRoomState("local-player-judger-default-path", "ja");
   roomState.scene_phase = "discussion";
@@ -911,6 +1014,60 @@ test("exchange-settled facilitator intervention does not re-trigger on the next 
   const preparedTurn = prepareNextRuntimeTurn(roomState);
   assert.equal(preparedTurn.decision.owner, "player");
   assert.equal(preparedTurn.decision.intervention_reason, null);
+});
+
+test("topic-drift facilitator intervention clears drift-driving exchange state", () => {
+  const roomState = createInitialRoomState("topic-drift-no-loop");
+  roomState.scene_phase = "discussion";
+  roomState.turn_index = 3;
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    depth: 3,
+  };
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    initiating_actor_id: "platform",
+    follow_up_count: 2,
+    awaiting_reaction_from: null,
+    should_continue_current_exchange: true,
+    handoff_candidate_actor_ids: [],
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "We should start with one narrow onboarding path.",
+    },
+    {
+      turn_index: 2,
+      speaker_id: "platform",
+      speaker_name: "Naoki Sato",
+      turn_owner: "initiating_actor",
+      text: "That helps, but I still need the boundary to stay narrow.",
+    },
+    {
+      turn_index: 3,
+      speaker_id: "delivery",
+      speaker_name: "Emi Hayashi",
+      turn_owner: "reacting_actor",
+      text: "I can work with that if the workflow impact stays small.",
+    },
+  ];
+
+  const afterFacilitatorTurn = applyTurnOutcome(roomState, {
+    speaker_id: "mika",
+    speaker_name: "Mika",
+    turn_owner: "facilitator",
+    text: "Let's stay with the current topic long enough to make the next decision boundary usable.",
+  });
+
+  const preparedTurn = prepareNextRuntimeTurn(afterFacilitatorTurn);
+  assert.equal(preparedTurn.decision.owner, "player");
+  assert.equal(preparedTurn.decision.intervention_reason, null);
+  assert.equal(afterFacilitatorTurn.exchange_state.follow_up_count, 0);
+  assert.equal(afterFacilitatorTurn.exchange_state.initiating_actor_id, null);
 });
 
 test("close readiness detects bounded next-step phrasing beyond the original exact wording", () => {
