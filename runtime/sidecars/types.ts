@@ -63,6 +63,10 @@ export type WhisperTemperatureShift = "more-curious" | "more-concerned" | "more-
 
 export type WhisperPriorityHint = "use-if-selected" | "use-only-if-natural";
 
+export type WhisperStanceBias = "probing" | "guarded" | "constructive" | "skeptical";
+
+export type WhisperMoveBias = "ask" | "narrow" | "support-with-condition" | "push-back";
+
 export interface WhisperInjection {
   whisper_id: string;
   target_participant_id: string;
@@ -73,7 +77,9 @@ export interface WhisperInjection {
   context_pressure_tag: string | null;
   temperature_shift: WhisperTemperatureShift;
   priority_hint: WhisperPriorityHint;
-  optional_question_seed: string | null;
+  stance_bias: WhisperStanceBias;
+  move_bias: WhisperMoveBias;
+  focus_cue: string | null;
   do_not_repeat_tags: string[];
 }
 

@@ -4,7 +4,9 @@ interface SidecarReactionCandidateLike {
   angle_shift?: unknown;
   context_pressure_tag?: unknown;
   temperature_shift?: unknown;
-  optional_question_seed?: unknown;
+  stance_bias?: unknown;
+  move_bias?: unknown;
+  focus_cue?: unknown;
 }
 
 function hashText(value: string): number {
@@ -99,8 +101,10 @@ function renderSidecarCandidateResponse(sessionId: string, speakerId: string, la
   const angleShift = typeof candidate.angle_shift === "string" ? candidate.angle_shift : null;
   const contextPressureTag = typeof candidate.context_pressure_tag === "string" ? candidate.context_pressure_tag : null;
   const temperatureShift = typeof candidate.temperature_shift === "string" ? candidate.temperature_shift : null;
-  const nextQuestion = typeof candidate.optional_question_seed === "string" ? candidate.optional_question_seed : null;
-  const variant = hashText(`${sessionId}:${speakerId}:${angleShift ?? "none"}:${nextQuestion ?? "none"}`) % 2;
+  const stanceBias = typeof candidate.stance_bias === "string" ? candidate.stance_bias : null;
+  const moveBias = typeof candidate.move_bias === "string" ? candidate.move_bias : null;
+  const focusCue = typeof candidate.focus_cue === "string" ? candidate.focus_cue : null;
+  const variant = hashText(`${sessionId}:${speakerId}:${angleShift ?? "none"}:${focusCue ?? "none"}`) % 2;
   const translatedAngleShift = translateWhisperAngle(angleShift, language);
   const translatedContextPressure = translateContextPressureTag(contextPressureTag, language);
 
@@ -111,7 +115,7 @@ function renderSidecarCandidateResponse(sessionId: string, speakerId: string, la
         translatedAngleShift ? `ただ、今は ${translatedAngleShift} を先に揃えたいです。` : null,
         translatedContextPressure ? `${translatedContextPressure} も少し気になります。` : null,
         temperatureShift === "more-concerned" ? "入口を広げすぎると、あとで支援負荷が膨らみます。" : null,
-        nextQuestion,
+        focusCue ? `${focusCue} を見える形にしたいです。` : null,
       ].filter(Boolean).join(" ");
     }
     if (speakerId === "delivery") {
@@ -119,7 +123,7 @@ function renderSidecarCandidateResponse(sessionId: string, speakerId: string, la
         variant === 0 ? "それなら現場でも試す余地はあります。" : "そこまで絞るなら現場の判断はしやすいです。",
         translatedAngleShift ? `気になるのは ${translatedAngleShift} です。` : null,
         translatedContextPressure ? `${translatedContextPressure} も前提として無視しにくいです。` : null,
-        nextQuestion,
+        focusCue ? `${focusCue} が見えるかは確認したいです。` : null,
       ].filter(Boolean).join(" ");
     }
     if (speakerId === "exec") {
@@ -127,7 +131,7 @@ function renderSidecarCandidateResponse(sessionId: string, speakerId: string, la
         variant === 0 ? "その一歩目なら経営判断の土台にはなります。" : "その切り方なら最初の判断材料としては扱えます。",
         translatedAngleShift ? `ただし、${translatedAngleShift} の見え方は押さえたいです。` : null,
         translatedContextPressure ? `${translatedContextPressure} も踏まえておきたいです。` : null,
-        nextQuestion,
+        focusCue ? `${focusCue} は先に揃えたいです。` : null,
       ].filter(Boolean).join(" ");
     }
   }
@@ -138,7 +142,7 @@ function renderSidecarCandidateResponse(sessionId: string, speakerId: string, la
       angleShift ? `The angle I still care about is ${angleShift}.` : null,
       contextPressureTag ? `The enterprise pressure I still feel is ${contextPressureTag}.` : null,
       temperatureShift ? `I am coming at it ${temperatureShift.replaceAll("-", " ")}.` : null,
-      nextQuestion,
+      focusCue ? `I still want ${focusCue} made visible.` : null,
     ].filter(Boolean).join(" ");
   }
   if (speakerId === "delivery") {
@@ -146,7 +150,7 @@ function renderSidecarCandidateResponse(sessionId: string, speakerId: string, la
       "That could help if the first step is usable quickly.",
       angleShift ? `I am still thinking about ${angleShift}.` : null,
       contextPressureTag ? `The background pressure still feels like ${contextPressureTag}.` : null,
-      nextQuestion,
+      focusCue ? `I would check ${focusCue} next.` : null,
     ].filter(Boolean).join(" ");
   }
   if (speakerId === "exec") {
@@ -154,11 +158,13 @@ function renderSidecarCandidateResponse(sessionId: string, speakerId: string, la
       "That sounds credible enough for a first move.",
       angleShift ? `I want to anchor it in ${angleShift}.` : null,
       contextPressureTag ? `I also want to keep ${contextPressureTag} in view.` : null,
-      nextQuestion,
+      focusCue ? `I still want ${focusCue} clarified.` : null,
     ].filter(Boolean).join(" ");
   }
-  if (angleShift || temperatureShift || nextQuestion) {
-    return [angleShift, temperatureShift, nextQuestion].filter((value): value is string => Boolean(value)).join(" ");
+  if (angleShift || temperatureShift || stanceBias || moveBias || focusCue) {
+    return [angleShift, temperatureShift, stanceBias, moveBias, focusCue]
+      .filter((value): value is string => Boolean(value))
+      .join(" ");
   }
   return null;
 }

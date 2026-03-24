@@ -1,6 +1,9 @@
 import type { CloseReadiness, RoomState, StructuralState, TurnOutcome } from "./types.ts";
 import { isBoundedNextStepSignal, isSupportiveAcknowledgment } from "./text-signals.ts";
 
+const SOFT_LOOP_TURN_THRESHOLD = 8;
+const HARD_STOP_TURN_THRESHOLD = 12;
+
 export function deriveStructuralState(roomState: RoomState, outcome: TurnOutcome): StructuralState {
   const current = roomState.structural_state;
   const text = outcome.text.toLowerCase();
@@ -77,6 +80,17 @@ function exchangeSettledEnoughToClose(roomState: RoomState): boolean {
   );
 }
 
+function repeatedQuestionLoop(roomState: RoomState, outcome: TurnOutcome): boolean {
+  const recentTurns = [...roomState.recent_transcript.slice(-3), { text: outcome.text, speaker_id: outcome.speaker_id }];
+  const questionLikeTurns = recentTurns.filter((turn) => turn.text.includes("?")).length;
+
+  return (
+    roomState.turn_index + 1 >= SOFT_LOOP_TURN_THRESHOLD &&
+    roomState.exchange_state.follow_up_count >= 2 &&
+    questionLikeTurns >= 2
+  );
+}
+
 export function deriveCloseReadiness(
   roomStateBeforeTurn: RoomState,
   outcome: TurnOutcome,
@@ -102,6 +116,20 @@ export function deriveCloseReadiness(
     return {
       ready: true,
       reason: "exchange-resolved-enough",
+    };
+  }
+
+  if (repeatedQuestionLoop(roomStateBeforeTurn, outcome)) {
+    return {
+      ready: true,
+      reason: "loop-threshold-reached",
+    };
+  }
+
+  if (roomStateAfterTurn.turn_index >= HARD_STOP_TURN_THRESHOLD) {
+    return {
+      ready: true,
+      reason: "hard-turn-limit-reached",
     };
   }
 

@@ -203,53 +203,53 @@ function createParticipantSessionSetup(
 ): ParticipantSessionSetup {
   if (participant.role_type === "player") {
     return {
-      session_role_focus: "state the current direction in a workable draft form and keep it bounded",
+      role_focus: "state a workable direction and keep it bounded enough for the room to react to",
       current_pressure_seed: playerGoal,
-      interaction_posture: "enter the room ready to clarify, not to give a polished long speech",
+      likely_misunderstanding_or_overreach: "trying to sound too complete too early can make the room read broad commitment into a draft idea",
       likely_first_move: "start with where the room can begin today and let others react from there",
     };
   }
 
   if (participant.role_type === "facilitator") {
     return {
-      session_role_focus: "keep the room moving on one active topic without taking over the content",
+      role_focus: "keep the room on one active topic without taking over the content",
       current_pressure_seed: meetingGoal,
-      interaction_posture: "stay unobtrusive until flow or ownership becomes unclear",
+      likely_misunderstanding_or_overreach: "over-facilitating would make the room sound coached instead of lived-in",
       likely_first_move: "open the workshop briefly and hand the room to the player",
     };
   }
 
   if (participant.participant_id === "exec") {
     return {
-      session_role_focus: "test whether the initial direction is credible enough to matter at enterprise scale",
+      role_focus: "test whether the direction is credible enough to matter beyond a local team convenience",
       current_pressure_seed: "avoid broad commitment without a believable first move and practical logic",
-      interaction_posture: "curious first, then narrowing toward practical business meaning",
+      likely_misunderstanding_or_overreach: "may hear platform talk as another shared-service promise unless the boundary and business logic are concrete",
       likely_first_move: "ask what the first usable scope or boundary actually is",
     };
   }
 
   if (participant.participant_id === "platform") {
     return {
-      session_role_focus: "check whether the initial path quietly expands platform-side support burden",
+      role_focus: "check whether the path quietly turns into hidden support or cleanup work",
       current_pressure_seed: "the team is already busy and cannot silently absorb more operational or onboarding work",
-      interaction_posture: "plainspoken, field-aware, and wary of invisible extra work",
+      likely_misunderstanding_or_overreach: "may assume the room is asking platform to absorb exceptions unless the first offer stays narrow",
       likely_first_move: "ask what the platform side is really committing to first",
     };
   }
 
   if (participant.participant_id === "delivery") {
     return {
-      session_role_focus: "check whether the proposed path helps a delivery team move now",
+      role_focus: "check whether the path helps a delivery team move now rather than later in theory",
       current_pressure_seed: "active roadmap pressure makes it hard to adopt a path that adds interpretation overhead before helping",
-      interaction_posture: "practical and open, but impatient with vague helpfulness",
+      likely_misunderstanding_or_overreach: "may treat directionally good platform talk as unusable unless the day-one benefit is visible",
       likely_first_move: "ask what becomes easier for the team right away",
     };
   }
 
   return {
-    session_role_focus: "react from your local role in the meeting",
+    role_focus: "react from your local role in the meeting",
     current_pressure_seed: meetingGoal,
-    interaction_posture: "stay within your own role and visible concern",
+    likely_misunderstanding_or_overreach: "may read too much certainty into a rough draft if the room does not keep the boundary visible",
     likely_first_move: "react from your current role in the room",
   };
 }

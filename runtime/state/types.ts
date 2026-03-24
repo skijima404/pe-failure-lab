@@ -13,6 +13,17 @@ export type TurnOwner = "player" | "initiating_actor" | "reacting_actor" | "faci
 
 export type ParticipantRoleType = "player" | "facilitator" | "stakeholder" | "evaluator";
 
+export type RuntimeDefaultMove = "ask" | "narrow" | "support-with-condition" | "push-back" | "repair-flow";
+
+export type RuntimePatience = "low" | "medium" | "high";
+
+export type RuntimeTrustThreshold =
+  | "one-bounded-signal"
+  | "visible-support-boundary"
+  | "day-one-utility"
+  | "credible-transition-path"
+  | "direct-exchange-legible";
+
 export type ReactionType =
   | "none"
   | "recognition"
@@ -27,16 +38,14 @@ export interface RuntimePersonaSlice {
   source_path: string;
   display_name: string;
   role_label: string;
+  tone_summary: string;
   core_concern: string;
-  typical_bias: string;
-  escalation_trigger: string;
-  cooperation_condition: string;
-  working_context: string;
-  day_to_day_pressure: string;
-  protection_target: string;
-  relationship_to_change: string;
+  default_move: RuntimeDefaultMove;
+  patience: RuntimePatience;
+  trust_threshold: RuntimeTrustThreshold;
+  likely_misunderstanding: string;
+  cooperation_condition?: string;
   voice_cues: string[];
-  do_not_overdo: string[];
 }
 
 export interface RuntimeSceneSetup {
@@ -61,9 +70,9 @@ export interface RuntimePlayerInitialization {
 }
 
 export interface ParticipantSessionSetup {
-  session_role_focus: string;
+  role_focus: string;
   current_pressure_seed: string;
-  interaction_posture: string;
+  likely_misunderstanding_or_overreach: string;
   likely_first_move: string;
 }
 

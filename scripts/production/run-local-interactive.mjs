@@ -1,5 +1,6 @@
 import readline from "node:readline";
 import { stdin as input, stdout as output } from "node:process";
+import { pathToFileURL } from "node:url";
 
 import { LocalLiveActorResponder } from "../../runtime/execution/local-live-actor-responder.ts";
 import {
@@ -138,6 +139,28 @@ class LineReader {
       this.pendingResolvers.push(resolve);
     });
   }
+
+  drainBufferedLines() {
+    const lines = [...this.bufferedLines];
+    this.bufferedLines = [];
+    return lines;
+  }
+}
+
+export function coalesceBufferedMultilineTurn(firstLine, trailingLines) {
+  return [firstLine, ...trailingLines].join("\n");
+}
+
+async function readPlayerTurn(lineReader, prompt) {
+  const firstLine = await lineReader.readLine(prompt);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  const trailingLines = lineReader.drainBufferedLines();
+  return coalesceBufferedMultilineTurn(firstLine, trailingLines);
+}
+
+function isDirectExecution() {
+  const entrypoint = process.argv[1];
+  return Boolean(entrypoint) && import.meta.url === pathToFileURL(entrypoint).href;
 }
 
 async function main() {
@@ -205,7 +228,7 @@ async function main() {
       const nextTurn = prepareNextRuntimeTurn(state);
 
       if (nextTurn.decision.owner === "player") {
-        const playerInput = (await lineReader.readLine(language.startsWith("ja") ? "Player> " : "Player> ")).trim();
+        const playerInput = (await readPlayerTurn(lineReader, language.startsWith("ja") ? "Player> " : "Player> ")).trim();
 
         if (!playerInput) {
           console.log(language.startsWith("ja") ? "発話を入力してください。終了するには /quit を入力します。" : "Enter a player turn, or use /quit.");
@@ -256,8 +279,10 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error("Local interactive play failed.");
-  console.error(error?.stack ?? error);
-  process.exitCode = 1;
-});
+if (isDirectExecution()) {
+  main().catch((error) => {
+    console.error("Local interactive play failed.");
+    console.error(error?.stack ?? error);
+    process.exitCode = 1;
+  });
+}

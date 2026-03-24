@@ -36,9 +36,10 @@ export function summarizePromptInput(
     prompt_focus:
       record.runtime_persona && typeof record.runtime_persona === "object"
         ? {
+            tone_summary: (record.runtime_persona as Record<string, unknown>).tone_summary ?? null,
             core_concern: (record.runtime_persona as Record<string, unknown>).core_concern ?? null,
-            day_to_day_pressure: (record.runtime_persona as Record<string, unknown>).day_to_day_pressure ?? null,
-            protection_target: (record.runtime_persona as Record<string, unknown>).protection_target ?? null,
+            default_move: (record.runtime_persona as Record<string, unknown>).default_move ?? null,
+            trust_threshold: (record.runtime_persona as Record<string, unknown>).trust_threshold ?? null,
           }
         : null,
     prompt_text_preview: promptText.slice(0, 180),

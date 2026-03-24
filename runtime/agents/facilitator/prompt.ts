@@ -19,6 +19,44 @@ export interface FacilitatorPrompt {
   prompt_text: string;
 }
 
+function describeDefaultMove(value: NonNullable<ParticipantState["runtime_persona"]>["default_move"] | undefined): string {
+  if (value === "repair-flow") {
+    return "repair flow briefly and hand the room back";
+  }
+  if (value === "ask") {
+    return "ask one bounded clarifying question";
+  }
+  if (value === "narrow") {
+    return "narrow the active thread";
+  }
+  if (value === "support-with-condition") {
+    return "support the room conditionally";
+  }
+  if (value === "push-back") {
+    return "push back when the room becomes unclear";
+  }
+  return "repair meeting flow and hand the room back quickly";
+}
+
+function describeTrustThreshold(value: NonNullable<ParticipantState["runtime_persona"]>["trust_threshold"] | undefined): string {
+  if (value === "direct-exchange-legible") {
+    return "the room can continue by direct exchange";
+  }
+  if (value === "one-bounded-signal") {
+    return "one believable bounded signal";
+  }
+  if (value === "visible-support-boundary") {
+    return "a visible support boundary";
+  }
+  if (value === "day-one-utility") {
+    return "one concrete day-one benefit";
+  }
+  if (value === "credible-transition-path") {
+    return "a credible transition path";
+  }
+  return "the room can react directly without facilitator repair";
+}
+
 export function buildFacilitatorPromptInput(
   roomState: RoomState,
   interventionReason: string,
@@ -54,7 +92,6 @@ export function renderFacilitatorPrompt(input: FacilitatorPromptInput): string {
   const parkedTopics = input.parked_topic_labels.map((item) => `- ${item}`).join("\n") || "- none";
   const constraints = input.response_constraints.map((item) => `- ${item.key}: ${item.value}`).join("\n");
   const voiceCues = persona?.voice_cues.join(", ") ?? "calm, brief, neutral";
-  const doNotOverdo = persona?.do_not_overdo.map((item) => `- ${item}`).join("\n") ?? "- Do not over-facilitate.";
   const closeReadiness = input.close_readiness.ready
     ? `ready (${input.close_readiness.reason ?? "no-reason"})`
     : "not-ready";
@@ -70,14 +107,22 @@ export function renderFacilitatorPrompt(input: FacilitatorPromptInput): string {
     `Close readiness: ${closeReadiness}`,
     "",
     "Runtime stance:",
+    `- Tone summary: ${persona?.tone_summary ?? "calm, brief, and neutral"}`,
     `- Core concern: ${persona?.core_concern ?? "Keep the meeting legible and moving."}`,
-    `- Typical bias: ${persona?.typical_bias ?? "Protect flow without taking over content."}`,
-    `- Escalation trigger: ${persona?.escalation_trigger ?? input.intervention_reason}`,
+    `- Default move: ${describeDefaultMove(persona?.default_move)}`,
+    `- Patience: ${persona?.patience ?? "moderate until flow breaks"}`,
+    `- Trust threshold: ${describeTrustThreshold(persona?.trust_threshold)}`,
+    `- Likely misunderstanding: ${
+      persona?.likely_misunderstanding ?? "treating content confusion as something the facilitator should solve directly"
+    }`,
     `- Cooperation condition: ${persona?.cooperation_condition ?? "The room remains legible enough for direct exchange."}`,
     `- Voice cues: ${voiceCues}`,
-    `- Session role focus: ${input.facilitator_runtime_slice?.session_setup?.session_role_focus ?? "Keep the meeting legible."}`,
+    `- Session role focus: ${input.facilitator_runtime_slice?.session_setup?.role_focus ?? "Keep the meeting legible."}`,
     `- Current pressure seed: ${input.facilitator_runtime_slice?.session_setup?.current_pressure_seed ?? "Keep the current meeting goal visible."}`,
-    `- Interaction posture: ${input.facilitator_runtime_slice?.session_setup?.interaction_posture ?? "Stay calm and unobtrusive."}`,
+    `- Likely misunderstanding or overreach: ${
+      input.facilitator_runtime_slice?.session_setup?.likely_misunderstanding_or_overreach ??
+      "Do not become a hidden coach or content owner."
+    }`,
     `- Likely first move: ${input.facilitator_runtime_slice?.session_setup?.likely_first_move ?? "Open briefly and hand the room on."}`,
     "",
     "Facilitator rules:",
@@ -87,9 +132,6 @@ export function renderFacilitatorPrompt(input: FacilitatorPromptInput): string {
     "- You are a good human facilitator, but not a deep Platform Engineering expert.",
     "- You may notice drift in the conversation, but do not invent hidden PE diagnosis on your own.",
     "- Keep the room on one active topic.",
-    "",
-    "Do not overdo:",
-    doNotOverdo,
     "",
     "Visible unresolved items:",
     unresolved,

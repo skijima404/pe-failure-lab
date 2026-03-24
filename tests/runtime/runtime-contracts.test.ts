@@ -59,6 +59,7 @@ import {
   createScriptedSessionInitialState,
   SCRIPTED_SESSION_FIXTURE,
 } from "../../runtime/validation/fixtures/scripted-session.ts";
+import { coalesceBufferedMultilineTurn } from "../../scripts/production/run-local-interactive.mjs";
 
 test("scripted fixture completes with zero selection mismatches", async () => {
   const result = await runScriptedFixture(
@@ -609,13 +610,14 @@ test("persona slice loader reads durable runtime persona assets", () => {
   assert.ok(execPersona);
   assert.equal(execPersona?.display_name, "Aki Tanaka");
   assert.equal(execPersona?.role_label, "Executive Stakeholder");
+  assert.match(execPersona?.tone_summary ?? "", /skeptical|value-oriented/);
   assert.equal(execPersona?.voice_cues.includes("broad-first"), true);
   assert.ok(platformPersona);
-  assert.match(platformPersona?.day_to_day_pressure ?? "", /capacity is thin/);
-  assert.match(platformPersona?.protection_target ?? "", /invisible support inflation/);
+  assert.equal(platformPersona?.trust_threshold, "visible-support-boundary");
+  assert.match(platformPersona?.likely_misunderstanding ?? "", /absorb exceptions/);
   assert.ok(facilitatorPersona);
   assert.equal(facilitatorPersona?.display_name, "Mika");
-  assert.equal(facilitatorPersona?.do_not_overdo.includes("do not act like a shadow evaluator"), true);
+  assert.equal(facilitatorPersona?.default_move, "repair-flow");
 });
 
 test("scene setup loader reads the thin runtime scene asset", () => {
@@ -697,7 +699,9 @@ test("actor prompt includes stakeholder working context and pressure background"
       context_pressure_tag: "support-function-misread",
       temperature_shift: "more-concerned",
       priority_hint: "use-if-selected",
-      optional_question_seed: "What exactly does platform provide first?",
+      stance_bias: "guarded",
+      move_bias: "narrow",
+      focus_cue: "first support boundary",
       do_not_repeat_tags: ["platform-boundary-clarity"],
     },
   ];
@@ -705,11 +709,13 @@ test("actor prompt includes stakeholder working context and pressure background"
   const preparedTurn = prepareNextRuntimeTurn(roomState);
 
   assert.equal(preparedTurn.decision.speaker_id, "platform");
-  assert.match(preparedTurn.prompt_text, /Working context:/);
-  assert.match(preparedTurn.prompt_text, /Day-to-day pressure:/);
-  assert.match(preparedTurn.prompt_text, /actual workload, team reality, or delivery context/i);
+  assert.match(preparedTurn.prompt_text, /Tone summary:/);
+  assert.match(preparedTurn.prompt_text, /Default move:/);
+  assert.match(preparedTurn.prompt_text, /Trust threshold:/);
+  assert.match(preparedTurn.prompt_text, /Likely misunderstanding:/);
   assert.match(preparedTurn.prompt_text, /Session role focus:/);
   assert.match(preparedTurn.prompt_text, /Current pressure seed:/);
+  assert.match(preparedTurn.prompt_text, /Likely misunderstanding or overreach:/);
   assert.match(preparedTurn.prompt_text, /Active topic depth: 2/);
   assert.match(preparedTurn.prompt_text, /Visible unresolved items:/);
   assert.match(preparedTurn.prompt_text, /Hidden whisper:/);
@@ -792,7 +798,7 @@ test("voice separation fixtures select platform and delivery as distinct next sp
 
   assert.equal(platformTurn.decision.speaker_id, "platform");
   assert.equal(deliveryTurn.decision.speaker_id, "delivery");
-  assert.match(platformTurn.prompt_text, /capacity is thin/i);
+  assert.match(platformTurn.prompt_text, /cannot silently absorb more operational or onboarding work/i);
   assert.match(deliveryTurn.prompt_text, /roadmap pressure/i);
 });
 
@@ -950,7 +956,7 @@ test("supportive but unresolved stakeholder follow-up keeps the exchange open", 
   assert.equal(preparedTurn.decision.selection_reason, "player-clarification-needed");
 });
 
-test("supportive stakeholder acknowledgment without a next ask routes to facilitator instead of another player turn", () => {
+test("supportive stakeholder acknowledgment without a next ask returns the room to the player", () => {
   const roomState = createInitialRoomState("exchange-settled-guard");
   roomState.scene_phase = "discussion";
   roomState.turn_index = 2;
@@ -974,11 +980,11 @@ test("supportive stakeholder acknowledgment without a next ask routes to facilit
   ];
 
   const preparedTurn = prepareNextRuntimeTurn(roomState);
-  assert.equal(preparedTurn.decision.owner, "facilitator");
-  assert.equal(preparedTurn.decision.intervention_reason, "exchange-settled");
+  assert.equal(preparedTurn.decision.owner, "player");
+  assert.equal(preparedTurn.decision.intervention_reason, null);
 });
 
-test("exchange-settled facilitator intervention does not re-trigger on the next turn", () => {
+test("a prior facilitator turn on a settled exchange still returns control to the player next", () => {
   const roomState = createInitialRoomState("exchange-settled-no-loop");
   roomState.scene_phase = "discussion";
   roomState.turn_index = 3;
@@ -1144,6 +1150,75 @@ test("resolved exchange with sufficient structural progress becomes close-ready 
   assert.equal(afterStakeholderTurn.close_readiness.reason, "exchange-resolved-enough");
   assert.equal(afterStakeholderTurn.topic_status, "resolved-enough");
   assert.equal(afterStakeholderTurn.active_topic.status, "resolved-enough");
+});
+
+test("repeated unresolved questioning can time-box the session without forced convergence", () => {
+  const roomState = createInitialRoomState("loop-threshold-close");
+  roomState.scene_phase = "discussion";
+  roomState.turn_index = 8;
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    follow_up_count: 2,
+    should_continue_current_exchange: true,
+    awaiting_reaction_from: null,
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 6,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "What exactly are we committing to here?",
+    },
+    {
+      turn_index: 7,
+      speaker_id: "platform",
+      speaker_name: "Naoki Sato",
+      turn_owner: "initiating_actor",
+      text: "I still need that boundary to be clearer.",
+    },
+    {
+      turn_index: 8,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "Then what is the smallest boundary we can actually hold?",
+    },
+  ];
+
+  const nextState = applyTurnOutcome(roomState, {
+    speaker_id: "platform",
+    speaker_name: "Naoki Sato",
+    turn_owner: "initiating_actor",
+    text: "If we keep circling this, I still need the actual boundary clarified?",
+  });
+
+  assert.equal(nextState.close_readiness.ready, true);
+  assert.equal(nextState.close_readiness.reason, "loop-threshold-reached");
+});
+
+test("hard turn limit can stop the session even when the room is still unresolved", () => {
+  const roomState = createInitialRoomState("hard-stop-close");
+  roomState.scene_phase = "discussion";
+  roomState.turn_index = 11;
+  roomState.structural_state = {
+    ...roomState.structural_state,
+    open_risks: ["support-boundary-not-yet-clear"],
+  };
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    should_continue_current_exchange: true,
+  };
+
+  const nextState = applyTurnOutcome(roomState, {
+    speaker_id: "delivery",
+    speaker_name: "Emi Hayashi",
+    turn_owner: "reacting_actor",
+    text: "I can see the direction, but I still do not know what teams get first.",
+  });
+
+  assert.equal(nextState.close_readiness.ready, true);
+  assert.equal(nextState.close_readiness.reason, "hard-turn-limit-reached");
 });
 
 test("facilitator intervention clears stale stakeholder pending questions", () => {
@@ -1555,9 +1630,23 @@ test("participants receive session-specific setup during initialization", () => 
   const platform = roomState.participant_states.find((participant) => participant.participant_id === "platform");
 
   assert.ok(facilitator?.session_setup);
+  assert.match(facilitator?.session_setup?.role_focus ?? "", /one active topic/i);
   assert.match(facilitator?.session_setup?.likely_first_move ?? "", /open the workshop briefly/i);
   assert.ok(platform?.session_setup);
   assert.match(platform?.session_setup?.current_pressure_seed ?? "", /cannot silently absorb more operational or onboarding work/i);
+  assert.match(platform?.session_setup?.likely_misunderstanding_or_overreach ?? "", /absorb exceptions/i);
+});
+
+test("interactive multiline player paste is coalesced into one intended turn", () => {
+  const merged = coalesceBufferedMultilineTurn("全体的にデザイン思考を取り入れた進み方をしたいので、", [
+    "- まずはこの流れが始まったきっかけとその背景にあった問題の確認",
+    "- その上でどう言ったものでその問題を解決できそうか",
+    "- 実施に際して必要になる制約や方向性の洗い出しと役割分担",
+  ]);
+
+  assert.equal(merged.split("\n").length, 4);
+  assert.match(merged, /背景にあった問題/);
+  assert.match(merged, /役割分担/);
 });
 
 test("local live responder uses product runtime transport instead of verification rendering", async () => {
@@ -1580,6 +1669,51 @@ test("local live responder uses product runtime transport instead of verificatio
   assert.equal(outcome.response_metadata?.runtime_transport, "local-live-responder");
   assert.equal(outcome.response_metadata?.verification_asset, false);
   assert.match(outcome.text, /です|ます/);
+});
+
+test("japanese local live responder does not leak raw english concern or pressure strings into visible turns", async () => {
+  const initialized = initializeSession("live-local-ja-localization-test", "ja");
+  const started = startSession(initialized.room_state, "始めます");
+  assert.equal(started.accepted, true);
+
+  const roomAfterOpening = await runNextRuntimeActorTurnFromState(started.room_state, new AdapterBackedResponder(new MockModelAdapter()), {
+    opening_mode: "local",
+  });
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomAfterOpening.room_state,
+    "どんな意見があったか教えていただけますか？",
+    "Player",
+  );
+  const prepared = prepareNextRuntimeTurn(afterPlayer);
+  const responder = new LocalLiveActorResponder();
+  const outcome = responder.respond({ roomState: afterPlayer, preparedTurn: prepared });
+
+  assert.equal(/[\u3040-\u30ff\u4e00-\u9faf]/.test(outcome.text), true);
+  assert.equal(outcome.text.includes("avoid broad commitment without a believable first move and practical logic"), false);
+  assert.equal(outcome.text.includes("business value and investment credibility for the first move"), false);
+});
+
+test("local live responder exposes stance metadata and can produce non-question turns", async () => {
+  const initialized = initializeSession("live-local-stance-test", "en");
+  const started = startSession(initialized.room_state, "Start");
+  assert.equal(started.accepted, true);
+
+  const roomAfterOpening = await runNextRuntimeActorTurnFromState(started.room_state, new AdapterBackedResponder(new MockModelAdapter()), {
+    opening_mode: "local",
+  });
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomAfterOpening.room_state,
+    "We should keep the first platform move narrow and not imply broad support coverage.",
+    "Player",
+  );
+  const prepared = prepareNextRuntimeTurn(afterPlayer);
+  const responder = new LocalLiveActorResponder();
+  const outcome = responder.respond({ roomState: afterPlayer, preparedTurn: prepared });
+
+  assert.equal(typeof outcome.response_metadata?.stance_tone, "string");
+  assert.equal(typeof outcome.response_metadata?.stance_move, "string");
+  assert.equal(typeof outcome.response_metadata?.session_tension, "string");
+  assert.equal(outcome.text.includes("?"), false);
 });
 
 test("local live scripts avoid runtime verification imports while verification session driver stays explicit", () => {

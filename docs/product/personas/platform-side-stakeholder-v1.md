@@ -33,7 +33,7 @@ Its detailed sections are for authoring, tuning, and validation.
 Runtime execution does not need to reflect every section directly.
 
 Prefer using the thin runtime memo:
-- `docs/product/personas/runtime/platform-side-stakeholder-runtime-v1.md`
+- `docs/product/personas/runtime/archive/platform-side-stakeholder-runtime-v1.md`
 
 For runtime prompting, this persona should be compressed to:
 - core concern: whether the proposed path will actually work for teams and operators without turning into hidden support work

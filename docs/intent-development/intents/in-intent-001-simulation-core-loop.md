@@ -49,6 +49,7 @@ The repository already defines product assets and implementation direction for s
 - Expected implementation specs:
   - `docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md`
   - `docs/intent-development/implementation-specs/is-intent-001-local-first-live-actor-generation.md`
+  - `docs/intent-development/implementation-specs/is-intent-001-thin-runtime-persona-contract.md`
   - `docs/intent-development/implementation-specs/is-intent-001-runtime-module-structure.md`
   - `docs/intent-development/implementation-specs/is-intent-001-runtime-observability-and-validation.md`
 

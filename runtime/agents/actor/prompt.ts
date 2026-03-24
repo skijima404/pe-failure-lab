@@ -23,6 +23,44 @@ export interface ActorPrompt {
   prompt_text: string;
 }
 
+function describeDefaultMove(value: NonNullable<ParticipantState["runtime_persona"]>["default_move"] | undefined): string {
+  if (value === "ask") {
+    return "ask for one concrete clarification";
+  }
+  if (value === "narrow") {
+    return "narrow the scope or boundary before backing it";
+  }
+  if (value === "support-with-condition") {
+    return "offer conditional support if one bounded condition is visible";
+  }
+  if (value === "push-back") {
+    return "push back on ambiguity until the path sounds believable";
+  }
+  if (value === "repair-flow") {
+    return "repair flow briefly and hand the room back";
+  }
+  return "react from your local concern and ask for one concrete clarification";
+}
+
+function describeTrustThreshold(value: NonNullable<ParticipantState["runtime_persona"]>["trust_threshold"] | undefined): string {
+  if (value === "one-bounded-signal") {
+    return "one believable bounded signal";
+  }
+  if (value === "visible-support-boundary") {
+    return "a visible support boundary";
+  }
+  if (value === "day-one-utility") {
+    return "one concrete day-one benefit";
+  }
+  if (value === "credible-transition-path") {
+    return "a credible transition path";
+  }
+  if (value === "direct-exchange-legible") {
+    return "the room staying legible enough for direct exchange";
+  }
+  return "one believable bounded signal";
+}
+
 export function buildActorPromptInput(
   roomState: RoomState,
   speaker: ParticipantState,
@@ -54,7 +92,6 @@ export function buildActorPromptInput(
 export function renderActorPrompt(input: ActorPromptInput): string {
   const persona = input.runtime_persona;
   const voiceCues = persona?.voice_cues.join(", ") ?? "natural enterprise tone";
-  const doNotOverdo = persona?.do_not_overdo.map((item) => `- ${item}`).join("\n") ?? "- Do not sound scripted.";
   const recentTurns = input.recent_transcript.recent_turns
     .map((turn) => `${turn.speaker_name}: ${turn.text}`)
     .join("\n");
@@ -74,7 +111,9 @@ export function renderActorPrompt(input: ActorPromptInput): string {
         `- enterprise context pressure tag: ${input.active_whisper.context_pressure_tag ?? "none"}`,
         `- temperature shift: ${input.active_whisper.temperature_shift}`,
         `- priority hint: ${input.active_whisper.priority_hint}`,
-        `- optional question seed: ${input.active_whisper.optional_question_seed ?? "none"}`,
+        `- stance bias: ${input.active_whisper.stance_bias}`,
+        `- move bias: ${input.active_whisper.move_bias}`,
+        `- focus cue: ${input.active_whisper.focus_cue ?? "none"}`,
       ].join("\n")
     : "- none";
 
@@ -88,18 +127,20 @@ export function renderActorPrompt(input: ActorPromptInput): string {
     `Close readiness: ${closeReadiness}`,
     "",
     "Runtime persona:",
+    `- Tone summary: ${persona?.tone_summary ?? "natural enterprise stakeholder tone"}`,
     `- Core concern: ${persona?.core_concern ?? input.speaker_runtime_slice.current_concern_label ?? "the current topic"}`,
-    `- Typical bias: ${persona?.typical_bias ?? "Stay within your own viewpoint."}`,
-    `- Escalation trigger: ${persona?.escalation_trigger ?? "Escalate only when the player's answer creates a real concern."}`,
+    `- Default move: ${describeDefaultMove(persona?.default_move)}`,
+    `- Patience: ${persona?.patience ?? "moderate"}`,
+    `- Trust threshold: ${describeTrustThreshold(persona?.trust_threshold)}`,
+    `- Likely misunderstanding: ${persona?.likely_misunderstanding ?? "you may over-read the room's intent unless the boundary stays visible"}`,
     `- Cooperation condition: ${persona?.cooperation_condition ?? input.speaker_runtime_slice.cooperation_condition ?? "Find a bounded next step."}`,
-    `- Working context: ${persona?.working_context ?? "Respond from your real day-to-day working context."}`,
-    `- Day-to-day pressure: ${persona?.day_to_day_pressure ?? "You have normal delivery and operational pressure."}`,
-    `- Protection target: ${persona?.protection_target ?? "Protect the work and people you are responsible for."}`,
-    `- Relationship to change: ${persona?.relationship_to_change ?? "React to change from your own practical position."}`,
     `- Voice cues: ${voiceCues}`,
-    `- Session role focus: ${input.speaker_runtime_slice.session_setup?.session_role_focus ?? "Stay within your role in this meeting."}`,
+    `- Session role focus: ${input.speaker_runtime_slice.session_setup?.role_focus ?? "Stay within your role in this meeting."}`,
     `- Current pressure seed: ${input.speaker_runtime_slice.session_setup?.current_pressure_seed ?? "Respond from the pressure visible in the room."}`,
-    `- Interaction posture: ${input.speaker_runtime_slice.session_setup?.interaction_posture ?? "React in a natural meeting posture."}`,
+    `- Likely misunderstanding or overreach: ${
+      input.speaker_runtime_slice.session_setup?.likely_misunderstanding_or_overreach ??
+      "Do not over-read the room or make the draft broader than it is."
+    }`,
     `- Likely first move: ${input.speaker_runtime_slice.session_setup?.likely_first_move ?? "Make one natural move from your role."}`,
     "",
     "Conversation rules:",
@@ -109,13 +150,10 @@ export function renderActorPrompt(input: ActorPromptInput): string {
     "- Stay on the active topic.",
     "- Do not mention scores, rubrics, or hidden system logic.",
     "- Let your concern come from your actual workload, team reality, or delivery context, not from abstract best-practice debate alone.",
-    "- If close readiness is visible, either confirm bounded support or surface one final concrete concern. Do not reopen the whole meeting.",
+    "- If close readiness is visible, either name one bounded support point or one concrete unresolved concern. Do not pretend the room fully converged if it did not.",
     "- If a hidden whisper is present, treat it as a temporary nudge only. Keep persona core and topic fit first.",
     "- Ignore the hidden whisper if using it would sound forced or would open a second topic.",
     `- ${responseLanguage}`,
-    "",
-    "Do not overdo:",
-    doNotOverdo,
     "",
     "Visible unresolved items:",
     unresolved,

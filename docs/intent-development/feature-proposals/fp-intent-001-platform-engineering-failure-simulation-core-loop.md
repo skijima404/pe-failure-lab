@@ -29,6 +29,7 @@ Current Platform Engineering learning materials can explain failure patterns, bu
 6. Product-facing local simulation paths do not silently fall back to verification-only actor rendering.
 7. A session can end with low alignment or forced stop conditions without being treated as an invalid simulation.
 8. Evaluation quality is preserved even when live dialogue stays generative and not all assessment dimensions are spoken explicitly in-world.
+9. Runtime persona and scenario inputs stay thin enough that actor differentiation comes from light character contracts and live context rather than heavy scripted prompt payloads.
 
 ## Scope
 - In scope:
@@ -79,4 +80,5 @@ Current Platform Engineering learning materials can explain failure patterns, bu
 - `docs/intent-development/enabler-proposals/ep-intent-000-platform-engineering-failure-model.md`
 - `docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md`
 - `docs/intent-development/implementation-specs/is-intent-001-local-first-live-actor-generation.md`
+- `docs/intent-development/implementation-specs/is-intent-001-thin-runtime-persona-contract.md`
 - `README.md`

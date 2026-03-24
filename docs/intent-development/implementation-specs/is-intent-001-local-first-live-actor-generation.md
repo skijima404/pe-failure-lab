@@ -10,6 +10,7 @@
 - related_feature_proposal: docs/intent-development/feature-proposals/fp-intent-001-platform-engineering-failure-simulation-core-loop.md
 - related_runtime_specs:
   - docs/intent-development/implementation-specs/is-intent-001-conversation-naturalness-runtime-behavior.md
+  - docs/intent-development/implementation-specs/is-intent-001-thin-runtime-persona-contract.md
   - docs/intent-development/implementation-specs/is-intent-001-runtime-module-structure.md
   - docs/intent-development/implementation-specs/is-intent-008-local-whisper-runtime-design.md
 - related_decisions:
@@ -109,6 +110,41 @@ The live actor path should not also become:
 - a deterministic phrase engine
 - a forced-convergence controller
 
+## Current Runtime Direction
+The current local-first runtime should be interpreted with the following operational shape:
+
+- live actor surface generation should derive turns from:
+  - runtime persona slice
+  - participant session setup
+  - compact transcript reference
+  - session tension inferred from exchange state
+  - optional short-lived whisper stance hints
+- whisper payloads should carry light stance and move bias such as:
+  - probing
+  - guarded
+  - constructive
+  - skeptical
+- whisper payloads should not carry transcript-ready full-sentence questions as the primary live path
+- a stakeholder turn may:
+  - ask a bounded question
+  - narrow the proposal
+  - give conditional support
+  - push back on unresolved ambiguity
+- the runtime should return control to the player after a settled stakeholder response instead of automatically routing through facilitator closure language
+- facilitator intervention should remain for:
+  - opening
+  - trigger/background alignment
+  - turn-ownership repair
+  - pile-on risk
+  - topic drift
+  - explicit stop transitions
+- stop transitions may be triggered by:
+  - bounded next-step visibility
+  - resolved-enough exchange state
+  - repeated unresolved looping
+  - hard turn limit
+- unresolved or time-boxed endings should remain evaluator-valid and should not be treated as runtime failure
+
 ### Stop And Closure Rules
 The local-first simulation does not need to force agreement to remain valid.
 
@@ -139,6 +175,7 @@ The repository should distinguish:
 5. Local live turns remain on one active topic and do not regress into deterministic fixture wording.
 6. Product-facing live actor generation does not require direct loading of Failure Model or CNCF Maturity Model source assets.
 7. The runtime can end on time-box or unresolved stop conditions without collapsing the learning loop.
+8. The player can regain turn ownership after a stakeholder response without mandatory facilitator settlement.
 
 ## Follow-up
 - improve live actor surface realization quality without reintroducing verification assets

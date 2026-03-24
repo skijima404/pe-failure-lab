@@ -41,6 +41,11 @@ function parseList(lines: string[], key: string): string[] {
   return values;
 }
 
+function parseEnum<T extends string>(lines: string[], key: string, allowed: readonly T[], fallback: T): T {
+  const value = parseScalar(lines, key);
+  return (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
+}
+
 function parseRuntimeSliceFile(personaId: string, relativePath: string): RuntimePersonaSlice {
   const fullPath = resolve(relativePath);
   const content = readFileSync(fullPath, "utf8");
@@ -51,16 +56,25 @@ function parseRuntimeSliceFile(personaId: string, relativePath: string): Runtime
     source_path: relativePath,
     display_name: parseScalar(lines, "display_name"),
     role_label: parseScalar(lines, "role_label"),
+    tone_summary: parseScalar(lines, "tone_summary"),
     core_concern: parseScalar(lines, "core_concern"),
-    typical_bias: parseScalar(lines, "typical_bias"),
-    escalation_trigger: parseScalar(lines, "escalation_trigger"),
+    default_move: parseEnum(lines, "default_move", ["ask", "narrow", "support-with-condition", "push-back", "repair-flow"], "ask"),
+    patience: parseEnum(lines, "patience", ["low", "medium", "high"], "medium"),
+    trust_threshold: parseEnum(
+      lines,
+      "trust_threshold",
+      [
+        "one-bounded-signal",
+        "visible-support-boundary",
+        "day-one-utility",
+        "credible-transition-path",
+        "direct-exchange-legible",
+      ],
+      "one-bounded-signal",
+    ),
+    likely_misunderstanding: parseScalar(lines, "likely_misunderstanding"),
     cooperation_condition: parseScalar(lines, "cooperation_condition"),
-    working_context: parseScalar(lines, "working_context"),
-    day_to_day_pressure: parseScalar(lines, "day_to_day_pressure"),
-    protection_target: parseScalar(lines, "protection_target"),
-    relationship_to_change: parseScalar(lines, "relationship_to_change"),
     voice_cues: parseList(lines, "voice_cues"),
-    do_not_overdo: parseList(lines, "do_not_overdo"),
   };
 }
 

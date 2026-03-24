@@ -113,6 +113,8 @@ Execution note:
 - use a separate session for implementation work
 - after implementation, hand back a summary using `docs/templates/implementation-session-handoff-template.md`
 - close implementation work only after checking `docs/operations/architecture-review-checklist.md`
+- report implementation bugs with `docs/templates/runtime-bug-report-template.md`
+- bring repeated or structural runtime issues back to the architecture-review session with `docs/templates/runtime-rca-handoff-template.md`
 
 ## Intent Traceability
 This repository uses an intent-driven development flow:

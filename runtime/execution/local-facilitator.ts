@@ -51,6 +51,18 @@ function renderLocalFacilitatorText(
   }
 
   if (interventionReason === "closing-transition") {
+    if (roomState.close_readiness.reason === "loop-threshold-reached") {
+      return isJapanese(roomState)
+        ? "同じ論点を少し回り始めているので、今日はここで時間を切りましょう。未解決は残りますが、次に誰がどこを詰めるかだけ置いて終えます。"
+        : "We are starting to loop on the same point, so let’s time-box it here. We can leave it unresolved and just name who needs to tighten the next piece.";
+    }
+
+    if (roomState.close_readiness.reason === "hard-turn-limit-reached") {
+      return isJapanese(roomState)
+        ? "ここで一度ハードストップにします。合意まで持っていくより、残った論点と次の確認先を明確にして切ります。"
+        : "We are at the hard stop for this session. Rather than force agreement, let’s stop with the remaining open points and the next place to check them.";
+    }
+
     return isJapanese(roomState)
       ? "ここまでで、ひとまず区切るだけの材料は揃いました。オーナーと次の確認ポイントを明確にして、この論点はいったん閉じましょう。"
       : "We have enough to lock a bounded checkpoint. Let’s close this topic with the owner and next review point made explicit.";

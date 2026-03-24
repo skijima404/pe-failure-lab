@@ -1,5 +1,12 @@
 import type { RoomState } from "../state/types.ts";
-import type { WhisperInjection, WhisperPriorityHint, WhisperSidecarPacket, WhisperTemperatureShift } from "./types.ts";
+import type {
+  WhisperInjection,
+  WhisperMoveBias,
+  WhisperPriorityHint,
+  WhisperSidecarPacket,
+  WhisperStanceBias,
+  WhisperTemperatureShift,
+} from "./types.ts";
 
 interface WhisperTemplate {
   source_reason: string;
@@ -7,7 +14,9 @@ interface WhisperTemplate {
   context_pressure_tag: string | null;
   temperature_shift: WhisperTemperatureShift;
   priority_hint: WhisperPriorityHint;
-  optional_question_seed: string | null;
+  stance_bias: WhisperStanceBias;
+  move_bias: WhisperMoveBias;
+  focus_cue: string | null;
   do_not_repeat_tags: string[];
 }
 
@@ -89,7 +98,9 @@ function templatesForParticipant(packet: WhisperSidecarPacket, participantId: st
         context_pressure_tag: selectEnterpriseContextTag(enterpriseContextTags, participantId, packet),
         temperature_shift: "more-concerned",
         priority_hint: "use-if-selected",
-        optional_question_seed: "最初の提供範囲だけを明確にして、例外対応を最初の約束に入れない形を確認したい。",
+        stance_bias: "guarded",
+        move_bias: "narrow",
+        focus_cue: "first support boundary",
         do_not_repeat_tags: ["platform-boundary-clarity"],
       },
       {
@@ -98,7 +109,9 @@ function templatesForParticipant(packet: WhisperSidecarPacket, participantId: st
         context_pressure_tag: selectEnterpriseContextTag(enterpriseContextTags, participantId, packet),
         temperature_shift: "more-curious",
         priority_hint: "use-if-selected",
-        optional_question_seed: "その入口を作るとして、Platform 側の初期負荷をどこまでに抑える想定かを聞きたい。",
+        stance_bias: "probing",
+        move_bias: "ask",
+        focus_cue: "initial platform load",
         do_not_repeat_tags: ["platform-operator-capacity"],
       },
     ];
@@ -112,7 +125,9 @@ function templatesForParticipant(packet: WhisperSidecarPacket, participantId: st
         context_pressure_tag: selectEnterpriseContextTag(enterpriseContextTags, participantId, packet),
         temperature_shift: "more-curious",
         priority_hint: "use-only-if-natural",
-        optional_question_seed: "現場チームにとって何がすぐ楽になるのかを一つに絞って確かめたい。",
+        stance_bias: "probing",
+        move_bias: "ask",
+        focus_cue: "day-one team usefulness",
         do_not_repeat_tags: ["delivery-adoption-friction"],
       },
       {
@@ -121,7 +136,9 @@ function templatesForParticipant(packet: WhisperSidecarPacket, participantId: st
         context_pressure_tag: selectEnterpriseContextTag(enterpriseContextTags, participantId, packet),
         temperature_shift: "more-constructive",
         priority_hint: "use-only-if-natural",
-        optional_question_seed: "今のロードマップの中でも試せるくらい軽い入口かを確認したい。",
+        stance_bias: "constructive",
+        move_bias: "support-with-condition",
+        focus_cue: "roadmap-fit first move",
         do_not_repeat_tags: ["delivery-workflow-fit"],
       },
     ];
@@ -134,7 +151,9 @@ function templatesForParticipant(packet: WhisperSidecarPacket, participantId: st
       context_pressure_tag: selectEnterpriseContextTag(enterpriseContextTags, participantId, packet),
       temperature_shift: "more-constructive",
       priority_hint: "use-if-selected",
-      optional_question_seed: "最初の対象をどこに切るのか、それが今なぜ妥当かを押さえたい。",
+      stance_bias: "constructive",
+      move_bias: "narrow",
+      focus_cue: "smallest credible first target",
       do_not_repeat_tags: ["exec-launch-risk"],
     },
     {
@@ -143,7 +162,9 @@ function templatesForParticipant(packet: WhisperSidecarPacket, participantId: st
       context_pressure_tag: selectEnterpriseContextTag(enterpriseContextTags, participantId, packet),
       temperature_shift: text.includes("line") || text.includes("事業") ? "more-constructive" : "more-curious",
       priority_hint: "use-if-selected",
-      optional_question_seed: "広げる話ではなく、今回の一手が投資判断として筋が通るかを見たい。",
+      stance_bias: text.includes("line") || text.includes("事業") ? "constructive" : "skeptical",
+      move_bias: text.includes("line") || text.includes("事業") ? "support-with-condition" : "push-back",
+      focus_cue: "investment logic for this move",
       do_not_repeat_tags: ["exec-investment-credibility"],
     },
   ];
@@ -172,7 +193,9 @@ function buildWhisper(
     context_pressure_tag: template.context_pressure_tag,
     temperature_shift: template.temperature_shift,
     priority_hint: template.priority_hint,
-    optional_question_seed: template.optional_question_seed,
+    stance_bias: template.stance_bias,
+    move_bias: template.move_bias,
+    focus_cue: template.focus_cue,
     do_not_repeat_tags: template.do_not_repeat_tags,
   };
 }

@@ -77,6 +77,14 @@ The next runtime simplification pass should favor:
 - stronger production/verification/test folder boundaries
 - evaluation coverage through transcript evidence extraction rather than forcing every perspective into every live turn
 
+Persona simplification target:
+- tone summary
+- core concern
+- default move
+- patience
+- trust threshold
+- likely misunderstanding
+
 ## Minimal Layer Direction
 Target layer split for the next simplification pass:
 
