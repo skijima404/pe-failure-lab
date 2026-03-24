@@ -1,12 +1,14 @@
 import type { ParticipantState, PromptConstraint, RoomState } from "../../state/types.ts";
 import { compactTranscript, type TranscriptContext } from "../../transcripts/compaction.ts";
 import type { WhisperInjection } from "../../sidecars/types.ts";
+import { resolvePlayReadSurfaceMode, type PlayReadSurfaceMode } from "../../execution/play-read-surface.ts";
 
 export interface ActorPromptInput {
   speaker_id: string;
   language: string;
   speaker_runtime_slice: ParticipantState;
   runtime_persona: ParticipantState["runtime_persona"];
+  read_surface_mode: PlayReadSurfaceMode;
   last_player_utterance_type: RoomState["main_session_judgment"]["last_player_utterance_type"];
   last_player_intent: RoomState["main_session_judgment"]["last_player_intent"];
   turn_role: "initiating_actor" | "reacting_actor";
@@ -73,6 +75,7 @@ export function buildActorPromptInput(
     language: roomState.language,
     speaker_runtime_slice: speaker,
     runtime_persona: speaker.runtime_persona,
+    read_surface_mode: resolvePlayReadSurfaceMode(),
     last_player_utterance_type: roomState.main_session_judgment.last_player_utterance_type,
     last_player_intent: roomState.main_session_judgment.last_player_intent,
     turn_role: turnRole,
@@ -98,6 +101,7 @@ export function renderActorPrompt(input: ActorPromptInput): string {
   const voiceCues = persona?.voice_cues.join(", ") ?? "natural enterprise tone";
   const recentTurns = input.recent_transcript.recent_turns.slice(-3).map((turn) => `${turn.speaker_name}: ${turn.text}`).join("\n");
   const selectedReference = input.recent_transcript.recent_turns.at(-1)?.text ?? "none";
+  const isNarrow = input.read_surface_mode === "narrow";
   const responseLanguage =
     input.language.startsWith("ja")
       ? "Write the visible turn in natural Japanese."
@@ -121,9 +125,7 @@ export function renderActorPrompt(input: ActorPromptInput): string {
     `- turn_role: ${input.turn_role}`,
     `- active_topic: ${input.active_topic.label}`,
     `- latest_reference: ${selectedReference}`,
-    `- role_focus: ${input.speaker_runtime_slice.session_setup?.role_focus ?? "stay within your role in this meeting"}`,
-    `- current_pressure_seed: ${input.speaker_runtime_slice.session_setup?.current_pressure_seed ?? "respond from the pressure visible in the room"}`,
-    `- likely_first_move: ${input.speaker_runtime_slice.session_setup?.likely_first_move ?? "make one natural move from your role"}`,
+    `- read_surface_mode: ${input.read_surface_mode}`,
     `- whisper_hint: ${input.active_whisper?.focus_cue ?? input.active_whisper?.angle_shift ?? "none"}`,
     "",
     "Behavior:",
@@ -136,6 +138,15 @@ export function renderActorPrompt(input: ActorPromptInput): string {
     "",
     "Recent transcript:",
     recentTurns || "(none)",
+    ...(isNarrow
+      ? []
+      : [
+          "",
+          "Additional runtime hints:",
+          `- role_focus: ${input.speaker_runtime_slice.session_setup?.role_focus ?? "stay within your role in this meeting"}`,
+          `- current_pressure_seed: ${input.speaker_runtime_slice.session_setup?.current_pressure_seed ?? "respond from the pressure visible in the room"}`,
+          `- likely_first_move: ${input.speaker_runtime_slice.session_setup?.likely_first_move ?? "make one natural move from your role"}`,
+        ]),
   ].join("\n");
 }
 

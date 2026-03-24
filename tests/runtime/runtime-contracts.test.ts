@@ -757,6 +757,47 @@ test("actor prompt includes explicit japanese output guidance when the session l
   assert.match(preparedTurn.prompt_text, /Write the visible turn in natural Japanese\./);
 });
 
+test("narrow read-surface mode trims actor prompt to allowlisted exchange-local context", () => {
+  const previous = process.env.PLAY_NARROW_CONTEXT;
+  process.env.PLAY_NARROW_CONTEXT = "true";
+
+  try {
+    const roomState = createInitialRoomState("actor-narrow-read-surface-test");
+    roomState.scene_phase = "discussion";
+    roomState.exchange_state.awaiting_reaction_from = "platform";
+    roomState.sidecar_state.active_whispers = [
+      {
+        whisper_id: "narrow-read-whisper",
+        target_participant_id: "platform",
+        triggered_at_turn: roomState.turn_index,
+        expires_after_turn: roomState.turn_index + 2,
+        source_reason: "player-turn-made-support-boundary-salient",
+        angle_shift: "boundary-clarity",
+        context_pressure_tag: "support-function-misread",
+        temperature_shift: "more-concerned",
+        priority_hint: "use-if-selected",
+        stance_bias: "guarded",
+        move_bias: "narrow",
+        focus_cue: "first support boundary",
+        do_not_repeat_tags: ["platform-boundary-clarity"],
+      },
+    ];
+
+    const preparedTurn = prepareNextRuntimeTurn(roomState);
+
+    assert.match(preparedTurn.prompt_text, /read_surface_mode: narrow/);
+    assert.equal(preparedTurn.prompt_text.includes("Additional runtime hints:"), false);
+    assert.equal(preparedTurn.prompt_text.includes("current_pressure_seed:"), false);
+    assert.equal(preparedTurn.prompt_text.includes("role_focus:"), false);
+  } finally {
+    if (previous === undefined) {
+      delete process.env.PLAY_NARROW_CONTEXT;
+    } else {
+      process.env.PLAY_NARROW_CONTEXT = previous;
+    }
+  }
+});
+
 test("mock adapter renders whisper-aware stakeholder response when a whisper exists", async () => {
   const initialized = initializeSession("sidecar-local-rendering-test");
   const started = startSession(initialized.room_state, "Start");
@@ -1856,6 +1897,45 @@ test("japanese local live responder does not leak raw english concern or pressur
   assert.equal(/[\u3040-\u30ff\u4e00-\u9faf]/.test(outcome.text), true);
   assert.equal(outcome.text.includes("avoid broad commitment without a believable first move and practical logic"), false);
   assert.equal(outcome.text.includes("business value and investment credibility for the first move"), false);
+});
+
+test("narrow read-surface mode keeps local live responder off participant pressure-seed replay", async () => {
+  const previous = process.env.PLAY_NARROW_CONTEXT;
+  process.env.PLAY_NARROW_CONTEXT = "true";
+
+  try {
+    const roomState = createInitialRoomState("narrow-read-surface-local-render", "ja");
+    roomState.scene_phase = "discussion";
+    roomState.exchange_state.initiating_actor_id = "platform";
+    roomState.exchange_state.awaiting_reaction_from = "platform";
+    roomState.recent_transcript = [
+      {
+        turn_index: 1,
+        speaker_id: "platform",
+        speaker_name: "Naoki Sato",
+        turn_owner: "initiating_actor",
+        text: "支援境界をどう置くかが論点です。",
+      },
+    ];
+
+    const afterPlayer = acceptPlayerMessageWithLocalJudger(
+      roomState,
+      "Platform 側としてはどういう点を見ているのか、もう少し具体的に教えてください。",
+      "Player",
+    );
+    const prepared = prepareNextRuntimeTurn(afterPlayer);
+    const responder = new LocalLiveActorResponder();
+    const outcome = responder.respond({ roomState: afterPlayer, preparedTurn: prepared });
+
+    assert.equal(outcome.response_metadata?.read_surface_mode, "narrow");
+    assert.equal(outcome.text.includes("負荷が静かに膨らむ"), false);
+  } finally {
+    if (previous === undefined) {
+      delete process.env.PLAY_NARROW_CONTEXT;
+    } else {
+      process.env.PLAY_NARROW_CONTEXT = previous;
+    }
+  }
 });
 
 test("local live responder exposes stance metadata and can produce non-question turns", async () => {

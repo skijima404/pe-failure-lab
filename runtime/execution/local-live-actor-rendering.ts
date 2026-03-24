@@ -1,5 +1,6 @@
 import type { ActorPromptInput } from "../agents/actor/prompt.ts";
 import type { RoomState, TranscriptTurn, TurnOwner } from "../state/types.ts";
+import { resolvePlayReadSurfaceMode } from "./play-read-surface.ts";
 
 type SessionTension = "steady" | "guarded" | "pressured" | "looping";
 type TurnMove = "ask" | "narrow" | "support-with-condition" | "push-back";
@@ -133,6 +134,10 @@ function deriveFallbackMove(input: ActorPromptInput, tone: StanceTone): TurnMove
 }
 
 function deriveFocus(input: ActorPromptInput): string {
+  if (resolvePlayReadSurfaceMode() === "narrow") {
+    return input.active_whisper?.focus_cue ?? input.runtime_persona?.core_concern ?? input.active_topic.label;
+  }
+
   return (
     input.active_whisper?.focus_cue ??
     input.speaker_runtime_slice.current_concern_label ??
@@ -142,6 +147,10 @@ function deriveFocus(input: ActorPromptInput): string {
 }
 
 function derivePressureSeed(input: ActorPromptInput): string | null {
+  if (resolvePlayReadSurfaceMode() === "narrow") {
+    return null;
+  }
+
   return input.speaker_runtime_slice.session_setup?.current_pressure_seed ?? null;
 }
 
@@ -586,6 +595,7 @@ export function renderLocalLiveActorTurn(params: {
       runtime_transport: "local-live-responder",
       rendering_mode: "local-live-actor-generation",
       verification_asset: false,
+      read_surface_mode: resolvePlayReadSurfaceMode(),
       realization_mode: stance.mode,
       stance_tone: stance.tone,
       stance_move: stance.move,
