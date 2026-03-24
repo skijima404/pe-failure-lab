@@ -50,6 +50,20 @@ export function sameTopicOverlapAllowed(roomState: RoomState): boolean {
   );
 }
 
+export function capabilityShiftPreferred(roomState: RoomState): boolean {
+  const overlapActorId = roomState.exchange_state.handoff_candidate_actor_ids[0] ?? null;
+  const awaitingActorId = roomState.exchange_state.awaiting_reaction_from;
+
+  if (!overlapActorId || !awaitingActorId || overlapActorId === awaitingActorId || playerResponseOwed(roomState)) {
+    return false;
+  }
+
+  return (
+    roomState.main_session_judgment.last_player_intent === "request-role-specific-explanation" ||
+    roomState.main_session_judgment.multi_perspective_needed
+  );
+}
+
 export function playerJustSpokeWithoutClearActorPath(roomState: RoomState): boolean {
   return (
     lastTranscriptSpeaker(roomState) === "player" &&

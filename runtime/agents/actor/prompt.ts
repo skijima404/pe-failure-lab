@@ -7,6 +7,8 @@ export interface ActorPromptInput {
   language: string;
   speaker_runtime_slice: ParticipantState;
   runtime_persona: ParticipantState["runtime_persona"];
+  last_player_utterance_type: RoomState["main_session_judgment"]["last_player_utterance_type"];
+  last_player_intent: RoomState["main_session_judgment"]["last_player_intent"];
   turn_role: "initiating_actor" | "reacting_actor";
   scene_phase: RoomState["scene_phase"];
   active_topic: RoomState["active_topic"];
@@ -71,6 +73,8 @@ export function buildActorPromptInput(
     language: roomState.language,
     speaker_runtime_slice: speaker,
     runtime_persona: speaker.runtime_persona,
+    last_player_utterance_type: roomState.main_session_judgment.last_player_utterance_type,
+    last_player_intent: roomState.main_session_judgment.last_player_intent,
     turn_role: turnRole,
     scene_phase: roomState.scene_phase,
     active_topic: roomState.active_topic,
@@ -92,82 +96,46 @@ export function buildActorPromptInput(
 export function renderActorPrompt(input: ActorPromptInput): string {
   const persona = input.runtime_persona;
   const voiceCues = persona?.voice_cues.join(", ") ?? "natural enterprise tone";
-  const recentTurns = input.recent_transcript.recent_turns
-    .map((turn) => `${turn.speaker_name}: ${turn.text}`)
-    .join("\n");
-  const constraints = input.response_constraints.map((item) => `- ${item.key}: ${item.value}`).join("\n");
-  const unresolved = input.visible_unresolved_items.map((item) => `- ${item}`).join("\n") || "- none";
-  const closeReadiness = input.close_readiness.ready
-    ? `ready (${input.close_readiness.reason ?? "no-reason"})`
-    : "not-ready";
+  const recentTurns = input.recent_transcript.recent_turns.slice(-3).map((turn) => `${turn.speaker_name}: ${turn.text}`).join("\n");
+  const selectedReference = input.recent_transcript.recent_turns.at(-1)?.text ?? "none";
   const responseLanguage =
     input.language.startsWith("ja")
       ? "Write the visible turn in natural Japanese."
       : "Write the visible turn in natural English.";
-  const activeWhisper = input.active_whisper
-    ? [
-        `- source reason: ${input.active_whisper.source_reason}`,
-        `- temporary angle shift: ${input.active_whisper.angle_shift}`,
-        `- enterprise context pressure tag: ${input.active_whisper.context_pressure_tag ?? "none"}`,
-        `- temperature shift: ${input.active_whisper.temperature_shift}`,
-        `- priority hint: ${input.active_whisper.priority_hint}`,
-        `- stance bias: ${input.active_whisper.stance_bias}`,
-        `- move bias: ${input.active_whisper.move_bias}`,
-        `- focus cue: ${input.active_whisper.focus_cue ?? "none"}`,
-      ].join("\n")
-    : "- none";
 
   return [
     `You are ${input.speaker_runtime_slice.display_name}.`,
-    `Role label: ${persona?.role_label ?? input.speaker_runtime_slice.role_label ?? "Stakeholder"}`,
-    `Turn role: ${input.turn_role}`,
-    `Scene phase: ${input.scene_phase}`,
-    `Active topic: ${input.active_topic.label}`,
-    `Active topic depth: ${input.active_topic.depth}`,
-    `Close readiness: ${closeReadiness}`,
+    `Role: ${persona?.role_label ?? input.speaker_runtime_slice.role_label ?? "Stakeholder"}`,
     "",
-    "Runtime persona:",
-    `- Tone summary: ${persona?.tone_summary ?? "natural enterprise stakeholder tone"}`,
-    `- Core concern: ${persona?.core_concern ?? input.speaker_runtime_slice.current_concern_label ?? "the current topic"}`,
-    `- Default move: ${describeDefaultMove(persona?.default_move)}`,
-    `- Patience: ${persona?.patience ?? "moderate"}`,
-    `- Trust threshold: ${describeTrustThreshold(persona?.trust_threshold)}`,
-    `- Likely misunderstanding: ${persona?.likely_misunderstanding ?? "you may over-read the room's intent unless the boundary stays visible"}`,
-    `- Cooperation condition: ${persona?.cooperation_condition ?? input.speaker_runtime_slice.cooperation_condition ?? "Find a bounded next step."}`,
-    `- Voice cues: ${voiceCues}`,
-    `- Session role focus: ${input.speaker_runtime_slice.session_setup?.role_focus ?? "Stay within your role in this meeting."}`,
-    `- Current pressure seed: ${input.speaker_runtime_slice.session_setup?.current_pressure_seed ?? "Respond from the pressure visible in the room."}`,
-    `- Likely misunderstanding or overreach: ${
-      input.speaker_runtime_slice.session_setup?.likely_misunderstanding_or_overreach ??
-      "Do not over-read the room or make the draft broader than it is."
-    }`,
-    `- Likely first move: ${input.speaker_runtime_slice.session_setup?.likely_first_move ?? "Make one natural move from your role."}`,
+    "Character contract:",
+    `- tone_summary: ${persona?.tone_summary ?? "natural enterprise stakeholder tone"}`,
+    `- core_concern: ${persona?.core_concern ?? input.speaker_runtime_slice.current_concern_label ?? "the current topic"}`,
+    `- default_move: ${describeDefaultMove(persona?.default_move)}`,
+    `- trust_threshold: ${describeTrustThreshold(persona?.trust_threshold)}`,
+    `- likely_misunderstanding: ${persona?.likely_misunderstanding ?? "you may over-read the room's intent unless the boundary stays visible"}`,
+    `- voice_cues: ${voiceCues}`,
     "",
-    "Conversation rules:",
-    "- Sound like a real stakeholder in a working meeting, not an evaluator.",
-    "- Prefer a natural reaction before over-structured analysis when that fits the moment.",
-    "- Keep to one main point.",
-    "- Stay on the active topic.",
+    "Current moment:",
+    `- player_utterance_type: ${input.last_player_utterance_type ?? "none"}`,
+    `- player_intent: ${input.last_player_intent ?? "none"}`,
+    `- turn_role: ${input.turn_role}`,
+    `- active_topic: ${input.active_topic.label}`,
+    `- latest_reference: ${selectedReference}`,
+    `- role_focus: ${input.speaker_runtime_slice.session_setup?.role_focus ?? "stay within your role in this meeting"}`,
+    `- current_pressure_seed: ${input.speaker_runtime_slice.session_setup?.current_pressure_seed ?? "respond from the pressure visible in the room"}`,
+    `- likely_first_move: ${input.speaker_runtime_slice.session_setup?.likely_first_move ?? "make one natural move from your role"}`,
+    `- whisper_hint: ${input.active_whisper?.focus_cue ?? input.active_whisper?.angle_shift ?? "none"}`,
+    "",
+    "Behavior:",
+    "- Stay in character.",
+    "- Give one short natural meeting turn.",
+    "- Answer content-first when the player is asking for clarification or explanation.",
+    "- Let topic progression come from the current exchange, not from hidden evaluation goals.",
     "- Do not mention scores, rubrics, or hidden system logic.",
-    "- Let your concern come from your actual workload, team reality, or delivery context, not from abstract best-practice debate alone.",
-    "- If close readiness is visible, either name one bounded support point or one concrete unresolved concern. Do not pretend the room fully converged if it did not.",
-    "- If a hidden whisper is present, treat it as a temporary nudge only. Keep persona core and topic fit first.",
-    "- Ignore the hidden whisper if using it would sound forced or would open a second topic.",
     `- ${responseLanguage}`,
-    "",
-    "Visible unresolved items:",
-    unresolved,
-    "",
-    "Hidden whisper:",
-    activeWhisper,
     "",
     "Recent transcript:",
     recentTurns || "(none)",
-    "",
-    "Prompt constraints:",
-    constraints,
-    "",
-    "Write one short natural meeting turn for the visible transcript.",
   ].join("\n");
 }
 

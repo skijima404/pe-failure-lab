@@ -8,18 +8,33 @@ type StanceTone = "probing" | "guarded" | "constructive" | "skeptical";
 interface RuntimeTurnStance {
   tone: StanceTone;
   move: TurnMove;
+  mode: "answer" | "reaction";
   focus: string;
   pressure: string | null;
   reference_text: string | null;
   session_tension: SessionTension;
 }
 
-function hashText(value: string): number {
-  let hash = 0;
-  for (const char of value) {
-    hash = (hash * 33 + char.charCodeAt(0)) >>> 0;
-  }
-  return hash;
+interface RepetitionContext {
+  same_actor_continuation: boolean;
+  repeated_focus: boolean;
+  repeated_pressure: boolean;
+}
+
+interface CompactTurnHandoff {
+  speaker_id: string;
+  language: string;
+  mode: "answer" | "reaction";
+  tone: StanceTone;
+  move: TurnMove;
+  topic_label: string;
+  topic_type: ActorPromptInput["active_topic"]["topic_type"];
+  reference_text: string | null;
+  focus: string;
+  pressure: string | null;
+  session_tension: SessionTension;
+  repetition: RepetitionContext;
+  last_player_intent: ActorPromptInput["last_player_intent"];
 }
 
 function normalizeWhitespace(value: string): string {
@@ -46,8 +61,9 @@ function selectLatestRelevantTurn(input: ActorPromptInput): TranscriptTurn | nul
   return turns.find((turn) => turn.speaker_id !== input.speaker_id) ?? null;
 }
 
-function chooseVariant(roomState: RoomState, speakerId: string, referenceText: string | null): number {
-  return hashText(`${roomState.session_id}:${roomState.turn_index}:${speakerId}:${referenceText ?? "none"}`) % 4;
+function selectLatestSpeakerTurn(input: ActorPromptInput): TranscriptTurn | null {
+  const turns = [...input.recent_transcript.recent_turns].reverse();
+  return turns.find((turn) => turn.speaker_id === input.speaker_id) ?? null;
 }
 
 function inferSessionTension(roomState: RoomState): SessionTension {
@@ -81,50 +97,34 @@ function deriveFallbackTone(input: ActorPromptInput): StanceTone {
   if (/constructive|supportive|calm/.test(toneSummary)) {
     return "constructive";
   }
-
   if (input.turn_role === "reacting_actor") {
     return "probing";
   }
-
   if (input.speaker_id === "platform") {
     return "guarded";
   }
-
   if (input.speaker_id === "delivery") {
     return "probing";
   }
-
   return "constructive";
 }
 
 function deriveFallbackMove(input: ActorPromptInput, tone: StanceTone): TurnMove {
   const defaultMove = input.runtime_persona?.default_move;
 
-  if (defaultMove === "ask") {
-    return "ask";
-  }
-  if (defaultMove === "narrow") {
-    return "narrow";
-  }
-  if (defaultMove === "support-with-condition") {
-    return "support-with-condition";
-  }
-  if (defaultMove === "push-back") {
-    return "push-back";
+  if (defaultMove === "ask" || defaultMove === "narrow" || defaultMove === "support-with-condition" || defaultMove === "push-back") {
+    return defaultMove;
   }
 
   if (tone === "probing") {
     return "ask";
   }
-
   if (input.speaker_id === "platform") {
     return "narrow";
   }
-
   if (input.speaker_id === "exec") {
     return "support-with-condition";
   }
-
   if (tone === "skeptical") {
     return "push-back";
   }
@@ -153,21 +153,49 @@ function shouldSoftenMove(input: ActorPromptInput): boolean {
   return input.runtime_persona?.trust_threshold === "one-bounded-signal";
 }
 
+function deriveRealizationMode(input: ActorPromptInput): "answer" | "reaction" {
+  if (input.last_player_intent === "request-trigger-alignment") {
+    return "answer";
+  }
+
+  if (
+    input.last_player_intent === "request-role-specific-explanation" ||
+    input.last_player_intent === "clarify-current-layer" ||
+    input.last_player_intent === "confirm-current-understanding"
+  ) {
+    return "answer";
+  }
+
+  if (input.last_player_utterance_type === "clarification") {
+    return "answer";
+  }
+
+  if (input.last_player_utterance_type === "question" && !input.active_whisper) {
+    return "answer";
+  }
+
+  return "reaction";
+}
+
 function deriveTurnStance(input: ActorPromptInput, roomState: RoomState): RuntimeTurnStance {
   const relevantTurn = selectLatestRelevantTurn(input);
   const tone = input.active_whisper?.stance_bias ?? deriveFallbackTone(input);
   const sessionTension = inferSessionTension(roomState);
   const baseMove = input.active_whisper?.move_bias ?? deriveFallbackMove(input, tone);
+  const mode = deriveRealizationMode(input);
   const move =
-    shouldHardenMove(input, sessionTension) && baseMove === "support-with-condition"
-      ? "push-back"
-      : shouldSoftenMove(input) && baseMove === "push-back" && sessionTension === "steady"
-        ? "support-with-condition"
-        : baseMove;
+    mode === "answer"
+      ? baseMove
+      : shouldHardenMove(input, sessionTension) && baseMove === "support-with-condition"
+        ? "push-back"
+        : shouldSoftenMove(input) && baseMove === "push-back" && sessionTension === "steady"
+          ? "support-with-condition"
+          : baseMove;
 
   return {
     tone,
     move,
+    mode,
     focus: deriveFocus(input),
     pressure: input.active_whisper?.context_pressure_tag ?? derivePressureSeed(input),
     reference_text: relevantTurn ? extractReferenceSnippet(relevantTurn.text, input.language) : null,
@@ -218,7 +246,7 @@ function fallbackJapaneseFocus(input: ActorPromptInput): string {
     return "最初の事業判断の筋";
   }
   if (input.speaker_id === "platform") {
-    return "支援境界の見え方";
+    return "支援境界";
   }
   if (input.speaker_id === "delivery") {
     return "現場での使いやすさ";
@@ -250,10 +278,6 @@ function translateVisibleFocus(input: ActorPromptInput, focus: string): string {
     "immediate usability and reduced delivery friction": "すぐに使えて現場の進めにくさを減らせること",
     "migration safety and believable risk reduction for a fragile system": "壊れやすい既存システムに対する移行安全性と納得できるリスク低減",
     "keep the room legible without taking over the content": "内容を取り上げずに場の見通しを保つこと",
-    "business clarity": "事業判断の明確さ",
-    "operating-model sustainability": "運用モデルの持続性",
-    "delivery practicality": "現場での実用性",
-    "meeting flow": "会議の進行の見通し",
   };
 
   if (translations[focus]) {
@@ -278,7 +302,6 @@ function translateVisiblePressure(input: ActorPromptInput, pressure: string | nu
     "the team is already busy and cannot silently absorb more operational or onboarding work": "Platform 側がこれ以上の運用やオンボーディング負荷を静かに抱え込めないこと",
     "active roadmap pressure makes it hard to adopt a path that adds interpretation overhead before helping": "ロードマップ圧の中で、役に立つ前に読み解き負荷を増やす道は取りにくいこと",
     "trying to sound too complete too early can make the room read broad commitment into a draft idea": "早い段階で言い切りすぎると、粗い案が広い約束に見えてしまうこと",
-    "over-facilitating would make the room sound coached instead of lived-in": "進行をやりすぎると、会話が作り物っぽく見えること",
   };
 
   if (translations[pressure]) {
@@ -296,179 +319,242 @@ function focusWithWhisper(input: ActorPromptInput, focus: string): string {
   return translateVisibleFocus(input, focus);
 }
 
-function buildReferenceLead(language: string, referenceText: string | null, variant: number): string | null {
-  if (!referenceText) {
+function deriveRepetitionContext(input: ActorPromptInput, roomState: RoomState, stance: RuntimeTurnStance): RepetitionContext {
+  const latestSpeakerTurn = selectLatestSpeakerTurn(input);
+  const previousText = normalizeWhitespace(latestSpeakerTurn?.text ?? "").toLowerCase();
+  const visibleFocus = normalizeWhitespace(focusWithWhisper(input, stance.focus)).toLowerCase();
+  const visiblePressure = normalizeWhitespace(translateVisiblePressure(input, stance.pressure) ?? "").toLowerCase();
+
+  return {
+    same_actor_continuation:
+      roomState.recent_transcript.at(-1)?.speaker_id === input.speaker_id || roomState.exchange_state.follow_up_count >= 2,
+    repeated_focus: visibleFocus.length > 0 && previousText.includes(visibleFocus),
+    repeated_pressure: visiblePressure.length > 0 && previousText.includes(visiblePressure),
+  };
+}
+
+function buildCompactTurnHandoff(input: ActorPromptInput, roomState: RoomState): CompactTurnHandoff {
+  const stance = deriveTurnStance(input, roomState);
+
+  return {
+    speaker_id: input.speaker_id,
+    language: input.language,
+    mode: stance.mode,
+    tone: stance.tone,
+    move: stance.move,
+    topic_label: input.active_topic.label,
+    topic_type: input.active_topic.topic_type,
+    reference_text: stance.reference_text,
+    focus: focusWithWhisper(input, stance.focus),
+    pressure: translateVisiblePressure(input, stance.pressure),
+    session_tension: stance.session_tension,
+    repetition: deriveRepetitionContext(input, roomState, stance),
+    last_player_intent: input.last_player_intent,
+  };
+}
+
+function buildReferenceHook(handoff: CompactTurnHandoff): string | null {
+  if (handoff.language.startsWith("ja")) {
+    if (handoff.repetition.same_actor_continuation) {
+      return "補足で言うと";
+    }
+    if (handoff.reference_text) {
+      return `いまの「${handoff.reference_text}」で言うと`;
+    }
     return null;
   }
 
-  if (language.startsWith("ja")) {
-    const leads = [
-      `今の「${referenceText}」という置き方なら追えます。`,
-      `「${referenceText}」という話なら筋は見えます。`,
-      `今の「${referenceText}」は受け止め方としては分かります。`,
-      `「${referenceText}」まで絞るなら話は見えます。`,
-    ];
-    return leads[variant % leads.length] ?? leads[0];
+  if (handoff.repetition.same_actor_continuation) {
+    return "To add one point";
   }
-
-  const leads = [
-    `I can follow "${referenceText}."`,
-    `That framing around "${referenceText}" is at least workable.`,
-    `I can see what "${referenceText}" is trying to do.`,
-    `If we keep it at "${referenceText}," I can stay with it.`,
-  ];
-  return leads[variant % leads.length] ?? leads[0];
+  if (handoff.reference_text) {
+    return `On the point about "${handoff.reference_text}"`;
+  }
+  return null;
 }
 
-function buildPressureClause(language: string, pressure: string | null, tension: SessionTension, variant: number): string | null {
-  if (!pressure && tension === "steady") {
+function buildRoleAnswerSubject(input: ActorPromptInput, handoff: CompactTurnHandoff): string {
+  if (handoff.language.startsWith("ja")) {
+    if (input.speaker_id === "exec") {
+      return handoff.repetition.repeated_focus
+        ? "事業側として最初の一手の筋が立つか"
+        : `事業側として ${handoff.focus} が最初の一手として筋が立つか`;
+    }
+    if (input.speaker_id === "platform") {
+      return handoff.repetition.repeated_focus
+        ? "Platform 側がどこまで提供範囲を持つか"
+        : `Platform 側が ${handoff.focus} をどこまで提供範囲として持つか`;
+    }
+    if (input.speaker_id === "delivery") {
+      return handoff.repetition.repeated_focus
+        ? "現場で最初に何が使える形になるか"
+        : `現場で ${handoff.focus} が最初に何を使える形にするか`;
+    }
+    return `${handoff.focus} をどう読むか`;
+  }
+
+  if (input.speaker_id === "exec") {
+    return handoff.repetition.repeated_focus
+      ? "whether the first move is credible from the business side"
+      : `whether ${handoff.focus} is credible enough for the first move`;
+  }
+  if (input.speaker_id === "platform") {
+    return handoff.repetition.repeated_focus
+      ? "where the platform-side support boundary actually is"
+      : `where the boundary around ${handoff.focus} actually sits`;
+  }
+  if (input.speaker_id === "delivery") {
+    return handoff.repetition.repeated_focus
+      ? "what becomes usable first for delivery teams"
+      : `what becomes usable first around ${handoff.focus}`;
+  }
+  return `how ${handoff.focus} should be read`;
+}
+
+function buildReactionCore(input: ActorPromptInput, handoff: CompactTurnHandoff): string {
+  if (handoff.language.startsWith("ja")) {
+    if (handoff.move === "ask") {
+      if (handoff.topic_type === "support-model") {
+        return handoff.repetition.repeated_focus
+          ? "まずは支援境界をどこに置くのかをはっきりさせたいです。"
+          : `まずは ${handoff.focus} の支援境界をどこに置くのかをはっきりさせたいです。`;
+      }
+      return handoff.repetition.repeated_focus
+        ? "まず何が見えればこの場で進められるのかを確認したいです。"
+        : `まず ${handoff.focus} で何が見えればこの場で進められるのかを確認したいです。`;
+    }
+
+    if (handoff.move === "narrow") {
+      return handoff.repetition.repeated_focus
+        ? "最初の対象だけに切ってから反応を見たいです。"
+        : `${handoff.focus} は最初の対象だけに切ってから反応を見たいです。`;
+    }
+
+    if (handoff.move === "support-with-condition") {
+      return handoff.repetition.repeated_focus
+        ? "その範囲に収まるなら、いったん前に進めます。"
+        : `${handoff.focus} がその範囲に収まるなら、いったん前に進めます。`;
+    }
+
+    return handoff.repetition.repeated_focus
+      ? "このまま約束として受け取るにはまだ薄いです。"
+      : `${handoff.focus} をこのまま約束として受け取るにはまだ薄いです。`;
+  }
+
+  if (handoff.move === "ask") {
+    if (handoff.topic_type === "support-model") {
+      return handoff.repetition.repeated_focus
+        ? "I want the support boundary made explicit first."
+        : `I want the support boundary around ${handoff.focus} made explicit first.`;
+    }
+    return handoff.repetition.repeated_focus
+      ? "I want to know what would make this concrete enough to act on."
+      : `I want to know what would make ${handoff.focus} concrete enough to act on.`;
+  }
+
+  if (handoff.move === "narrow") {
+    return handoff.repetition.repeated_focus
+      ? "I would cut this down to the first usable slice."
+      : `I would cut ${handoff.focus} down to the first usable slice.`;
+  }
+
+  if (handoff.move === "support-with-condition") {
+    return handoff.repetition.repeated_focus
+      ? "If it really stays that bounded, I can move with it."
+      : `If ${handoff.focus} really stays that bounded, I can move with it.`;
+  }
+
+  return handoff.repetition.repeated_focus
+    ? "This still feels too thin to treat as a real commitment."
+    : `${handoff.focus} still feels too thin to treat as a real commitment.`;
+}
+
+function buildPressureHint(handoff: CompactTurnHandoff): string | null {
+  if (!handoff.pressure) {
+    if (handoff.session_tension === "looping") {
+      return handoff.language.startsWith("ja")
+        ? "同じところを回し始めているので、これ以上は広げたくありません。"
+        : "We are starting to circle the same point, so I do not want to widen it further.";
+    }
     return null;
   }
 
-  if (language.startsWith("ja")) {
-    if (pressure && tension === "looping") {
-      return variant % 2 === 0
-        ? `ただ、${pressure} があるので広げすぎるとまた曖昧になります。`
-        : `ただ、${pressure} が強いので、この場で広げると収まりにくいです。`;
+  if (handoff.repetition.repeated_pressure && handoff.session_tension !== "looping") {
+    return null;
+  }
+
+  if (handoff.language.startsWith("ja")) {
+    return handoff.session_tension === "looping"
+      ? `ただ、${handoff.pressure} があるので広げすぎるとまた曖昧になります。`
+      : `ただ、${handoff.pressure} は先に折り込んでおきたいです。`;
+  }
+
+  return handoff.session_tension === "looping"
+    ? `The pressure still feels like ${handoff.pressure}, so widening this now would make it muddy again.`
+    : `${handoff.pressure} is still part of the real constraint for me.`;
+}
+
+function buildAnswerRealization(input: ActorPromptInput, handoff: CompactTurnHandoff): string {
+  const hook = buildReferenceHook(handoff);
+  const subject = buildRoleAnswerSubject(input, handoff);
+  const pressureHint = buildPressureHint(handoff);
+
+  if (handoff.language.startsWith("ja")) {
+    const firstSentence =
+      input.speaker_id === "exec"
+        ? `事業側で見ているのは、${subject}です。`
+        : input.speaker_id === "platform"
+          ? `Platform 側で見ているのは、${subject}です。`
+          : input.speaker_id === "delivery"
+            ? `現場側で見ているのは、${subject}です。`
+            : `${subject}を見ています。`;
+    const lastSentence = handoff.repetition.repeated_focus
+      ? "要するに、その輪郭がこの場で見えれば十分です。"
+      : `要するに、${handoff.focus} の輪郭がこの場で見えれば十分です。`;
+    return [hook, firstSentence, pressureHint, lastSentence].filter(Boolean).join(" ");
+  }
+
+  const firstSentence =
+    input.speaker_id === "exec"
+      ? `From the business side, what I am looking at is ${subject}.`
+      : input.speaker_id === "platform"
+        ? `From the platform side, what I am looking at is ${subject}.`
+        : input.speaker_id === "delivery"
+          ? `From the delivery side, what I am looking at is ${subject}.`
+          : `What I am looking at is ${subject}.`;
+  const lastSentence = handoff.repetition.repeated_focus
+    ? "In short, I just need that boundary made legible in this room."
+    : `In short, I need ${handoff.focus} made legible in this room.`;
+  return [hook, firstSentence, pressureHint, lastSentence].filter(Boolean).join(" ");
+}
+
+function buildReactionRealization(input: ActorPromptInput, handoff: CompactTurnHandoff): string {
+  const hook = buildReferenceHook(handoff);
+  const pressureHint = buildPressureHint(handoff);
+  const core = buildReactionCore(input, handoff);
+
+  if (handoff.move === "ask") {
+    if (handoff.language.startsWith("ja")) {
+      const askTail =
+        handoff.last_player_intent === "request-role-specific-explanation"
+          ? "そこが分かれば、この論点はかなり読みやすくなります。"
+          : "そこが見えれば、この場で次の判断がしやすくなります。";
+      return [hook, core, pressureHint, askTail].filter(Boolean).join(" ");
     }
-    if (pressure) {
-      return variant % 2 === 0 ? `ただ、${pressure} は無視しにくいです。` : `ただ、${pressure} は先に織り込みたいです。`;
-    }
-    if (tension === "looping") {
-      return "このまま広げるより、一段絞って話したいです。";
-    }
-    return "まだ少し慎重に置きたいです。";
+
+    const askTail =
+      handoff.last_player_intent === "request-role-specific-explanation"
+        ? "If that is clear, the rest of the thread becomes much easier to read."
+        : "If that is visible, the next decision in this room becomes easier.";
+    return [hook, core, pressureHint, askTail].filter(Boolean).join(" ");
   }
 
-  if (pressure && tension === "looping") {
-    return `The pressure still feels like ${pressure}, so if we widen this now it will get muddy again.`;
-  }
-  if (pressure) {
-    return `I still have to account for ${pressure}.`;
-  }
-  if (tension === "looping") {
-    return "I would rather narrow this than let it sprawl again.";
-  }
-  return "I still want to keep this fairly bounded.";
-}
-
-function buildAskTurn(input: ActorPromptInput, stance: RuntimeTurnStance, variant: number): string {
-  const focus = focusWithWhisper(input, stance.focus);
-  const pressure = translateVisiblePressure(input, stance.pressure);
-  const lead = buildReferenceLead(input.language, stance.reference_text, variant);
-  const pressureClause = buildPressureClause(input.language, pressure, stance.session_tension, variant);
-
-  if (input.language.startsWith("ja")) {
-    const questions = [
-      `${focus} をこの場ではどこまで見る想定ですか。`,
-      `${focus} を最初の一手として置くなら、どこまでを約束にしますか。`,
-      `${focus} を動かすとして、最初に確認したい境界はどこですか。`,
-      `${focus} で進めるなら、まず何が見えれば十分ですか。`,
-    ];
-    return [lead, pressureClause, questions[variant % questions.length]].filter(Boolean).join(" ");
-  }
-
-  const questions = [
-    `What exactly counts as enough on ${focus} for this first move?`,
-    `If ${focus} is the first step, what are we actually committing to?`,
-    `Where is the boundary we need to make usable around ${focus}?`,
-    `What would make ${focus} concrete enough to act on now?`,
-  ];
-  return [lead, pressureClause, questions[variant % questions.length]].filter(Boolean).join(" ");
-}
-
-function buildNarrowingTurn(input: ActorPromptInput, stance: RuntimeTurnStance, variant: number): string {
-  const focus = focusWithWhisper(input, stance.focus);
-  const pressure = translateVisiblePressure(input, stance.pressure);
-  const lead = buildReferenceLead(input.language, stance.reference_text, variant);
-  const pressureClause = buildPressureClause(input.language, pressure, stance.session_tension, variant);
-
-  if (input.language.startsWith("ja")) {
-    const lines = [
-      `${focus} は最初から広く約束しない方がよいです。`,
-      `${focus} はまず狭く置いてから反応を見たいです。`,
-      `${focus} は入口だけを明確にして、それ以上は持ち込まない方が自然です。`,
-      `${focus} は一段切っておかないと、すぐに重くなります。`,
-    ];
-    return [lead, pressureClause, lines[variant % lines.length]].filter(Boolean).join(" ");
-  }
-
-  const lines = [
-    `I would keep ${focus} narrow at the start.`,
-    `I do not want ${focus} framed as a broad commitment yet.`,
-    `We should define only the entry point on ${focus}, not the whole future shape.`,
-    `If we do not cut ${focus} down now, it will get heavy very quickly.`,
-  ];
-  return [lead, pressureClause, lines[variant % lines.length]].filter(Boolean).join(" ");
-}
-
-function buildConditionalSupportTurn(input: ActorPromptInput, stance: RuntimeTurnStance, variant: number): string {
-  const focus = focusWithWhisper(input, stance.focus);
-  const pressure = translateVisiblePressure(input, stance.pressure);
-  const lead = buildReferenceLead(input.language, stance.reference_text, variant);
-  const pressureClause = buildPressureClause(input.language, pressure, stance.session_tension, variant);
-
-  if (input.language.startsWith("ja")) {
-    const lines = [
-      `${focus} がそのくらいに収まるなら、前に進める余地はあります。`,
-      `${focus} をその粒度で置くなら、いったん乗れます。`,
-      `${focus} が見えるなら、この場ではそれで十分です。`,
-      `${focus} をその範囲に保てるなら、今は進めてよいです。`,
-    ];
-    return [lead, pressureClause, lines[variant % lines.length]].filter(Boolean).join(" ");
-  }
-
-  const lines = [
-    `If ${focus} stays at that size, I can work with it.`,
-    `If that is the actual shape of ${focus}, I can support moving forward.`,
-    `That is enough on ${focus} for me to stay with the direction.`,
-    `I can back this if ${focus} really remains that bounded.`,
-  ];
-  return [lead, pressureClause, lines[variant % lines.length]].filter(Boolean).join(" ");
-}
-
-function buildPushBackTurn(input: ActorPromptInput, stance: RuntimeTurnStance, variant: number): string {
-  const focus = focusWithWhisper(input, stance.focus);
-  const pressure = translateVisiblePressure(input, stance.pressure);
-  const lead = buildReferenceLead(input.language, stance.reference_text, variant);
-  const pressureClause = buildPressureClause(input.language, pressure, stance.session_tension, variant);
-
-  if (input.language.startsWith("ja")) {
-    const lines = [
-      `${focus} がまだ薄いので、このまま約束には乗せたくありません。`,
-      `${focus} が見えないままだと、今ここで前提にするのは早いです。`,
-      `${focus} が曖昧なままだと、あとで別の期待を背負います。`,
-      `${focus} をもう少し具体化しないと、納得して進めにくいです。`,
-    ];
-    return [lead, pressureClause, lines[variant % lines.length]].filter(Boolean).join(" ");
-  }
-
-  const lines = [
-    `I do not want to commit on this while ${focus} is still that thin.`,
-    `Without a clearer shape on ${focus}, this still feels early to lock in.`,
-    `If ${focus} stays vague, the room will read more into it later.`,
-    `I still need ${focus} made more concrete before I can back it.`,
-  ];
-  return [lead, pressureClause, lines[variant % lines.length]].filter(Boolean).join(" ");
+  return [hook, core, pressureHint].filter(Boolean).join(" ");
 }
 
 function buildLiveActorText(input: ActorPromptInput, roomState: RoomState): string {
-  const stance = deriveTurnStance(input, roomState);
-  const variant = chooseVariant(roomState, input.speaker_id, stance.reference_text);
-
-  if (stance.move === "ask") {
-    return buildAskTurn(input, stance, variant);
-  }
-
-  if (stance.move === "narrow") {
-    return buildNarrowingTurn(input, stance, variant);
-  }
-
-  if (stance.move === "support-with-condition") {
-    return buildConditionalSupportTurn(input, stance, variant);
-  }
-
-  return buildPushBackTurn(input, stance, variant);
+  const handoff = buildCompactTurnHandoff(input, roomState);
+  return handoff.mode === "answer" ? buildAnswerRealization(input, handoff) : buildReactionRealization(input, handoff);
 }
 
 function inferSpeakerName(roomState: RoomState, speakerId: string): string {
@@ -500,6 +586,7 @@ export function renderLocalLiveActorTurn(params: {
       runtime_transport: "local-live-responder",
       rendering_mode: "local-live-actor-generation",
       verification_asset: false,
+      realization_mode: stance.mode,
       stance_tone: stance.tone,
       stance_move: stance.move,
       session_tension: stance.session_tension,

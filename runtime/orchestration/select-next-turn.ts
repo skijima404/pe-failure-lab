@@ -1,5 +1,6 @@
 import type { RoomState, TurnOwner } from "../state/types.ts";
 import {
+  capabilityShiftPreferred,
   findFacilitator,
   findParticipant,
   playerResponseOwed,
@@ -25,6 +26,17 @@ export function selectNextTurn(roomState: RoomState): NextTurnDecision {
     };
   }
 
+  const overlapActorId = roomState.exchange_state.handoff_candidate_actor_ids[0];
+  const overlapActor = findParticipant(roomState, overlapActorId);
+  if (overlapActor && capabilityShiftPreferred(roomState)) {
+    return {
+      owner: "reacting_actor",
+      speaker_id: overlapActor.participant_id,
+      selection_reason: "capability-shift-reaction",
+      intervention_reason: null,
+    };
+  }
+
   const awaitingReaction = findParticipant(roomState, roomState.exchange_state.awaiting_reaction_from);
   if (awaitingReaction && !playerResponseOwed(roomState)) {
     return {
@@ -35,8 +47,6 @@ export function selectNextTurn(roomState: RoomState): NextTurnDecision {
     };
   }
 
-  const overlapActorId = roomState.exchange_state.handoff_candidate_actor_ids[0];
-  const overlapActor = findParticipant(roomState, overlapActorId);
   if (overlapActor && sameTopicOverlapAllowed(roomState)) {
     return {
       owner: "reacting_actor",

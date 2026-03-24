@@ -32,6 +32,10 @@ Preferred direction:
 - let context and turn state shape the current move
 - avoid full-sentence templates as the main product behavior
 
+Important nuance:
+- narrow facilitator repair phrases are acceptable
+- closed phrase inventories for stakeholder concern expression are not
+
 ## Principle 2: Actor Difference Should Come From Light Contracts
 Actor distinctiveness should come primarily from:
 - tone summary
@@ -48,6 +52,8 @@ Not from:
 
 The runtime should preserve identity with small, stable character contracts rather than dense persona payloads.
 
+Actor identity should not depend on a small fixed phrase menu.
+
 ## Principle 3: Generative Variation Is A Design Surface
 Variation is not only a risk to control.
 It is part of the product value when bounded correctly.
@@ -60,6 +66,14 @@ Preferred direction:
 Avoid:
 - generic randomness with no role or topic grounding
 - excessive deterministic scripting that removes replay texture
+- concern expression that collapses into a repeated closed list of stakeholder warning phrases
+
+Preferred conversational behaviors:
+- content-first answering when the player asks for clarification or background
+- topic-led progression where new information creates the next question naturally
+- capability-based speaker switching rather than current-speaker stickiness
+- conditional actor entry where only relevant actors join the moment
+- progressive deepening from concern to impact, evidence need, or next step
 
 ## Principle 4: Evaluation Semantics Stay Outside Live Actor Speech
 Live actors and facilitator should not carry the full assessment model.
@@ -78,6 +92,11 @@ Live conversation should focus on:
 - unresolved pressure
 
 Evaluation quality should come from transcript evidence, not by forcing actors to say every important dimension out loud.
+
+Important consequence:
+- natural conversation quality and evaluation strictness are separate product qualities
+- a natural session may still score poorly if it fails to produce explicit evidence
+- a cooperative or smooth conversation should not automatically receive a strong evaluation
 
 ## Principle 5: The Runtime Does Not Need Forced Convergence
 A session does not need to end in agreement to be valuable.
@@ -105,6 +124,10 @@ It should not become:
 - a hidden evaluator
 
 If more assessment intelligence is needed, prefer making evaluator evidence richer instead of making live speech heavier.
+
+Reduction-first rule:
+- when live conversation becomes repetitive or game-like, first try removing runtime control, prompt weight, or phrase menus before adding new orchestration logic
+- treat heavy repository context and excessive code-level steering as likely causes of degraded naturalness
 
 ## Principle 7: Production And Verification Must Stay Legible
 Production-facing conversation behavior and verification scaffolding must remain visibly separate.

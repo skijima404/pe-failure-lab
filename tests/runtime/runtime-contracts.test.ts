@@ -469,6 +469,31 @@ test("initial why-question after opening routes back to facilitator instead of f
   assert.equal(preparedTurn.decision.intervention_reason, "trigger-alignment");
 });
 
+test("trigger-alignment facilitator turn provides content recap before handing back", async () => {
+  const roomState = createInitialRoomState("trigger-alignment-facilitator-recap", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "今日はありがとうございます。どこから始めるのがよさそうか共有してください。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "まずこの活動は、どう言うきっかけで始まり、その背景にあった問題はなんだったかを教えてもらえますか",
+  );
+  const facilitatorTurn = await runNextRuntimeActorTurnFromState(afterPlayer, new LocalLiveActorResponder(), {
+    facilitator_mode: "local",
+  });
+
+  assert.equal(facilitatorTurn.turn_log.intervention_reason, "trigger-alignment");
+  assert.match(facilitatorTurn.room_state.recent_transcript.at(-1)?.text ?? "", /きっかけ|背景の問題/);
+});
+
 test("initial boundary proposal after opening routes first reaction to platform", () => {
   const roomState = createInitialRoomState("initial-boundary-routes-platform", "ja");
   roomState.scene_phase = "discussion";
@@ -709,16 +734,16 @@ test("actor prompt includes stakeholder working context and pressure background"
   const preparedTurn = prepareNextRuntimeTurn(roomState);
 
   assert.equal(preparedTurn.decision.speaker_id, "platform");
-  assert.match(preparedTurn.prompt_text, /Tone summary:/);
-  assert.match(preparedTurn.prompt_text, /Default move:/);
-  assert.match(preparedTurn.prompt_text, /Trust threshold:/);
-  assert.match(preparedTurn.prompt_text, /Likely misunderstanding:/);
-  assert.match(preparedTurn.prompt_text, /Session role focus:/);
-  assert.match(preparedTurn.prompt_text, /Current pressure seed:/);
-  assert.match(preparedTurn.prompt_text, /Likely misunderstanding or overreach:/);
-  assert.match(preparedTurn.prompt_text, /Active topic depth: 2/);
-  assert.match(preparedTurn.prompt_text, /Visible unresolved items:/);
-  assert.match(preparedTurn.prompt_text, /Hidden whisper:/);
+  assert.match(preparedTurn.prompt_text, /Character contract:/);
+  assert.match(preparedTurn.prompt_text, /tone_summary:/);
+  assert.match(preparedTurn.prompt_text, /default_move:/);
+  assert.match(preparedTurn.prompt_text, /trust_threshold:/);
+  assert.match(preparedTurn.prompt_text, /likely_misunderstanding:/);
+  assert.match(preparedTurn.prompt_text, /Current moment:/);
+  assert.match(preparedTurn.prompt_text, /role_focus:/);
+  assert.match(preparedTurn.prompt_text, /current_pressure_seed:/);
+  assert.match(preparedTurn.prompt_text, /latest_reference:/);
+  assert.match(preparedTurn.prompt_text, /whisper_hint:/);
 });
 
 test("actor prompt includes explicit japanese output guidance when the session language is japanese", () => {
@@ -765,7 +790,10 @@ test("mock adapter renders whisper-aware stakeholder response when a whisper exi
   );
 
   assert.equal(actorTurn.turn_log.selected_speaker, "platform");
-  assert.match(actorTurn.room_state.recent_transcript.at(-1)?.text ?? "", /I can work with that direction if we keep it tight\.|The angle I still care about is/);
+  assert.match(
+    actorTurn.room_state.recent_transcript.at(-1)?.text ?? "",
+    /I can work with that direction if we keep it tight\.|The angle I still care about is/,
+  );
   assert.equal(actorTurn.turn_log.agent_output_summary.response_transport, "mock-model-adapter");
 });
 
@@ -808,6 +836,52 @@ test("same-topic overlap is allowed after player response when burden stays boun
   assert.equal(overlapTurn.decision.owner, "reacting_actor");
   assert.equal(overlapTurn.decision.speaker_id, "platform");
   assert.equal(overlapTurn.decision.selection_reason, "overlap-reaction");
+});
+
+test("capability-based actor entry can override current-actor stickiness without forcing equal participation", () => {
+  const roomState = createInitialRoomState("capability-shift-reaction");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "support-model",
+    depth: 2,
+  };
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    initiating_actor_id: "exec",
+    awaiting_reaction_from: "exec",
+    handoff_candidate_actor_ids: ["platform"],
+    should_continue_current_exchange: true,
+    follow_up_count: 1,
+  };
+  roomState.main_session_judgment = {
+    ...roomState.main_session_judgment,
+    last_player_utterance_type: "question",
+    last_player_intent: "request-role-specific-explanation",
+    multi_perspective_needed: false,
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "exec",
+      speaker_name: "Aki Tanaka",
+      turn_owner: "initiating_actor",
+      text: "The business case matters, but we should hear the support boundary clearly.",
+    },
+    {
+      turn_index: 2,
+      speaker_id: "player",
+      speaker_name: "Player",
+      turn_owner: "player",
+      text: "Can the platform side say more clearly what they would actually provide first?",
+    },
+  ];
+
+  const prepared = prepareNextRuntimeTurn(roomState);
+
+  assert.equal(prepared.decision.owner, "reacting_actor");
+  assert.equal(prepared.decision.speaker_id, "platform");
+  assert.equal(prepared.decision.selection_reason, "capability-shift-reaction");
 });
 
 test("substantive same-topic turns deepen the active topic", () => {
@@ -1669,6 +1743,97 @@ test("local live responder uses product runtime transport instead of verificatio
   assert.equal(outcome.response_metadata?.runtime_transport, "local-live-responder");
   assert.equal(outcome.response_metadata?.verification_asset, false);
   assert.match(outcome.text, /です|ます/);
+});
+
+test("clarification-style player turn uses answer mode instead of repeating persona-pressure warning", async () => {
+  const roomState = createInitialRoomState("clarification-answer-mode", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.exchange_state.initiating_actor_id = "exec";
+  roomState.exchange_state.awaiting_reaction_from = "exec";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "exec",
+      speaker_name: "Aki Tanaka",
+      turn_owner: "initiating_actor",
+      text: "最初の一手をどう説明するかを見たいです。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "どんな意見があったか教えていただけますか？",
+    "Player",
+  );
+  const prepared = prepareNextRuntimeTurn(afterPlayer);
+  const responder = new LocalLiveActorResponder();
+  const outcome = responder.respond({ roomState: afterPlayer, preparedTurn: prepared });
+
+  assert.equal(prepared.decision.speaker_id, "exec");
+  assert.equal(outcome.response_metadata?.realization_mode, "answer");
+  assert.match(outcome.text, /事業側/);
+  assert.equal(outcome.text.includes("avoid broad commitment without a believable first move and practical logic"), false);
+});
+
+test("role-local clarification stays with engaged actor and gives content-first answer", async () => {
+  const roomState = createInitialRoomState("platform-role-local-clarification", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.exchange_state.initiating_actor_id = "platform";
+  roomState.exchange_state.awaiting_reaction_from = "platform";
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "platform",
+      speaker_name: "Naoki Sato",
+      turn_owner: "initiating_actor",
+      text: "最初に Platform 側がどこまで持つのかを明確にしたいです。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "Platform 側としてはどういう点を見ているのか、もう少し具体的に教えてください。",
+    "Player",
+  );
+  const prepared = prepareNextRuntimeTurn(afterPlayer);
+  const responder = new LocalLiveActorResponder();
+  const outcome = responder.respond({ roomState: afterPlayer, preparedTurn: prepared });
+
+  assert.equal(prepared.decision.owner, "initiating_actor");
+  assert.equal(prepared.decision.speaker_id, "platform");
+  assert.equal(outcome.response_metadata?.realization_mode, "answer");
+  assert.match(outcome.text, /Platform 側/);
+});
+
+test("same-actor follow-up uses continuation framing instead of replaying the same fixed opening", async () => {
+  const roomState = createInitialRoomState("same-actor-continuation-framing", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.exchange_state.initiating_actor_id = "platform";
+  roomState.exchange_state.awaiting_reaction_from = "platform";
+  roomState.exchange_state.follow_up_count = 2;
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "platform",
+      speaker_name: "Naoki Sato",
+      turn_owner: "initiating_actor",
+      text: "支援境界は入口だけにして、それ以上は広げたくありません。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "では最初の対象を一つに絞って、入口だけを定義する形で進めたいです。",
+    "Player",
+  );
+  const prepared = prepareNextRuntimeTurn(afterPlayer);
+  const responder = new LocalLiveActorResponder();
+  const outcome = responder.respond({ roomState: afterPlayer, preparedTurn: prepared });
+
+  assert.equal(prepared.decision.speaker_id, "platform");
+  assert.match(String(outcome.response_metadata?.realization_mode), /answer|reaction/);
+  assert.match(outcome.text, /補足で言うと|いまの|Platform 側/);
+  assert.notEqual(outcome.text, "支援境界は入口だけにして、それ以上は広げたくありません。");
 });
 
 test("japanese local live responder does not leak raw english concern or pressure strings into visible turns", async () => {

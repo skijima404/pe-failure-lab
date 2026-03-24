@@ -16,6 +16,11 @@
 - related_decisions:
   - docs/decisions/adr-20260321-local-first-runtime-and-multi-agent-scope.md
   - docs/decisions/adr-20260323-separate-runtime-verification-assets-from-product-runtime.md
+- related_development_memos:
+  - docs/intent-development/development-memos/dm-20260324-clarification-turn-handling-direction.md
+  - docs/intent-development/development-memos/dm-20260324-naturalness-vs-evaluation-and-reduction-first.md
+  - docs/intent-development/development-memos/dm-20260324-skill-assessment-style-renderer-replacement.md
+  - docs/intent-development/development-memos/dm-20260325-narrow-read-surface-experiment.md
 
 ## Goal
 Define the product-facing local-first actor generation path for live simulation turns without reusing verification-only renderers.
@@ -75,6 +80,10 @@ The live actor generator should not require:
 - exhaustive persona inventories
 - exhaustive scenario prose
 
+Preferred read-surface direction:
+- a play or demo runtime mode may deliberately restrict live roleplay to an allowlisted narrow read surface
+- broad repository richness should not automatically become live actor context
+
 ### Naturalness Rules
 The local live actor generator should:
 - react to the current moment before sounding evaluative
@@ -84,6 +93,27 @@ The local live actor generator should:
 - use reusable phrasing atoms sparingly and only as connective tissue
 - prefer contextual references from the current transcript over generic reusable lines
 - tolerate unresolved, looping, or time-boxed conversation without forcing closure language
+
+The local live actor generator should preserve these conversational behaviors:
+- content-first answering for clarification and background requests
+- topic-led progression where new information creates the next question naturally
+- capability-based speaker switching when another actor is better positioned to answer
+- conditional actor entry rather than mandatory equal participation
+- progressive deepening instead of repeating the same concern in slightly different words
+
+The local live actor generator should also distinguish:
+- clarification or background-answer turns
+- ordinary reaction turns
+
+Clarification-style turns should prefer content answer before concern restatement.
+
+Facilitator exception:
+- narrow fixed repair or stop-language is acceptable for facilitator turns when the room needs traffic control or bounded closure
+
+Actor rule:
+- stakeholder concern expression should not be primarily produced by choosing from a small closed phrase list
+- repeated-play variation should come from conversational function, stance, and context, not only from phrase inventory rotation
+- stakeholder turns should not primarily be controlled by large fixed lead, concern, and closing-question inventories
 
 ### Whisper Rules
 - a whisper or successor mechanism may shift concern emphasis, reaction posture, or move choice
@@ -109,6 +139,29 @@ The live actor path should not also become:
 - a full model-asset reasoning layer
 - a deterministic phrase engine
 - a forced-convergence controller
+- a large repository-context interpreter that tries to carry every available source detail into live speech
+
+Narrow read-surface rule:
+- if play quality degrades because live roleplay appears repo-informed rather than exchange-local, prefer introducing a narrow runtime read policy over broad repo-context access
+
+### Clarification Handling Rule
+The local-first live actor path should treat clarification-style player turns as a first-class case.
+
+Expected behavior:
+- if the player asks for background or framing, the room should provide usable content rather than only repeating persona pressure
+- if the requested clarification belongs to room framing, facilitator recap is allowed
+- if the requested clarification belongs to the engaged stakeholder's role, that actor should answer in content-first mode
+
+The runtime should not treat every clarification as if it were a proposal needing the same bounded-reaction surface.
+
+### Evaluation Separation Rule
+The live actor path should optimize for natural dialogue, while evaluation remains intentionally stricter.
+
+Expected direction:
+- live actors do not need to explicitly cover every assessment dimension
+- evaluator output may remain severe if transcript evidence is weak, missing, or overly fuzzy
+- smooth or collaborative talk alone is not sufficient for a strong evaluation
+- actor count may increase without requiring all actors to speak in every exchange
 
 ## Current Runtime Direction
 The current local-first runtime should be interpreted with the following operational shape:
@@ -145,6 +198,32 @@ The current local-first runtime should be interpreted with the following operati
   - hard turn limit
 - unresolved or time-boxed endings should remain evaluator-valid and should not be treated as runtime failure
 
+### Reduction-First Implementation Rule
+When local-live conversation becomes repetitive, game-like, or over-controlled, prefer subtraction before expansion.
+
+First reduction targets:
+- fixed phrase inventories
+- heavy persona or scenario payloads
+- routing rules that over-stick to the current actor
+- control logic that forces visible turns to carry hidden evaluation semantics
+- repository context that is too broad for the current live exchange
+
+Only add new runtime machinery after reduction attempts fail to recover naturalness.
+
+### Renderer Replacement Allowance
+If repeated playtests still show phrase-inventory feel, weak clarification answers, or poor topic progression after reduction-first passes, the repository may replace the stakeholder live renderer with a thinner skill-assessment-style realization path.
+
+Replacement scope should prefer:
+- stakeholder visible-turn realization
+- actor live prompt shape
+- minimal actor handoff contract
+
+Replacement scope should avoid unnecessary churn in:
+- canonical state
+- orchestration
+- evaluator path
+- production / verification / test boundaries
+
 ### Stop And Closure Rules
 The local-first simulation does not need to force agreement to remain valid.
 
@@ -180,3 +259,5 @@ The repository should distinguish:
 ## Follow-up
 - improve live actor surface realization quality without reintroducing verification assets
 - expand local live actor generation to cover facilitator wording if the current local facilitator path becomes a naturalness bottleneck
+- add clarification-answer regression coverage so player informational questions do not collapse back into repeated persona-warning turns
+- keep evaluation strictness improvements in evaluator-facing paths rather than pushing them back into actor phrasing
