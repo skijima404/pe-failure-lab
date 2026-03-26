@@ -1,7 +1,12 @@
 import type { RoomState, TurnOwner } from "../state/types.ts";
 import {
   capabilityShiftPreferred,
+  directActorReplyCanBypassFacilitator,
+  directActorReplyPreferred,
+  engagedActorAnswerCanBypassFacilitator,
+  engagedActorAnswerPreferred,
   findFacilitator,
+  findDirectAddressedParticipant,
   findParticipant,
   playerResponseOwed,
   requiresFacilitatorIntervention,
@@ -17,12 +22,42 @@ export interface NextTurnDecision {
 
 export function selectNextTurn(roomState: RoomState): NextTurnDecision {
   const facilitatorReason = requiresFacilitatorIntervention(roomState);
-  if (facilitatorReason) {
+  const directAddressedParticipant = findDirectAddressedParticipant(roomState);
+  const engagedActor = engagedActorAnswerPreferred(roomState);
+
+  if (
+    facilitatorReason &&
+    !directActorReplyCanBypassFacilitator(roomState, directAddressedParticipant) &&
+    !engagedActorAnswerCanBypassFacilitator(roomState)
+  ) {
     return {
       owner: "facilitator",
       speaker_id: findFacilitator(roomState).participant_id,
       selection_reason: "facilitator-intervention",
       intervention_reason: facilitatorReason,
+    };
+  }
+
+  if (directActorReplyPreferred(roomState, directAddressedParticipant)) {
+    return {
+      owner:
+        roomState.exchange_state.initiating_actor_id === directAddressedParticipant?.participant_id ||
+        roomState.exchange_state.awaiting_reaction_from === directAddressedParticipant?.participant_id ||
+        roomState.exchange_state.initiating_actor_id === null
+          ? "initiating_actor"
+          : "reacting_actor",
+      speaker_id: directAddressedParticipant?.participant_id ?? "player",
+      selection_reason: "direct-address-target",
+      intervention_reason: null,
+    };
+  }
+
+  if (engagedActor) {
+    return {
+      owner: "initiating_actor",
+      speaker_id: engagedActor.participant_id,
+      selection_reason: "engaged-actor-answer",
+      intervention_reason: null,
     };
   }
 

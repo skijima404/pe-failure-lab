@@ -362,128 +362,12 @@ function buildCompactTurnHandoff(input: ActorPromptInput, roomState: RoomState):
   };
 }
 
-function buildReferenceHook(handoff: CompactTurnHandoff): string | null {
-  if (handoff.language.startsWith("ja")) {
-    if (handoff.repetition.same_actor_continuation) {
-      return "補足で言うと";
-    }
-    if (handoff.reference_text) {
-      return `いまの「${handoff.reference_text}」で言うと`;
-    }
-    return null;
-  }
-
-  if (handoff.repetition.same_actor_continuation) {
-    return "To add one point";
-  }
-  if (handoff.reference_text) {
-    return `On the point about "${handoff.reference_text}"`;
-  }
-  return null;
-}
-
-function buildRoleAnswerSubject(input: ActorPromptInput, handoff: CompactTurnHandoff): string {
-  if (handoff.language.startsWith("ja")) {
-    if (input.speaker_id === "exec") {
-      return handoff.repetition.repeated_focus
-        ? "事業側として最初の一手の筋が立つか"
-        : `事業側として ${handoff.focus} が最初の一手として筋が立つか`;
-    }
-    if (input.speaker_id === "platform") {
-      return handoff.repetition.repeated_focus
-        ? "Platform 側がどこまで提供範囲を持つか"
-        : `Platform 側が ${handoff.focus} をどこまで提供範囲として持つか`;
-    }
-    if (input.speaker_id === "delivery") {
-      return handoff.repetition.repeated_focus
-        ? "現場で最初に何が使える形になるか"
-        : `現場で ${handoff.focus} が最初に何を使える形にするか`;
-    }
-    return `${handoff.focus} をどう読むか`;
-  }
-
-  if (input.speaker_id === "exec") {
-    return handoff.repetition.repeated_focus
-      ? "whether the first move is credible from the business side"
-      : `whether ${handoff.focus} is credible enough for the first move`;
-  }
-  if (input.speaker_id === "platform") {
-    return handoff.repetition.repeated_focus
-      ? "where the platform-side support boundary actually is"
-      : `where the boundary around ${handoff.focus} actually sits`;
-  }
-  if (input.speaker_id === "delivery") {
-    return handoff.repetition.repeated_focus
-      ? "what becomes usable first for delivery teams"
-      : `what becomes usable first around ${handoff.focus}`;
-  }
-  return `how ${handoff.focus} should be read`;
-}
-
-function buildReactionCore(input: ActorPromptInput, handoff: CompactTurnHandoff): string {
-  if (handoff.language.startsWith("ja")) {
-    if (handoff.move === "ask") {
-      if (handoff.topic_type === "support-model") {
-        return handoff.repetition.repeated_focus
-          ? "まずは支援境界をどこに置くのかをはっきりさせたいです。"
-          : `まずは ${handoff.focus} の支援境界をどこに置くのかをはっきりさせたいです。`;
-      }
-      return handoff.repetition.repeated_focus
-        ? "まず何が見えればこの場で進められるのかを確認したいです。"
-        : `まず ${handoff.focus} で何が見えればこの場で進められるのかを確認したいです。`;
-    }
-
-    if (handoff.move === "narrow") {
-      return handoff.repetition.repeated_focus
-        ? "最初の対象だけに切ってから反応を見たいです。"
-        : `${handoff.focus} は最初の対象だけに切ってから反応を見たいです。`;
-    }
-
-    if (handoff.move === "support-with-condition") {
-      return handoff.repetition.repeated_focus
-        ? "その範囲に収まるなら、いったん前に進めます。"
-        : `${handoff.focus} がその範囲に収まるなら、いったん前に進めます。`;
-    }
-
-    return handoff.repetition.repeated_focus
-      ? "このまま約束として受け取るにはまだ薄いです。"
-      : `${handoff.focus} をこのまま約束として受け取るにはまだ薄いです。`;
-  }
-
-  if (handoff.move === "ask") {
-    if (handoff.topic_type === "support-model") {
-      return handoff.repetition.repeated_focus
-        ? "I want the support boundary made explicit first."
-        : `I want the support boundary around ${handoff.focus} made explicit first.`;
-    }
-    return handoff.repetition.repeated_focus
-      ? "I want to know what would make this concrete enough to act on."
-      : `I want to know what would make ${handoff.focus} concrete enough to act on.`;
-  }
-
-  if (handoff.move === "narrow") {
-    return handoff.repetition.repeated_focus
-      ? "I would cut this down to the first usable slice."
-      : `I would cut ${handoff.focus} down to the first usable slice.`;
-  }
-
-  if (handoff.move === "support-with-condition") {
-    return handoff.repetition.repeated_focus
-      ? "If it really stays that bounded, I can move with it."
-      : `If ${handoff.focus} really stays that bounded, I can move with it.`;
-  }
-
-  return handoff.repetition.repeated_focus
-    ? "This still feels too thin to treat as a real commitment."
-    : `${handoff.focus} still feels too thin to treat as a real commitment.`;
-}
-
 function buildPressureHint(handoff: CompactTurnHandoff): string | null {
   if (!handoff.pressure) {
     if (handoff.session_tension === "looping") {
       return handoff.language.startsWith("ja")
-        ? "同じところを回し始めているので、これ以上は広げたくありません。"
-        : "We are starting to circle the same point, so I do not want to widen it further.";
+        ? "ここで広げるより、まず一点だけ見たいです。"
+        : "I would keep this to one point instead of widening it here.";
     }
     return null;
   }
@@ -494,71 +378,128 @@ function buildPressureHint(handoff: CompactTurnHandoff): string | null {
 
   if (handoff.language.startsWith("ja")) {
     return handoff.session_tension === "looping"
-      ? `ただ、${handoff.pressure} があるので広げすぎるとまた曖昧になります。`
-      : `ただ、${handoff.pressure} は先に折り込んでおきたいです。`;
+      ? `ただ、${handoff.pressure} を外すとまた曖昧になります。`
+      : `ただ、${handoff.pressure} は外せません。`;
   }
 
   return handoff.session_tension === "looping"
-    ? `The pressure still feels like ${handoff.pressure}, so widening this now would make it muddy again.`
-    : `${handoff.pressure} is still part of the real constraint for me.`;
+    ? `If we drop ${handoff.pressure}, this gets muddy again.`
+    : `I still need ${handoff.pressure} kept in view.`;
+}
+
+function buildTopicLead(handoff: CompactTurnHandoff): string | null {
+  if (!handoff.reference_text || handoff.repetition.same_actor_continuation) {
+    return null;
+  }
+
+  if (handoff.language.startsWith("ja")) {
+    return `「${handoff.reference_text}」の話なら`;
+  }
+
+  return `On "${handoff.reference_text}"`;
+}
+
+function buildShortFocus(handoff: CompactTurnHandoff): string {
+  return handoff.repetition.repeated_focus ? (handoff.language.startsWith("ja") ? "その点" : "that point") : handoff.focus;
+}
+
+function buildAnswerCore(input: ActorPromptInput, handoff: CompactTurnHandoff): string {
+  const focus = buildShortFocus(handoff);
+
+  if (handoff.language.startsWith("ja")) {
+    if (input.speaker_id === "exec") {
+      return `事業側としては、${focus}が最初の一手として説明できるかを見ます。`;
+    }
+    if (input.speaker_id === "platform") {
+      return `Platform 側としては、${focus}で最初に持つ範囲と持たない範囲を切り分けたいです。`;
+    }
+    if (input.speaker_id === "delivery") {
+      return `現場側としては、${focus}が最初に使える形になるかを見ます。`;
+    }
+    return `${focus}なら、まず輪郭をはっきりさせたいです。`;
+  }
+
+  if (input.speaker_id === "exec") {
+    return `On ${focus}, I need a first move that is explainable in business terms.`;
+  }
+  if (input.speaker_id === "platform") {
+    return `On ${focus}, I want the support boundary made explicit early.`;
+  }
+  if (input.speaker_id === "delivery") {
+    return `On ${focus}, I am looking for something delivery teams can actually use first.`;
+  }
+  return `On ${focus}, I want the shape made legible first.`;
+}
+
+function buildReactionCore(handoff: CompactTurnHandoff): string {
+  const focus = buildShortFocus(handoff);
+
+  if (handoff.language.startsWith("ja")) {
+    if (handoff.move === "ask") {
+      return handoff.topic_type === "support-model"
+        ? `${focus}なら、先に支援境界を一つだけ決めたいです。`
+        : `${focus}なら、先に一つだけ具体化したいです。`;
+    }
+
+    if (handoff.move === "narrow") {
+      return `${focus}は、まず一つの対象に切って見たいです。`;
+    }
+
+    if (handoff.move === "support-with-condition") {
+      return `${focus}がその範囲で収まるなら進められます。`;
+    }
+
+    return `${focus}だけではまだ判断しきれません。`;
+  }
+
+  if (handoff.move === "ask") {
+    return handoff.topic_type === "support-model"
+      ? `On ${focus}, I want one explicit support boundary first.`
+      : `On ${focus}, I want one concrete point first.`;
+  }
+
+  if (handoff.move === "narrow") {
+    return `I would cut ${focus} to one first slice.`;
+  }
+
+  if (handoff.move === "support-with-condition") {
+    return `I can move if ${focus} really stays that bounded.`;
+  }
+
+  return `${focus} is still too thin for me to treat as a real commitment.`;
+}
+
+function buildAskTail(handoff: CompactTurnHandoff): string | null {
+  if (handoff.move !== "ask") {
+    return null;
+  }
+
+  if (handoff.language.startsWith("ja")) {
+    return handoff.last_player_intent === "request-role-specific-explanation"
+      ? "そこが見えれば読み違いはかなり減ります。"
+      : "そこが見えれば次に進めます。";
+  }
+
+  return handoff.last_player_intent === "request-role-specific-explanation"
+    ? "If that is visible, the room is much less likely to misread this."
+    : "If that is visible, the next move becomes clearer.";
 }
 
 function buildAnswerRealization(input: ActorPromptInput, handoff: CompactTurnHandoff): string {
-  const hook = buildReferenceHook(handoff);
-  const subject = buildRoleAnswerSubject(input, handoff);
+  const topicLead = buildTopicLead(handoff);
   const pressureHint = buildPressureHint(handoff);
+  const core = buildAnswerCore(input, handoff);
 
-  if (handoff.language.startsWith("ja")) {
-    const firstSentence =
-      input.speaker_id === "exec"
-        ? `事業側で見ているのは、${subject}です。`
-        : input.speaker_id === "platform"
-          ? `Platform 側で見ているのは、${subject}です。`
-          : input.speaker_id === "delivery"
-            ? `現場側で見ているのは、${subject}です。`
-            : `${subject}を見ています。`;
-    const lastSentence = handoff.repetition.repeated_focus
-      ? "要するに、その輪郭がこの場で見えれば十分です。"
-      : `要するに、${handoff.focus} の輪郭がこの場で見えれば十分です。`;
-    return [hook, firstSentence, pressureHint, lastSentence].filter(Boolean).join(" ");
-  }
-
-  const firstSentence =
-    input.speaker_id === "exec"
-      ? `From the business side, what I am looking at is ${subject}.`
-      : input.speaker_id === "platform"
-        ? `From the platform side, what I am looking at is ${subject}.`
-        : input.speaker_id === "delivery"
-          ? `From the delivery side, what I am looking at is ${subject}.`
-          : `What I am looking at is ${subject}.`;
-  const lastSentence = handoff.repetition.repeated_focus
-    ? "In short, I just need that boundary made legible in this room."
-    : `In short, I need ${handoff.focus} made legible in this room.`;
-  return [hook, firstSentence, pressureHint, lastSentence].filter(Boolean).join(" ");
+  return [topicLead, core, pressureHint].filter(Boolean).join(" ");
 }
 
-function buildReactionRealization(input: ActorPromptInput, handoff: CompactTurnHandoff): string {
-  const hook = buildReferenceHook(handoff);
+function buildReactionRealization(_input: ActorPromptInput, handoff: CompactTurnHandoff): string {
+  const topicLead = buildTopicLead(handoff);
   const pressureHint = buildPressureHint(handoff);
-  const core = buildReactionCore(input, handoff);
+  const core = buildReactionCore(handoff);
+  const askTail = buildAskTail(handoff);
 
-  if (handoff.move === "ask") {
-    if (handoff.language.startsWith("ja")) {
-      const askTail =
-        handoff.last_player_intent === "request-role-specific-explanation"
-          ? "そこが分かれば、この論点はかなり読みやすくなります。"
-          : "そこが見えれば、この場で次の判断がしやすくなります。";
-      return [hook, core, pressureHint, askTail].filter(Boolean).join(" ");
-    }
-
-    const askTail =
-      handoff.last_player_intent === "request-role-specific-explanation"
-        ? "If that is clear, the rest of the thread becomes much easier to read."
-        : "If that is visible, the next decision in this room becomes easier.";
-    return [hook, core, pressureHint, askTail].filter(Boolean).join(" ");
-  }
-
-  return [hook, core, pressureHint].filter(Boolean).join(" ");
+  return [topicLead, core, pressureHint, askTail].filter(Boolean).join(" ");
 }
 
 function buildLiveActorText(input: ActorPromptInput, roomState: RoomState): string {

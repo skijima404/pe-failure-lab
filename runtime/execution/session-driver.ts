@@ -16,6 +16,7 @@ import { generateLocalWhispers } from "../sidecars/local-whisper-sidecar.ts";
 import { buildPlayerTurnJudgmentPacket } from "../orchestration/player-turn-judgment-packet.ts";
 import type { AsyncPlayerTurnJudger } from "../orchestration/adapter-backed-player-turn-judger.ts";
 import { judgePlayerTurnLocally } from "../orchestration/local-player-turn-judger.ts";
+import { findDirectAddressedParticipant } from "../orchestration/turn-selection-helpers.ts";
 
 export interface SessionDriverResult {
   accepted: boolean;
@@ -42,9 +43,28 @@ export interface SessionCloseResult {
 }
 
 function selectInitialStakeholderReaction(
+  roomState: RoomState,
   text: string,
   judgment: RoomState["main_session_judgment"] | undefined,
 ): string | null {
+  const directTarget = findDirectAddressedParticipant({
+    ...roomState,
+    recent_transcript: [
+      ...roomState.recent_transcript,
+      {
+        turn_index: roomState.turn_index + 1,
+        speaker_id: "player",
+        speaker_name: "Player",
+        turn_owner: "player",
+        text,
+      },
+    ],
+  });
+
+  if (directTarget && directTarget.role_type === "stakeholder") {
+    return directTarget.participant_id;
+  }
+
   if (!judgment) {
     return "exec";
   }
@@ -100,7 +120,7 @@ function buildAcceptedPlayerTurnOutcome(
     roomState.exchange_state.initiating_actor_id === null &&
     roomState.recent_transcript.at(-1)?.speaker_id === "mika";
   const initialReactionTarget = needsInitialStakeholderReaction
-    ? selectInitialStakeholderReaction(text, mainSessionJudgmentOverride)
+    ? selectInitialStakeholderReaction(roomState, text, mainSessionJudgmentOverride)
     : null;
   const shouldRouteInitialQuestionToFacilitator = needsInitialStakeholderReaction && initialReactionTarget === null;
 

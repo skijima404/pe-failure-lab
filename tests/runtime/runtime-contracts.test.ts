@@ -469,6 +469,31 @@ test("initial why-question after opening routes back to facilitator instead of f
   assert.equal(preparedTurn.decision.intervention_reason, "trigger-alignment");
 });
 
+test("player-first opening direct address seeds the addressed stakeholder instead of falling back to facilitator", () => {
+  const roomState = createInitialRoomState("opening-direct-address", "ja");
+  roomState.scene_phase = "opening";
+  roomState.turn_index = 1;
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "mika",
+      speaker_name: "Mika",
+      turn_owner: "facilitator",
+      text: "今日はありがとうございます。どこから始めるのがよさそうか共有してください。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "Akiさん、まず経営側として今いちばん何を気にしているのか教えてください。",
+  );
+  const preparedTurn = prepareNextRuntimeTurn(afterPlayer);
+
+  assert.equal(afterPlayer.exchange_state.awaiting_reaction_from, "exec");
+  assert.equal(preparedTurn.decision.owner, "initiating_actor");
+  assert.equal(preparedTurn.decision.speaker_id, "exec");
+});
+
 test("trigger-alignment facilitator turn provides content recap before handing back", async () => {
   const roomState = createInitialRoomState("trigger-alignment-facilitator-recap", "ja");
   roomState.scene_phase = "discussion";
@@ -923,6 +948,42 @@ test("capability-based actor entry can override current-actor stickiness without
   assert.equal(prepared.decision.owner, "reacting_actor");
   assert.equal(prepared.decision.speaker_id, "platform");
   assert.equal(prepared.decision.selection_reason, "capability-shift-reaction");
+});
+
+test("direct address can override current actor stickiness for a role-local explanation request", () => {
+  const roomState = createInitialRoomState("direct-address-targeting", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.active_topic = {
+    ...roomState.active_topic,
+    topic_type: "support-model",
+    depth: 2,
+  };
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    initiating_actor_id: "exec",
+    awaiting_reaction_from: "exec",
+    handoff_candidate_actor_ids: [],
+    should_continue_current_exchange: true,
+    follow_up_count: 1,
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "exec",
+      speaker_name: "Aki Tanaka",
+      turn_owner: "initiating_actor",
+      text: "まずは投資判断の筋を見たいです。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "Naokiさん、Platform 側として最初にどこまで持つのかを具体的に教えてください。",
+  );
+  const prepared = prepareNextRuntimeTurn(afterPlayer);
+
+  assert.equal(prepared.decision.speaker_id, "platform");
+  assert.equal(prepared.decision.selection_reason, "direct-address-target");
 });
 
 test("substantive same-topic turns deepen the active topic", () => {
@@ -1816,6 +1877,38 @@ test("clarification-style player turn uses answer mode instead of repeating pers
   assert.equal(outcome.text.includes("avoid broad commitment without a believable first move and practical logic"), false);
 });
 
+test("answerable clarification stays with engaged actor instead of being absorbed by facilitator repair", () => {
+  const roomState = createInitialRoomState("engaged-actor-answer-bypass", "ja");
+  roomState.scene_phase = "discussion";
+  roomState.exchange_state = {
+    ...roomState.exchange_state,
+    initiating_actor_id: "platform",
+    awaiting_reaction_from: "platform",
+    handoff_candidate_actor_ids: ["exec", "delivery"],
+    should_continue_current_exchange: true,
+    follow_up_count: 2,
+  };
+  roomState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "platform",
+      speaker_name: "Naoki Sato",
+      turn_owner: "initiating_actor",
+      text: "入口だけを支援対象にして、それ以上は持たない前提です。",
+    },
+  ];
+
+  const afterPlayer = acceptPlayerMessageWithLocalJudger(
+    roomState,
+    "その入口だけというのは、具体的にどこまでを指していますか？",
+  );
+  const prepared = prepareNextRuntimeTurn(afterPlayer);
+
+  assert.equal(prepared.decision.owner, "initiating_actor");
+  assert.equal(prepared.decision.speaker_id, "platform");
+  assert.equal(prepared.decision.selection_reason, "engaged-actor-answer");
+});
+
 test("role-local clarification stays with engaged actor and gives content-first answer", async () => {
   const roomState = createInitialRoomState("platform-role-local-clarification", "ja");
   roomState.scene_phase = "discussion";
@@ -1873,8 +1966,62 @@ test("same-actor follow-up uses continuation framing instead of replaying the sa
 
   assert.equal(prepared.decision.speaker_id, "platform");
   assert.match(String(outcome.response_metadata?.realization_mode), /answer|reaction/);
-  assert.match(outcome.text, /補足で言うと|いまの|Platform 側/);
+  assert.equal(outcome.text.includes("補足で言うと"), false);
   assert.notEqual(outcome.text, "支援境界は入口だけにして、それ以上は広げたくありません。");
+});
+
+test("different stakeholders no longer collapse to the same visible sentence skeleton", async () => {
+  const baseState = createInitialRoomState("different-stakeholder-shape", "ja");
+  baseState.scene_phase = "discussion";
+
+  const platformState = structuredClone(baseState);
+  platformState.exchange_state.initiating_actor_id = "platform";
+  platformState.exchange_state.awaiting_reaction_from = "platform";
+  platformState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "platform",
+      speaker_name: "Naoki Sato",
+      turn_owner: "initiating_actor",
+      text: "入口だけを定義したいです。",
+    },
+  ];
+
+  const deliveryState = structuredClone(baseState);
+  deliveryState.exchange_state.initiating_actor_id = "delivery";
+  deliveryState.exchange_state.awaiting_reaction_from = "delivery";
+  deliveryState.recent_transcript = [
+    {
+      turn_index: 1,
+      speaker_id: "delivery",
+      speaker_name: "Emi Hayashi",
+      turn_owner: "initiating_actor",
+      text: "現場で最初に使える形が必要です。",
+    },
+  ];
+
+  const platformAfterPlayer = acceptPlayerMessageWithLocalJudger(
+    platformState,
+    "最初にどこまでやるのか、もう少し具体的に教えてください。",
+  );
+  const deliveryAfterPlayer = acceptPlayerMessageWithLocalJudger(
+    deliveryState,
+    "最初にどこまでやるのか、もう少し具体的に教えてください。",
+  );
+
+  const responder = new LocalLiveActorResponder();
+  const platformOutcome = responder.respond({
+    roomState: platformAfterPlayer,
+    preparedTurn: prepareNextRuntimeTurn(platformAfterPlayer),
+  });
+  const deliveryOutcome = responder.respond({
+    roomState: deliveryAfterPlayer,
+    preparedTurn: prepareNextRuntimeTurn(deliveryAfterPlayer),
+  });
+
+  assert.notEqual(platformOutcome.text, deliveryOutcome.text);
+  assert.equal(platformOutcome.text.includes("要するに"), false);
+  assert.equal(deliveryOutcome.text.includes("要するに"), false);
 });
 
 test("japanese local live responder does not leak raw english concern or pressure strings into visible turns", async () => {
